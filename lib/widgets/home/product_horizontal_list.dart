@@ -1,0 +1,38 @@
+import 'package:flutter/material.dart';
+import 'package:rwnaqk/models/home_product_item.dart';
+import 'package:rwnaqk/widgets/home/product_card.dart';
+
+class ProductHorizontalList extends StatelessWidget {
+  final List<HomeProductItem> items;
+  final double itemWidth;
+  final double height;
+  final ValueChanged<HomeProductItem> onTap;
+
+  const ProductHorizontalList({
+    super.key,
+    required this.items,
+    required this.itemWidth,
+    required this.height,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (_, i) => SizedBox(
+          width: itemWidth,
+          child: ProductCard(
+            item: items[i],
+            onTap: onTap,
+          ),
+        ),
+      ),
+    );
+  }
+}
