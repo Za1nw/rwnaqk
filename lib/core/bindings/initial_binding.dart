@@ -20,9 +20,8 @@ class InitialBinding extends Bindings {
     Get.lazyPut<WishlistController>(() => WishlistController(), fenix: true);
 
     // لو عندك تبويبات أخرى:
-    Get.lazyPut<CartController>(() => CartController(), fenix: true);
     Get.put<AppSettingsController>(AppSettingsController(), permanent: true);
-
+    Get.put<CartController>(CartController(), permanent: true);
     // Get.lazyPut<ProfileController>(() => ProfileController(), fenix: true);
     // Get.lazyPut<OrdersController>(() => OrdersController(), fenix: true);
   }

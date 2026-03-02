@@ -5,11 +5,11 @@ class PaymentItemsHeader extends StatelessWidget {
   final String title; // "Items"
   final int count;
 
-  /// حالة 1: Add Voucher
+  /// State 1: Add Voucher
   final String? voucherText; // "Add Voucher"
   final VoidCallback? onAddVoucher;
 
-  /// حالة 2: Discount Chip
+  /// State 2: Discount Chip
   final String? discountText; // "5% Discount"
   final VoidCallback? onRemoveDiscount;
 
@@ -17,64 +17,73 @@ class PaymentItemsHeader extends StatelessWidget {
     super.key,
     required this.title,
     required this.count,
-
-    // voucher state
     this.voucherText,
     this.onAddVoucher,
-
-    // discount state
     this.discountText,
     this.onRemoveDiscount,
   });
 
-  bool get _showDiscount => discountText != null && discountText!.trim().isNotEmpty;
-  bool get _showVoucher => !_showDiscount && onAddVoucher != null;
+  bool get _showDiscount =>
+      discountText != null && discountText!.trim().isNotEmpty;
+
+  bool get _showVoucher =>
+      !_showDiscount && onAddVoucher != null; // نفس منطقك
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: context.foreground,
-            fontWeight: FontWeight.w900,
-            fontSize: 26,
-          ),
-        ),
-        const SizedBox(width: 10),
+    return LayoutBuilder(
+      builder: (context, c) {
+        final compact = c.maxWidth < 360;
 
-        // badge count
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: context.primary.withOpacity(.10),
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: context.primary.withOpacity(.18)),
-          ),
-          child: Text(
-            '$count',
-            style: TextStyle(
-              color: context.primary,
-              fontWeight: FontWeight.w900,
+        final titleSize = compact ? 18.0 : 20.0; // ✅ مثل الصورة
+        final badgeFont = compact ? 12.0 : 12.5;
+
+        return Row(
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: context.foreground,
+                fontWeight: FontWeight.w900,
+                fontSize: titleSize,
+                height: 1.0,
+              ),
             ),
-          ),
-        ),
+            const SizedBox(width: 10),
 
-        const Spacer(),
+            // ✅ badge count (رمادي فاتح + حجم صغير مثل الصورة)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: context.muted.withOpacity(context.isDark ? .25 : .55),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  color: context.foreground,
+                  fontWeight: FontWeight.w800,
+                  fontSize: badgeFont,
+                  height: 1.0,
+                ),
+              ),
+            ),
 
-        // RIGHT SIDE (Voucher OR Discount)
-        if (_showDiscount)
-          _DiscountChip(
-            text: discountText!,
-            onClose: onRemoveDiscount,
-          )
-        else if (_showVoucher)
-          _VoucherButton(
-            text: voucherText ?? "Add Voucher",
-            onTap: onAddVoucher!,
-          ),
-      ],
+            const Spacer(),
+
+            if (_showDiscount)
+              _DiscountChip(
+                text: discountText!,
+                onClose: onRemoveDiscount,
+              )
+            else if (_showVoucher)
+              _VoucherButton(
+                text: voucherText ?? "Add Voucher",
+                onTap: onAddVoucher!,
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -91,18 +100,20 @@ class _VoucherButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
       child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        // ✅ أقصر وأنحف مثل الصورة
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: context.primary, width: 1.6),
+          border: Border.all(color: context.primary, width: 1.4),
         ),
         child: Text(
           text,
           style: TextStyle(
             color: context.primary,
-            fontWeight: FontWeight.w900,
-            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            fontSize: 12.5,
+            height: 1.0,
           ),
         ),
       ),
@@ -119,29 +130,37 @@ class _DiscountChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 12, 10),
+      // ✅ أقصر مثل الصورة
+      padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 8, 6),
       decoration: BoxDecoration(
         color: context.primary,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             text,
             style: TextStyle(
               color: context.primaryForeground,
-              fontWeight: FontWeight.w900,
-              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              fontSize: 12.5,
+              height: 1.0,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
+
+          // ✅ شكل X أقرب للصورة (مربع/دائرة صغيرة داخل الشيب)
           InkWell(
             onTap: onClose,
             borderRadius: BorderRadius.circular(999),
-            child: Icon(
-              Icons.close_rounded,
-              size: 18,
-              color: context.primaryForeground,
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Icon(
+                Icons.close_rounded,
+                size: 16,
+                color: context.primaryForeground,
+              ),
             ),
           ),
         ],

@@ -18,6 +18,7 @@ import 'package:rwnaqk/screens/flash_sale_screen.dart';
 import 'package:rwnaqk/screens/home_screen.dart';
 import 'package:rwnaqk/screens/main_screen.dart';
 import 'package:rwnaqk/screens/onboarding_screen.dart';
+import 'package:rwnaqk/screens/payment_screen.dart';
 import 'package:rwnaqk/screens/product_details_screen.dart';
 import 'package:rwnaqk/screens/reviews_screen.dart';
 import 'package:rwnaqk/screens/search_results_screen.dart';
@@ -56,11 +57,7 @@ class AppPages {
       page: () => const ResetPasswordScreen(),
       binding: ForgotPasswordBinding(),
     ),
-    GetPage(
-      name: AppRoutes.home,
-      page: () => const HomeScreen(),
-      
-    ),
+    GetPage(name: AppRoutes.home, page: () => const HomeScreen()),
     GetPage(
       name: AppRoutes.search,
       page: () => const SearchScreen(),
@@ -82,20 +79,13 @@ class AppPages {
       binding: ProductDetailsBinding(),
     ),
     GetPage(name: AppRoutes.reviews, page: () => const ReviewsScreen()),
-    GetPage(
-      name: AppRoutes.wishlist,
-      page: () => const WishlistScreen(),
-      
-    ),
-    GetPage(
-      name: AppRoutes.main,
-      page: () => const MainScreen(),
-      
-    ),
+    GetPage(name: AppRoutes.wishlist, page: () => const WishlistScreen()),
+    GetPage(name: AppRoutes.main, page: () => const MainScreen()),
     GetPage(
       name: AppRoutes.cart,
       page: () => const CartScreen(),
       // binding: CartBinding(),
     ),
+    GetPage(name: AppRoutes.payment, page: () => const PaymentScreen()),
   ];
 }

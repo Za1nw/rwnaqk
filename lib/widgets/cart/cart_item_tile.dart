@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_utils/src/extensions/export.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/widgets/app_network_image.dart';
+import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
 
 import '../../models/home_product_item.dart';
 import '../common/quantity_stepper.dart';
@@ -194,59 +196,26 @@ class _ImageWithDelete extends StatelessWidget {
             child: AppNetworkImage(url: imageUrl, fit: BoxFit.cover),
           ),
         ),
-        PositionedDirectional(
-          top: -8,
-          end: -8,
-          child: _DeleteButton(onTap: onRemove),
+         PositionedDirectional(
+          top: -6,
+          end: -6,
+          child: AppActionIconButton(
+            icon: Icons.delete_outline_rounded,
+            iconColor: context.destructive,
+            onTap: onRemove,
+
+            size: 30, 
+            iconSize: 25, 
+            radius: 99, 
+            borderColor: context.background,
+            
+
+            backgroundColor: context.destructive.withOpacity(.5), 
+            // iconColor = أبيض افتراضياً
+          ),
         ),
       ],
     );
   }
 }
 
-class _DeleteButton extends StatelessWidget {
-  final VoidCallback onTap;
-  const _DeleteButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: context.card,
-            shape: BoxShape.circle,
-            border: Border.all(color: context.border.withOpacity(.35)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(.10),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: context.destructive.withOpacity(.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.close_rounded,
-                size: 16,
-                color: context.destructive,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

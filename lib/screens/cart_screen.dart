@@ -5,7 +5,9 @@ import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
 
 import '../../controllers/cart_controller.dart';
 
-import '../../widgets/cart/cart_app_bar.dart';
+import '../../widgets/cart/cart_header.dart';
+import '../../widgets/cart/address_section.dart';
+
 import '../../widgets/cart/cart_items_list.dart';
 import '../../widgets/cart/cart_total_bar.dart';
 import '../../widgets/cart/cart_wishlist_section.dart';
@@ -22,59 +24,51 @@ class CartScreen extends GetView<CartController> {
       body: SafeArea(
         child: Column(
           children: [
-            /// TOP BAR
-            CartAppBar(
-                count: 2,
-                shippingTitle: "Shipping Address",
-                shippingAddress:
-                    "26, Duong So 2, Thao Dien Ward\nHo Chi Minh city 70000",
-                onEditAddress: () {
-                  /// بيانات مؤقتة
-                  String? selectedCountry = "Vietnam";
+            /// TOP (Header + Address)
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 16, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// Header
+                  Obx(
+                    () => CartHeader(
+                      title: 'Cart',
+                      count: controller.cartItems.length,
+                    ),
+                  ),
 
-                  final addressCtrl = TextEditingController(
-                    text: "26, Duong So 2, Thao Dien Ward",
-                  );
+                  const SizedBox(height: 12),
 
-                  final cityCtrl = TextEditingController(
-                    text: "Ho Chi Minh city",
-                  );
+                  /// Address Section (Edit إذا موجود / Add إذا فاضي)
+                  AddressSection(
+                    title: 'Shipping Address',
 
-                  final postcodeCtrl = TextEditingController(text: "70000");
+                    // خليها فاضية عشان يظهر AddInfoCard
+                    address: '',
 
-                  ShippingAddressSheet.show(
-                    context,
-
-                    country: selectedCountry,
-
-                    countries: const [
-                      "Vietnam",
-                      "Yemen",
-                      "Saudi Arabia",
-                      "UAE",
-                      "Egypt",
-                    ],
-
-                    onCountryChanged: (value) {
-                      selectedCountry = value;
+                    // عند الضغط على زر (+) يفتح الفورم مباشرة
+                    onEdit: () {
+                      ShippingAddressSheet.showShipping(
+                        context,
+                        addressController: TextEditingController(),
+                        cityController: TextEditingController(),
+                        postcodeController: TextEditingController(),
+                        country: 'Yemen',
+                        countries: const [
+                          'Yemen',
+                          'Saudi Arabia',
+                          'UAE',
+                          'India',
+                        ],
+                        onCountryChanged: (_) {},
+                        onSave: () => Navigator.pop(context),
+                      );
                     },
-
-                    addressController: addressCtrl,
-                    cityController: cityCtrl,
-                    postcodeController: postcodeCtrl,
-
-                    onSave: () {
-                      debugPrint(selectedCountry ?? "");
-                      debugPrint(addressCtrl.text);
-                      debugPrint(cityCtrl.text);
-                      debugPrint(postcodeCtrl.text);
-
-                      Navigator.pop(context);
-                    },
-                  );
-                },
+                  ),
+                ],
               ),
-            
+            ),
 
             /// BODY
             Expanded(

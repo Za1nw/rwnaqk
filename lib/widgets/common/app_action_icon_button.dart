@@ -1,35 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 
-/// زر أيقونة صغير موحّد للاستخدام داخل عناوين الأقسام أو الأدوات الجانبية.
+/// زر أيقونة موحّد
+/// ✅ الافتراضي = Primary background + White icon
+/// ✅ يمكن override الألوان من مكان الاستدعاء
 class AppActionIconButton extends StatelessWidget {
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+
+  /// Optional overrides
+  final Color? backgroundColor;
+  final Color? borderColor;
+  final Color? iconColor;
+
+  /// Size
   final double size;
+  final double iconSize;
+  final double radius;
 
   const AppActionIconButton({
     super.key,
     required this.icon,
     required this.onTap,
-    this.size = 34,
+    this.backgroundColor,
+    this.borderColor,
+    this.iconColor,
+    this.size = 42,
+    this.iconSize = 20,
+    this.radius = 14,
   });
 
   @override
   Widget build(BuildContext context) {
+    /// ✅ defaults (نفس تصميمك الحالي)
+    final bg = backgroundColor ?? context.primary;
+    final ic = iconColor ?? Colors.white;
+    final bd = borderColor;
+
     return Material(
       color: Colors.transparent,
+      borderRadius: BorderRadius.circular(radius),
       child: Ink(
         width: size,
         height: size,
         decoration: BoxDecoration(
-          color: context.input.withOpacity(context.isDark ? 0.65 : 1.0),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: context.border.withOpacity(0.45)),
+          color: bg,
+          borderRadius: BorderRadius.circular(radius),
+          border: bd != null ? Border.all(color: bd) : null,
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
           onTap: onTap,
-          child: Icon(icon, size: 18, color: context.mutedForeground),
+          borderRadius: BorderRadius.circular(radius),
+          child: Center(
+            child: Icon(
+              icon,
+              size: iconSize,
+              color: ic,
+            ),
+          ),
         ),
       ),
     );

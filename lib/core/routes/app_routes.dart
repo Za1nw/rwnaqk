@@ -14,5 +14,5 @@ abstract class AppRoutes {
   static const wishlist = '/wishlist';
   static const main = '/main';
   static const cart = '/cart';
-
+  static const payment = '/payment';
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/widgets/app_network_image.dart';
+import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
 import '../../models/home_product_item.dart';
 
 /// ✅ Wishlist card (similar to cart card)
@@ -92,10 +93,14 @@ class WishlistItemTile extends StatelessWidget {
                     ),
 
                     // VARIANT (مرة واحدة فقط)
-                    if (variantText != null && variantText!.trim().isNotEmpty) ...[
+                    if (variantText != null &&
+                        variantText!.trim().isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: context.mutedForeground.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(10),
@@ -121,7 +126,10 @@ class WishlistItemTile extends StatelessWidget {
                       children: [
                         // PRICE
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 7,
+                          ),
                           decoration: BoxDecoration(
                             color: context.primary.withOpacity(0.10),
                             borderRadius: BorderRadius.circular(12),
@@ -141,9 +149,14 @@ class WishlistItemTile extends StatelessWidget {
 
                         const Spacer(),
 
-                        _AddToCartIconButton(
+                        AppActionIconButton(
+                          icon: Icons.shopping_cart_outlined,
                           onTap: onAddToCart,
-                          isSmall: isSmall,
+                          size: isSmall ? 40 : 44,
+                          iconSize: isSmall ? 18 : 20,
+                          radius: 14,
+
+                          // اختياري: لو تبغاه يطلع "برايمري" مثل زرّك القديم:
                         ),
                       ],
                     ),
@@ -181,99 +194,26 @@ class _ImageWithDelete extends StatelessWidget {
           child: SizedBox(
             width: size,
             height: size,
-            child: AppNetworkImage(
-              url: imageUrl,
-              fit: BoxFit.cover,
-            ),
+            child: AppNetworkImage(url: imageUrl, fit: BoxFit.cover),
           ),
         ),
         PositionedDirectional(
-          top: -8,
-          end: -8,
-          child: _DeleteButton(onTap: onRemove),
+          top: -6,
+          end: -6,
+          child: AppActionIconButton(
+            icon: Icons.delete_outline_rounded,
+            iconColor: context.destructive,
+            onTap: onRemove,
+
+            size: 30,
+            iconSize: 25,
+            radius: 99,
+            borderColor: context.background,
+            backgroundColor: context.destructive.withOpacity(.5),
+            // iconColor = أبيض افتراضياً
+          ),
         ),
       ],
-    );
-  }
-}
-
-class _DeleteButton extends StatelessWidget {
-  final VoidCallback onTap;
-  const _DeleteButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: context.card,
-            shape: BoxShape.circle,
-            border: Border.all(color: context.border.withOpacity(.35)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(.10),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: context.destructive.withOpacity(.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.close_rounded,
-                size: 16,
-                color: context.destructive,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AddToCartIconButton extends StatelessWidget {
-  final VoidCallback onTap;
-  final bool isSmall;
-
-  const _AddToCartIconButton({
-    required this.onTap,
-    required this.isSmall,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final s = isSmall ? 38.0 : 42.0;
-    final iconSize = isSmall ? 18.0 : 20.0;
-
-    return Material(
-      color: context.primary,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: SizedBox(
-          width: s,
-          height: s,
-          child: Icon(
-            Icons.shopping_cart_outlined,
-            size: iconSize,
-            color: Colors.white,
-          ),
-        ),
-      ),
     );
   }
 }
