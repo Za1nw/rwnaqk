@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/main_controller.dart';
 import 'package:rwnaqk/screens/cart_screen.dart';
+import 'package:rwnaqk/screens/orders_screen.dart';
+import 'package:rwnaqk/screens/settings_screen.dart';
 import 'package:rwnaqk/widgets/app_bottom_nav.dart';
 
 // استبدلهم بصفحاتك الحقيقية:
@@ -16,9 +18,9 @@ class MainScreen extends GetView<MainController> {
     final pages =  [
       HomeScreen(),
       WishlistScreen(),
-      Placeholder(),
+      OrdersScreen(),
       CartScreen(),
-      Placeholder(),
+      SettingsScreen(),
     ];
 
     return Obx(() {

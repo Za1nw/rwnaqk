@@ -4,6 +4,7 @@ import 'package:rwnaqk/controllers/cart_controller.dart';
 
 import 'package:rwnaqk/controllers/main_controller.dart';
 import 'package:rwnaqk/controllers/home_controller.dart';
+import 'package:rwnaqk/controllers/orders_controller.dart';
 import 'package:rwnaqk/controllers/wishlist_controller.dart';
 // import باقي الكنترولرز لو عندك (Cart/Profile/Orders...)
 
@@ -23,6 +24,6 @@ class InitialBinding extends Bindings {
     Get.put<AppSettingsController>(AppSettingsController(), permanent: true);
     Get.put<CartController>(CartController(), permanent: true);
     // Get.lazyPut<ProfileController>(() => ProfileController(), fenix: true);
-    // Get.lazyPut<OrdersController>(() => OrdersController(), fenix: true);
+    Get.lazyPut<OrdersController>(() => OrdersController(), fenix: true);
   }
 }

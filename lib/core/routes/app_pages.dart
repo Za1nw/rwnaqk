@@ -1,4 +1,7 @@
 import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/addresses_controller.dart';
+import 'package:rwnaqk/controllers/orders_controller.dart';
+import 'package:rwnaqk/controllers/profile/edit_profile_controller.dart';
 import 'package:rwnaqk/core/bindings/flash_sale_binding.dart';
 import 'package:rwnaqk/core/bindings/forgot_password_binding.dart';
 import 'package:rwnaqk/core/bindings/login_binding.dart';
@@ -7,6 +10,7 @@ import 'package:rwnaqk/core/bindings/product_details_binding.dart';
 import 'package:rwnaqk/core/bindings/register_binding.dart';
 import 'package:rwnaqk/core/bindings/search_binding.dart';
 import 'package:rwnaqk/core/bindings/search_results_binding.dart';
+import 'package:rwnaqk/core/bindings/settings_binding.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/screens/auth/forgot_password_method_screen.dart';
 import 'package:rwnaqk/screens/auth/login_screen.dart';
@@ -18,11 +22,16 @@ import 'package:rwnaqk/screens/flash_sale_screen.dart';
 import 'package:rwnaqk/screens/home_screen.dart';
 import 'package:rwnaqk/screens/main_screen.dart';
 import 'package:rwnaqk/screens/onboarding_screen.dart';
+import 'package:rwnaqk/screens/order_tracking_screen.dart';
+import 'package:rwnaqk/screens/orders_screen.dart';
 import 'package:rwnaqk/screens/payment_screen.dart';
 import 'package:rwnaqk/screens/product_details_screen.dart';
+import 'package:rwnaqk/screens/profile/addresses_screen.dart';
+import 'package:rwnaqk/screens/profile/edit_profile_screen.dart';
 import 'package:rwnaqk/screens/reviews_screen.dart';
 import 'package:rwnaqk/screens/search_results_screen.dart';
 import 'package:rwnaqk/screens/search_screen.dart';
+import 'package:rwnaqk/screens/settings_screen.dart';
 import 'package:rwnaqk/screens/wishlist_screen.dart';
 
 class AppPages {
@@ -87,5 +96,36 @@ class AppPages {
       // binding: CartBinding(),
     ),
     GetPage(name: AppRoutes.payment, page: () => const PaymentScreen()),
+    GetPage(
+      name: AppRoutes.settings,
+      page: () => const SettingsScreen(),
+      binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.editProfile,
+      page: () => const EditProfileScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut(() => EditProfileController());
+      }),
+    ),
+    GetPage(
+      name: AppRoutes.addresses,
+      page: () => const AddressesScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut(() => AddressesController());
+      }),
+    ),
+    GetPage(
+      name: AppRoutes.orders,
+      page: () => const OrdersScreen(),
+          // binding:BindingsBuilder(
+          //    Get.lazyPut(() =>OrdersController());
+          // ),
+    ),
+    GetPage(
+      name: AppRoutes.orderTracking,
+      page: () => const OrderTrackingScreen(),
+      // ما يحتاج binding لأنه يستخدم نفس OrdersController الموجود
+    ),
   ];
 }
