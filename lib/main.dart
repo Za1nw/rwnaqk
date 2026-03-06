@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       initialBinding: InitialBinding(),
 
       // Routes
-      initialRoute: AppRoutes.main,
+      initialRoute: AppRoutes.onboarding,
       getPages: AppPages.routes,
 
       // Theme

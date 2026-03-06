@@ -1,38 +1,121 @@
 import 'package:get/get.dart';
+import 'package:rwnaqk/models/home_product_item.dart';
+import 'package:rwnaqk/models/product_review.dart';
 
 class ProductDetailsController extends GetxController {
-  // Data (عادة تجي من arguments أو API)
-  final productName = 'Product'.obs;
-  final price = 17.00.obs;
-  final currency = '\$'.obs;
-  final description = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam arcu mauris, scelerisque eu mauris id, pretium pulvinar sapien.'
-      .obs;
+  // ====== Data ======
+  final item = Rxn<HomeProductItem>();
 
-  final imageUrl = 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=80'
-      .obs;
+  final images = <String>[].obs;          // صور الهيدر
+  final variationImages = <String>[].obs; // صور الفاريشن (ثامبنيل)
 
-  // Variations (thumbnails)
-  final variations = <String>[
-    'https://images.unsplash.com/photo-1520975958225-5b92f0a5a606?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1520975597974-9f5761f7673b?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1520975867597-0a9b2f2b0f10?auto=format&fit=crop&w=400&q=80',
-  ].obs;
+  final reviews = <ProductReview>[].obs;
+  final mostPopular = <HomeProductItem>[].obs;
+  final recommended = <HomeProductItem>[].obs;
 
-  final selectedVariation = 0.obs;
+  // ====== UI State ======
+  final selectedThumb = 0.obs;
+  final isFavorite = false.obs;
+  final deliverySelected = 'standard'.obs; // standard / express
 
-  // Options (chips)
-  final colors = <String>['Pink', 'Blue', 'Red'].obs;
-  final sizes = <String>['S', 'M', 'L'].obs;
+  // (اختياري) لو تبغى حالات تحميل لاحقًا مع API
+  final isLoading = false.obs;
 
-  final selectedColor = 'Pink'.obs;
-  final selectedSize = 'M'.obs;
+  // ====== Computed helpers ======
+  double get price => item.value?.price ?? 17;
+  int get discount => item.value?.discountPercent ?? 0;
+  bool get hasDiscount => discount > 0;
 
-  void selectVariation(int i) => selectedVariation.value = i;
-  void selectColor(String v) => selectedColor.value = v;
-  void selectSize(String v) => selectedSize.value = v;
+  String get salePriceText {
+    final p = price;
+    if (!hasDiscount) return p.toStringAsFixed(2);
+    final sp = (p * (1 - discount / 100));
+    return sp.toStringAsFixed(2);
+  }
+
+  String get oldPriceText => price.toStringAsFixed(2);
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadFromArgs(Get.arguments);
+  }
+
+  void _loadFromArgs(dynamic args) {
+    // يدعم args بالشكل:
+    // { item: HomeProductItem, reviews: [...], mostPopular: [...], recommended: [...] }
+    final map = (args is Map) ? args : const {};
+
+    final argItem = map['item'];
+    if (argItem is HomeProductItem) {
+      item.value = argItem;
+    }
+
+    // images
+    final baseImages = <String>[
+      if ((item.value?.imageUrl ?? '').isNotEmpty) item.value!.imageUrl,
+      'https://picsum.photos/500/650?pd_a',
+      'https://picsum.photos/500/650?pd_b',
+      'https://picsum.photos/500/650?pd_c',
+    ];
+    images.assignAll(baseImages);
+
+    // variation thumbs
+    variationImages.assignAll(images.take(3).toList());
+    if (variationImages.isEmpty) {
+      variationImages.assignAll(images);
+    }
+
+    // reviews
+    reviews.assignAll(_resolveReviews(map['reviews']));
+
+    // lists
+    mostPopular.assignAll(_resolveItems(map['mostPopular']));
+    recommended.assignAll(_resolveItems(map['recommended']));
+  }
+
+  List<HomeProductItem> _resolveItems(dynamic raw) {
+    if (raw is List<HomeProductItem>) return raw;
+    if (raw is List) return raw.whereType<HomeProductItem>().toList();
+    return const [];
+  }
+
+  List<ProductReview> _resolveReviews(dynamic raw) {
+    // supports:
+    // - List<ProductReview>
+    // - List<Map>
+    if (raw is List<ProductReview>) return raw;
+
+    if (raw is List) {
+      final out = <ProductReview>[];
+      for (final e in raw) {
+        if (e is ProductReview) out.add(e);
+        else if (e is Map<String, dynamic>) out.add(ProductReview.fromMap(e));
+        else if (e is Map) out.add(ProductReview.fromMap(Map<String, dynamic>.from(e)));
+      }
+      if (out.isNotEmpty) return out;
+    }
+
+    // fallback demo
+    return const [
+      ProductReview(
+        name: 'Veronika',
+        rating: 4.0,
+        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam...',
+        dateText: '2 days ago',
+      ),
+    ];
+  }
+
+  // ====== Actions ======
+  void selectThumb(int i) => selectedThumb.value = i;
+
+  void toggleFavorite() => isFavorite.value = !isFavorite.value;
+
+  void setDelivery(String id) => deliverySelected.value = id;
 
   void addToCart() {
-    // TODO: اربطها بسلة مشروعك
+    // TODO: اربطها بسلة مشروعك لاحقًا
     Get.snackbar('Cart', 'Added to cart');
   }
 

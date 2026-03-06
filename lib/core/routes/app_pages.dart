@@ -7,7 +7,9 @@ import 'package:rwnaqk/core/bindings/forgot_password_binding.dart';
 import 'package:rwnaqk/core/bindings/login_binding.dart';
 import 'package:rwnaqk/core/bindings/onboarding_binding.dart';
 import 'package:rwnaqk/core/bindings/product_details_binding.dart';
+import 'package:rwnaqk/core/bindings/products_listing_binding.dart';
 import 'package:rwnaqk/core/bindings/register_binding.dart';
+import 'package:rwnaqk/core/bindings/reviews_binding.dart';
 import 'package:rwnaqk/core/bindings/search_binding.dart';
 import 'package:rwnaqk/core/bindings/search_results_binding.dart';
 import 'package:rwnaqk/core/bindings/settings_binding.dart';
@@ -26,6 +28,7 @@ import 'package:rwnaqk/screens/order_tracking_screen.dart';
 import 'package:rwnaqk/screens/orders_screen.dart';
 import 'package:rwnaqk/screens/payment_screen.dart';
 import 'package:rwnaqk/screens/product_details_screen.dart';
+import 'package:rwnaqk/screens/products_listing_screen.dart';
 import 'package:rwnaqk/screens/profile/addresses_screen.dart';
 import 'package:rwnaqk/screens/profile/edit_profile_screen.dart';
 import 'package:rwnaqk/screens/reviews_screen.dart';
@@ -87,7 +90,11 @@ class AppPages {
       page: () => const ProductDetailsScreen(),
       binding: ProductDetailsBinding(),
     ),
-    GetPage(name: AppRoutes.reviews, page: () => const ReviewsScreen()),
+    GetPage(
+      name: AppRoutes.reviews,
+      page: () => const ReviewsScreen(),
+      binding: ReviewsBinding(),
+    ),
     GetPage(name: AppRoutes.wishlist, page: () => const WishlistScreen()),
     GetPage(name: AppRoutes.main, page: () => const MainScreen()),
     GetPage(
@@ -118,14 +125,19 @@ class AppPages {
     GetPage(
       name: AppRoutes.orders,
       page: () => const OrdersScreen(),
-          // binding:BindingsBuilder(
-          //    Get.lazyPut(() =>OrdersController());
-          // ),
+      // binding:BindingsBuilder(
+      //    Get.lazyPut(() =>OrdersController());
+      // ),
     ),
     GetPage(
       name: AppRoutes.orderTracking,
       page: () => const OrderTrackingScreen(),
       // ما يحتاج binding لأنه يستخدم نفس OrdersController الموجود
+    ),
+    GetPage(
+      name: AppRoutes.listing,
+      page: () => const ProductsListingScreen(),
+      binding: ProductsListingBinding(),
     ),
   ];
 }
