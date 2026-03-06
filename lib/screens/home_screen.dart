@@ -17,6 +17,12 @@ import '../widgets/home/shop_top_bar.dart';
 class HomeScreen extends GetView<HomeController> {
   const HomeScreen({super.key});
 
+  static const double _pageHPadding = 18;
+  static const double _pageVPadding = 14;
+  static const double _sectionGap = 18;
+  static const double _innerGap = 10;
+  static const double _gridSpacing = 10;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,24 +32,21 @@ class HomeScreen extends GetView<HomeController> {
           builder: (context, c) {
             final w = c.maxWidth;
 
-            /// horizontal cards
             final productW = AppBreakpoints.isCompact(w) ? 150.0 : 170.0;
             final horizontalListH = AppBreakpoints.isCompact(w) ? 220.0 : 230.0;
 
-            /// grid columns
             final flashCols = AppBreakpoints.productGridColumns(w);
             final justCols = AppBreakpoints.productGridColumns(w);
 
-            /// spacing used in grids
-            const gridSpacing = 10.0;
-
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              padding: const EdgeInsets.symmetric(
+                horizontal: _pageHPadding,
+                vertical: _pageVPadding,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// top bar
                   ShopTopBar(
                     title: 'home.title'.tr,
                     searchHint: 'home.search_hint'.tr,
@@ -52,12 +55,12 @@ class HomeScreen extends GetView<HomeController> {
                     onCamera: controller.openCamera,
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: _innerGap),
 
-                  /// banner
                   Obx(() {
                     final items = controller.banners.toList();
                     if (items.isEmpty) return const SizedBox.shrink();
+
                     return BannerCarousel(
                       items: items,
                       index: controller.bannerIndex.value,
@@ -65,56 +68,58 @@ class HomeScreen extends GetView<HomeController> {
                     );
                   }),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: _sectionGap),
 
-                  /// categories
                   SectionHeader(
                     title: 'home.categories'.tr,
                     actionText: 'home.see_all'.tr,
                     onAction: controller.onSeeAllCategories,
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: _innerGap),
 
                   Obx(() {
                     final items = controller.categories.toList();
                     if (items.isEmpty) return const SizedBox.shrink();
+
                     return CategoryGrid(
                       items: items,
                       onTap: controller.openCategory,
                     );
                   }),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: _sectionGap),
 
-                  /// top products
-                  SectionHeader(title: 'home.top_products'.tr),
+                  SectionHeader(
+                    title: 'home.top_products'.tr,
+                  ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: _innerGap),
 
                   Obx(() {
                     final items = controller.topProducts.toList();
                     if (items.isEmpty) return const SizedBox.shrink();
+
                     return ProductAvatarRow(
                       items: items,
                       onTap: controller.openProduct,
                     );
                   }),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: _sectionGap),
 
-                  /// new items
                   SectionHeader(
                     title: 'home.new_items'.tr,
                     actionText: 'home.see_all'.tr,
                     onAction: controller.onSeeAllNewItems,
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: _innerGap),
 
                   Obx(() {
                     final items = controller.newItems.toList();
                     if (items.isEmpty) return const SizedBox.shrink();
+
                     return ProductHorizontalList(
                       items: items,
                       itemWidth: productW,
@@ -123,9 +128,8 @@ class HomeScreen extends GetView<HomeController> {
                     );
                   }),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: _sectionGap),
 
-                  /// flash sale header
                   Obx(
                     () => FlashSaleHeader(
                       hh: controller.hh.value,
@@ -135,9 +139,8 @@ class HomeScreen extends GetView<HomeController> {
                     ),
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: _innerGap),
 
-                  /// flash sale grid (✅ no aspect ratio; card takes its comfort height)
                   Obx(() {
                     final items = controller.flashSale.toList();
                     if (items.isEmpty) return const SizedBox.shrink();
@@ -145,32 +148,27 @@ class HomeScreen extends GetView<HomeController> {
                     return ProductGridSection(
                       items: items,
                       crossAxisCount: flashCols,
-                      crossAxisSpacing: gridSpacing,
-                      mainAxisSpacing: gridSpacing,
+                      crossAxisSpacing: _gridSpacing,
+                      mainAxisSpacing: _gridSpacing,
                       onTap: controller.openProduct,
-
-                      // ✅ IMPORTANT:
-                      // childAspectRatio موجود في توقيعك القديم، خلّيه قيمة محايدة لو لازم:
-                      // إذا أنت عدّلت ProductGridSection ليستخدم mainAxisExtent داخليًا،
-                      // هذه القيمة ما تأثر.
                       childAspectRatio: 1.0,
                     );
                   }),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: _sectionGap),
 
-                  /// most popular
                   SectionHeader(
                     title: 'home.most_popular'.tr,
                     actionText: 'home.see_all'.tr,
                     onAction: controller.onSeeAllMostPopular,
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: _innerGap),
 
                   Obx(() {
                     final items = controller.mostPopular.toList();
                     if (items.isEmpty) return const SizedBox.shrink();
+
                     return ProductHorizontalList(
                       items: items,
                       itemWidth: productW,
@@ -179,9 +177,8 @@ class HomeScreen extends GetView<HomeController> {
                     );
                   }),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: _sectionGap),
 
-                  /// just for you
                   Text(
                     'home.just_for_you'.tr,
                     style: TextStyle(
@@ -191,9 +188,8 @@ class HomeScreen extends GetView<HomeController> {
                     ),
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: _innerGap),
 
-                  /// just for you grid (✅ no aspect ratio; card takes its comfort height)
                   Obx(() {
                     final items = controller.justForYou.toList();
                     if (items.isEmpty) return const SizedBox.shrink();
@@ -201,14 +197,14 @@ class HomeScreen extends GetView<HomeController> {
                     return ProductGridSection(
                       items: items,
                       crossAxisCount: justCols,
-                      crossAxisSpacing: gridSpacing,
-                      mainAxisSpacing: gridSpacing,
+                      crossAxisSpacing: _gridSpacing,
+                      mainAxisSpacing: _gridSpacing,
                       onTap: controller.openProduct,
-                      childAspectRatio: 1.0, // محايد (لن يؤثر لو mainAxisExtent شغال)
+                      childAspectRatio: 1.0,
                     );
                   }),
 
-                  const SizedBox(height: 18),
+                  const SizedBox(height: _sectionGap),
                 ],
               ),
             );

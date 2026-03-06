@@ -1,19 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
-
-class ProductReview {
-  final String name;
-  final double rating;
-  final String text;
-  final String? avatarUrl;
-
-  const ProductReview({
-    required this.name,
-    required this.rating,
-    required this.text,
-    this.avatarUrl,
-  });
-}
+import 'package:rwnaqk/models/product_review.dart'; // ✅ استخدم موديل واحد فقط
 
 class ProductReviewsSection extends StatelessWidget {
   final String title;
@@ -45,7 +32,7 @@ class ProductReviewsSection extends StatelessWidget {
         children: [
           _SectionTitle(title: title),
           const SizedBox(height: 10),
-          _EmptyReviews(),
+          const _EmptyReviews(),
         ],
       );
     }
@@ -111,6 +98,8 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _EmptyReviews extends StatelessWidget {
+  const _EmptyReviews();
+
   @override
   Widget build(BuildContext context) {
     return Container(

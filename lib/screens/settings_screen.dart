@@ -15,8 +15,9 @@ class SettingsScreen extends GetView<SettingsController> {
   @override
   Widget build(BuildContext context) {
     final app = Get.find<AppSettingsController>();
-    final main =
-        Get.isRegistered<MainController>() ? Get.find<MainController>() : null;
+    final main = Get.isRegistered<MainController>()
+        ? Get.find<MainController>()
+        : null;
 
     return Scaffold(
       backgroundColor: context.background,
@@ -63,6 +64,14 @@ class SettingsScreen extends GetView<SettingsController> {
               subtitle: 'Manage shipping addresses'.tr,
               onTap: () => Get.toNamed(AppRoutes.addresses),
             ),
+            const SizedBox(height: 10),
+
+            SettingsListTile(
+              icon: Icons.receipt_long_outlined,
+              title: 'طلباتي'.tr,
+              subtitle: 'تتبع وإدارة الطلبات'.tr,
+              onTap: () => Get.toNamed(AppRoutes.orders),
+            ),
 
             const SizedBox(height: 18),
 
@@ -98,8 +107,10 @@ class SettingsScreen extends GetView<SettingsController> {
               trailing: Obx(() {
                 final code = app.locale.value.languageCode.toUpperCase();
                 return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: context.primary.withOpacity(.08),
                     borderRadius: BorderRadius.circular(999),
@@ -271,8 +282,10 @@ class _ProfileHeaderCard extends StatelessWidget {
             Material(
               color: Colors.transparent,
               child: Ink(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: context.input,
                   borderRadius: BorderRadius.circular(14),
@@ -283,8 +296,11 @@ class _ProfileHeaderCard extends StatelessWidget {
                   onTap: onEdit,
                   child: Row(
                     children: [
-                      Icon(Icons.edit_rounded,
-                          size: 18, color: context.foreground),
+                      Icon(
+                        Icons.edit_rounded,
+                        size: 18,
+                        color: context.foreground,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         'Edit'.tr,

@@ -103,8 +103,9 @@ class HomeController extends GetxController {
     topProducts.assignAll(_sampleProducts(6, seed: 100));
     newItems.assignAll(_sampleProducts(6, seed: 200));
     flashSale.assignAll(_sampleProducts(6, seed: 300, discount: 20));
-    mostPopular
-        .assignAll(_sampleProducts(6, seed: 400, tagKey: 'home.tags.hot'));
+    mostPopular.assignAll(
+      _sampleProducts(6, seed: 400, tagKey: 'home.tags.hot'),
+    );
     justForYou.assignAll(_sampleProducts(8, seed: 500));
 
     _startFlashTimer();
@@ -113,23 +114,92 @@ class HomeController extends GetxController {
 
   void onBannerChanged(int i) => bannerIndex.value = i;
 
-  void onSeeAllCategories() {}
-  void onSeeAllNewItems() {}
-  void onSeeAllMostPopular() {}
+  void onSeeAllCategories() {
+    Get.toNamed(
+      AppRoutes.listing,
+      arguments: {
+        'title': 'Categories',
+        'source': 'categories',
+        'items': <HomeProductItem>[],
+      },
+    );
+  }
+
+  void onSeeAllNewItems() {
+    Get.toNamed(
+      AppRoutes.listing,
+      arguments: {
+        'title': 'New Items',
+        'source': 'new_items',
+        'items': newItems.toList(),
+      },
+    );
+  }
+
+  void onSeeAllMostPopular() {
+    Get.toNamed(
+      AppRoutes.listing,
+      arguments: {
+        'title': 'Most Popular',
+        'source': 'most_popular',
+        'items': mostPopular.toList(),
+      },
+    );
+  }
+
+  void onSeeAllJustForYou() {
+    Get.toNamed(
+      AppRoutes.listing,
+      arguments: {
+        'title': 'Just For You',
+        'source': 'just_for_you',
+        'items': justForYou.toList(),
+      },
+    );
+  }
 
   void openProduct(HomeProductItem p) {
     final isSale = (p.discountPercent ?? 0) > 0;
     Get.toNamed(
       AppRoutes.product,
-      arguments: {'item': p, 'forceSale': isSale},
+      arguments: {
+        'item': p,
+        'forceSale': isSale,
+        'mostPopular': mostPopular.toList(),
+        'recommended': justForYou.toList(),
+      },
     );
   }
 
   void openFlashSaleScreen() {
-    Get.toNamed(AppRoutes.flashSale);
+    Get.toNamed(
+      AppRoutes.listing,
+      arguments: {
+        'title': 'Flash Sale',
+        'source': 'flash_sale',
+        'items': flashSale.toList(),
+      },
+    );
   }
 
-  void openCategory(HomeCategoryItem c) {}
+  void openCategory(HomeCategoryItem c) {
+    final pool = <HomeProductItem>[
+      ...topProducts,
+      ...newItems,
+      ...flashSale,
+      ...mostPopular,
+      ...justForYou,
+    ];
+
+    Get.toNamed(
+      AppRoutes.listing,
+      arguments: {
+        'title': c.name,
+        'source': 'category_${c.id}',
+        'items': pool.toList(),
+      },
+    );
+  }
 
   void openCamera() {}
 

@@ -6,9 +6,15 @@ import '../core/constants/app_colors.dart';
 class AppToggles extends GetView<AppSettingsController> {
   final Alignment alignment;
 
+  /// التحكم في الازرار
+  final bool showLanguage;
+  final bool showTheme;
+
   const AppToggles({
     super.key,
     this.alignment = Alignment.topRight,
+    this.showLanguage = true,
+    this.showTheme = true,
   });
 
   @override
@@ -40,19 +46,27 @@ class AppToggles extends GetView<AppSettingsController> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _ToggleButton(
-              icon: Icons.language,
-              onTap: controller.toggleLanguage,
-            ),
-            const SizedBox(width: 4),
-            Obx(() {
-              final isDark = controller.themeMode.value == ThemeMode.dark;
+            /// زر اللغة
+            if (showLanguage)
+              _ToggleButton(
+                icon: Icons.language,
+                onTap: controller.toggleLanguage,
+              ),
 
-              return _ToggleButton(
-                icon: isDark ? Icons.dark_mode : Icons.light_mode,
-                onTap: controller.toggleTheme,
-              );
-            }),
+            /// مسافة فقط إذا كان الاثنين ظاهرين
+            if (showLanguage && showTheme) const SizedBox(width: 4),
+
+            /// زر الثيم
+            if (showTheme)
+              Obx(() {
+                final isDark =
+                    controller.themeMode.value == ThemeMode.dark;
+
+                return _ToggleButton(
+                  icon: isDark ? Icons.dark_mode : Icons.light_mode,
+                  onTap: controller.toggleTheme,
+                );
+              }),
           ],
         ),
       ),

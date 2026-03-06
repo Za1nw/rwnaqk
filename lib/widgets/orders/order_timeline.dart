@@ -23,7 +23,6 @@ class OrderTimeline extends StatelessWidget {
     final ki = order.indexOf(key);
 
     if (ki == -1) return key == currentStatus;
-
     return ki <= ci;
   }
 
@@ -43,26 +42,30 @@ class OrderTimeline extends StatelessWidget {
             Column(
               children: [
                 Container(
-                  width: 14,
-                  height: 14,
+                  width: 12,
+                  height: 12,
                   decoration: BoxDecoration(
-                    color: dotColor,
+                    color: dotColor.withOpacity(done ? 1 : .55),
                     shape: BoxShape.circle,
                   ),
                 ),
                 if (!isLast)
                   Container(
                     width: 2,
-                    height: 36,
-                    color: done ? context.primary : context.border,
+                    height: 46,
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    decoration: BoxDecoration(
+                      color: (done ? context.primary : context.border)
+                          .withOpacity(.45),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
               ],
             ),
-            const SizedBox(width: 10),
-
+            const SizedBox(width: 12),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 18),
+                padding: const EdgeInsets.only(top: 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -70,21 +73,34 @@ class OrderTimeline extends StatelessWidget {
                       s.title,
                       style: TextStyle(
                         color: context.foreground,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w900,
                         fontSize: 13.5,
                       ),
                     ),
-                    if ((s.subtitle ?? '').isNotEmpty) ...[
+                    if ((s.subtitle ?? '').trim().isNotEmpty) ...[
                       const SizedBox(height: 3),
                       Text(
                         s.subtitle!,
                         style: TextStyle(
                           color: context.muted,
                           fontWeight: FontWeight.w700,
-                          fontSize: 12,
+                          fontSize: 12.2,
                         ),
                       ),
                     ],
+                    if (s.time != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        '${s.time!.year}/${s.time!.month.toString().padLeft(2, '0')}/${s.time!.day.toString().padLeft(2, '0')}  '
+                        '${s.time!.hour.toString().padLeft(2, '0')}:${s.time!.minute.toString().padLeft(2, '0')}',
+                        style: TextStyle(
+                          color: context.muted.withOpacity(.85),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
                   ],
                 ),
               ),

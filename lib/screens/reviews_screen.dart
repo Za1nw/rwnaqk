@@ -2,94 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/widgets/app_network_image.dart';
+import 'package:rwnaqk/controllers/reviews_controller.dart';
 
-// لو عندك ProductReview موديل خارجي، احذف هذا الكلاس واعمل import
-class ProductReview {
-  final String name;
-  final double rating;
-  final String text;
-  final String? avatarUrl;
-  final String? dateText;
-
-  const ProductReview({
-    required this.name,
-    required this.rating,
-    required this.text,
-    this.avatarUrl,
-    this.dateText,
-  });
-
-  factory ProductReview.fromMap(Map<String, dynamic> map) {
-    return ProductReview(
-      name: (map['name'] ?? '').toString(),
-      rating: double.tryParse((map['rating'] ?? 0).toString()) ?? 0,
-      text: (map['text'] ?? '').toString(),
-      avatarUrl: map['avatarUrl']?.toString(),
-      dateText: map['dateText']?.toString(),
-    );
-  }
-}
-
-class ReviewsScreen extends StatelessWidget {
+class ReviewsScreen extends GetView<ReviewsController> {
   const ReviewsScreen({super.key});
-
-  // ✅ بيانات Static داخل الصفحة نفسها
-  List<ProductReview> _staticReviews() => const [
-        ProductReview(
-          name: 'Anna',
-          rating: 4.5,
-          text: 'Nice product, great quality and fast shipping.',
-          dateText: '2 days ago',
-        ),
-        ProductReview(
-          name: 'John',
-          rating: 5,
-          text: 'Perfect! Exactly as described.',
-          dateText: '1 week ago',
-        ),
-        ProductReview(
-          name: 'Sara',
-          rating: 4,
-          text: 'Good overall, but the packaging can be better.',
-          dateText: '3 weeks ago',
-        ),
-        ProductReview(
-          name: 'Khaled',
-          rating: 3.5,
-          text: 'It is okay, could be improved.',
-          dateText: '1 month ago',
-        ),
-      ];
-
-  // ✅ يستقبل أي نوع arguments بدون كسر
-  List<ProductReview> _resolveReviews(dynamic arg) {
-    if (arg == null) return _staticReviews();
-
-    // List<ProductReview>
-    if (arg is List<ProductReview> && arg.isNotEmpty) return arg;
-
-    // {reviews: [...]}
-    if (arg is Map && arg['reviews'] != null) {
-      return _resolveReviews(arg['reviews']);
-    }
-
-    // List<Map>
-    if (arg is List && arg.isNotEmpty) {
-      return arg.map((e) {
-        if (e is ProductReview) return e;
-        if (e is Map<String, dynamic>) return ProductReview.fromMap(e);
-        if (e is Map) return ProductReview.fromMap(Map<String, dynamic>.from(e));
-        return const ProductReview(name: 'Unknown', rating: 0, text: '');
-      }).toList();
-    }
-
-    return _staticReviews();
-  }
 
   @override
   Widget build(BuildContext context) {
-    final reviews = _resolveReviews(Get.arguments);
-
     return Scaffold(
       backgroundColor: context.background,
       body: SafeArea(
@@ -98,7 +17,6 @@ class ReviewsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
               Row(
                 children: [
                   IconButton(
@@ -117,16 +35,24 @@ class ReviewsScreen extends StatelessWidget {
                   ),
                 ],
               ),
-
               const SizedBox(height: 14),
 
               Expanded(
-                child: ListView.separated(
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: reviews.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 14),
-                  itemBuilder: (_, i) => _ReviewTile(review: reviews[i]),
-                ),
+                child: Obx(() {
+                  final reviews = controller.reviews;
+                  return ListView.separated(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: reviews.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 14),
+                    itemBuilder: (_, i) => _ReviewTile(
+                      name: reviews[i].name,
+                      rating: reviews[i].rating,
+                      text: reviews[i].text,
+                      avatarUrl: reviews[i].avatarUrl,
+                      dateText: reviews[i].dateText,
+                    ),
+                  );
+                }),
               ),
             ],
           ),
@@ -137,8 +63,19 @@ class ReviewsScreen extends StatelessWidget {
 }
 
 class _ReviewTile extends StatelessWidget {
-  final ProductReview review;
-  const _ReviewTile({required this.review});
+  final String name;
+  final double rating;
+  final String text;
+  final String? avatarUrl;
+  final String? dateText;
+
+  const _ReviewTile({
+    required this.name,
+    required this.rating,
+    required this.text,
+    this.avatarUrl,
+    this.dateText,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -159,18 +96,17 @@ class _ReviewTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _Avatar(name: review.name, avatarUrl: review.avatarUrl),
+          _Avatar(name: name, avatarUrl: avatarUrl),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // name + date
                 Row(
                   children: [
                     Expanded(
                       child: Text(
-                        review.name,
+                        name,
                         style: TextStyle(
                           color: context.foreground,
                           fontWeight: FontWeight.w900,
@@ -179,9 +115,9 @@ class _ReviewTile extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (review.dateText != null && review.dateText!.trim().isNotEmpty)
+                    if (dateText != null && dateText!.trim().isNotEmpty)
                       Text(
-                        review.dateText!,
+                        dateText!,
                         style: TextStyle(
                           color: context.mutedForeground,
                           fontWeight: FontWeight.w700,
@@ -190,13 +126,11 @@ class _ReviewTile extends StatelessWidget {
                       ),
                   ],
                 ),
-
                 const SizedBox(height: 6),
-                _StarsRow(rating: review.rating),
+                _StarsRow(rating: rating),
                 const SizedBox(height: 10),
-
                 Text(
-                  review.text,
+                  text,
                   style: TextStyle(
                     color: context.mutedForeground,
                     height: 1.45,
@@ -216,6 +150,7 @@ class _ReviewTile extends StatelessWidget {
 class _Avatar extends StatelessWidget {
   final String name;
   final String? avatarUrl;
+
   const _Avatar({required this.name, this.avatarUrl});
 
   @override
@@ -230,7 +165,7 @@ class _Avatar extends StatelessWidget {
         color: context.muted,
         alignment: Alignment.center,
         child: (avatarUrl != null && avatarUrl!.trim().isNotEmpty)
-            ? AppNetworkImage(url: avatarUrl!) // أو Image.network
+            ? AppNetworkImage(url: avatarUrl!)
             : Text(
                 letter,
                 style: TextStyle(
