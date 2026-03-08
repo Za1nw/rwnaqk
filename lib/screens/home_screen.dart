@@ -65,6 +65,7 @@ class HomeScreen extends GetView<HomeController> {
                       items: items,
                       index: controller.bannerIndex.value,
                       onChanged: controller.onBannerChanged,
+                      
                     );
                   }),
 
@@ -131,7 +132,7 @@ class HomeScreen extends GetView<HomeController> {
                   const SizedBox(height: _sectionGap),
 
                   Obx(
-                    () => FlashSaleHeader(
+                     () => FlashSaleHeader(
                       hh: controller.hh.value,
                       mm: controller.mm.value,
                       ss: controller.ss.value,

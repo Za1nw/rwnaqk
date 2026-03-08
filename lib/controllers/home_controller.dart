@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk/models/product_color_option.dart';
 
 import '../core/routes/app_routes.dart';
 import '../models/home_banner_item.dart';
@@ -124,6 +125,7 @@ class HomeController extends GetxController {
       },
     );
   }
+
 
   void onSeeAllNewItems() {
     Get.toNamed(
@@ -273,14 +275,47 @@ class HomeController extends GetxController {
     return List.generate(n, (i) {
       final id = '${seed}_$i';
       return HomeProductItem(
-        id: id,
-        title: 'Item $id',
-        imageUrl: 'https://picsum.photos/400/500?$id',
-        price: 17 + (i * 5).toDouble(),
-        discountPercent: discount,
-        isNew: i % 3 == 0,
-        tagKey: tagKey,
-      );
+  id: id,
+  title: 'Item $id',
+  imageUrl: 'https://picsum.photos/400/500?$id',
+  price: 17 + (i * 5).toDouble(),
+  discountPercent: discount,
+  isNew: i % 3 == 0,
+  tagKey: tagKey,
+
+  description: 'Premium product with modern style and comfortable daily use.',
+  brand: 'Rwnaq',
+  sku: 'SKU-$id',
+  stockText: 'In Stock',
+  soldText: '${20 + i * 7} sold',
+
+  images: [
+    'https://picsum.photos/500/650?${id}a',
+    'https://picsum.photos/500/650?${id}b',
+    'https://picsum.photos/500/650?${id}c',
+    'https://picsum.photos/500/650?${id}d',
+  ],
+
+  availableColors: [
+    ProductColorOption(
+      id: 'black_$id',
+      name: 'Black',
+      imageUrl: 'https://picsum.photos/120/120?${id}black',
+    ),
+    ProductColorOption(
+      id: 'white_$id',
+      name: 'White',
+      imageUrl: 'https://picsum.photos/120/120?${id}white',
+    ),
+    ProductColorOption(
+      id: 'beige_$id',
+      name: 'Beige',
+      imageUrl: 'https://picsum.photos/120/120?${id}beige',
+    ),
+  ],
+
+  availableSizes: const ['S', 'M', 'L', 'XL'],
+);
     });
   }
 

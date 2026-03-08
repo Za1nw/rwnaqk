@@ -35,6 +35,7 @@ import 'package:rwnaqk/screens/reviews_screen.dart';
 import 'package:rwnaqk/screens/search_results_screen.dart';
 import 'package:rwnaqk/screens/search_screen.dart';
 import 'package:rwnaqk/screens/settings_screen.dart';
+import 'package:rwnaqk/screens/test_states_screen.dart';
 import 'package:rwnaqk/screens/wishlist_screen.dart';
 
 class AppPages {
@@ -139,5 +140,6 @@ class AppPages {
       page: () => const ProductsListingScreen(),
       binding: ProductsListingBinding(),
     ),
+    GetPage(name: AppRoutes.test, page: ()=>TestStatesScreen()),
   ];
 }

@@ -12,19 +12,36 @@ class WishlistController extends GetxController {
   final Rx<RecentFilter> recentFilter = RecentFilter.today.obs;
   final Rxn<DateTime> selectedDate = Rxn<DateTime>();
 
-  // ✅ نفس نوع كرتك القديم ProductCard
+  // بيانات المفضلة والمشاهدة مؤخراً
   final RxList<HomeProductItem> wishlist = <HomeProductItem>[].obs;
   final RxList<HomeProductItem> recentlyViewed = <HomeProductItem>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    _seedMock(); // بيانات تجريبية (تقدر تستبدلها لاحقًا ببيانات حقيقية)
+    _seedMock();
   }
 
   void setTab(int i) => tabIndex.value = i;
 
-  void toggleWishlistItem(String id) {
+  /// هل المنتج موجود داخل المفضلة؟
+  bool isInWishlist(String id) {
+    return wishlist.any((e) => e.id == id);
+  }
+
+  /// إضافة أو إزالة المنتج من المفضلة
+  void toggleWishlist(HomeProductItem item) {
+    final exists = isInWishlist(item.id);
+
+    if (exists) {
+      wishlist.removeWhere((e) => e.id == item.id);
+    } else {
+      wishlist.add(item);
+    }
+  }
+
+  /// حذف مباشر من المفضلة
+  void removeFromWishlist(String id) {
     wishlist.removeWhere((e) => e.id == id);
   }
 
@@ -53,11 +70,13 @@ class WishlistController extends GetxController {
 
   void openProduct(HomeProductItem p) {
     final isSale = (p.discountPercent ?? 0) > 0;
-    Get.toNamed(AppRoutes.product, arguments: {'item': p, 'forceSale': isSale});
+    Get.toNamed(
+      AppRoutes.product,
+      arguments: {'item': p, 'forceSale': isSale},
+    );
   }
 
   void addToCart(HomeProductItem p) {
-    // مؤقت: إلى أن تربطه مع CartController
     Get.snackbar(
       'Cart',
       'Added "${p.title}" to cart',
@@ -67,7 +86,7 @@ class WishlistController extends GetxController {
   }
 
   // -----------------------------
-  // Mock data (مثل HomeController)
+  // Mock data
   // -----------------------------
   void _seedMock() {
     wishlist.assignAll(

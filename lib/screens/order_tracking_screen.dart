@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/controllers/orders_controller.dart';
+import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/models/order_model.dart';
+import 'package:rwnaqk/widgets/dialogs/review_dialog.dart';
 import 'package:rwnaqk/widgets/orders/order_status_pill.dart';
 import 'package:rwnaqk/widgets/orders/order_timeline.dart';
 
 class OrderTrackingScreen extends GetView<OrdersController> {
   const OrderTrackingScreen({super.key});
 
-  String _money(double v) => v.toStringAsFixed(0);
+  /// تنسيق المبلغ بشكل مختصر
+  String _money(double value) => value.toStringAsFixed(0);
 
-  String _statusLabel(String s) {
-    switch (s) {
+  /// ترجمة حالة الطلب إلى نص واضح للمستخدم
+  String _statusLabel(String status) {
+    switch (status) {
       case 'pending':
         return 'قيد المعالجة';
       case 'confirmed':
@@ -24,12 +27,13 @@ class OrderTrackingScreen extends GetView<OrdersController> {
       case 'canceled':
         return 'ملغي';
       default:
-        return s;
+        return status;
     }
   }
 
-  IconData _statusIcon(String s) {
-    switch (s) {
+  /// أيقونة مناسبة لكل حالة طلب
+  IconData _statusIcon(String status) {
+    switch (status) {
       case 'pending':
         return Icons.timelapse_rounded;
       case 'confirmed':
@@ -45,7 +49,8 @@ class OrderTrackingScreen extends GetView<OrdersController> {
     }
   }
 
-  /// ETA mock (بدّلها لاحقًا بقيمة من API)
+  /// نص الوصول المتوقع حسب حالة الطلب
+  /// حاليًا Mock ويمكن لاحقًا ربطه مع API
   String _etaText(String status) {
     switch (status) {
       case 'pending':
@@ -63,24 +68,108 @@ class OrderTrackingScreen extends GetView<OrdersController> {
     }
   }
 
-  bool _canCancel(String status) => status == 'pending' || status == 'confirmed';
-  bool _canReorder(String status) => status == 'delivered' || status == 'canceled';
+  /// السماح بإلغاء الطلب فقط في الحالات المبكرة
+  bool _canCancel(String status) {
+    return status == 'pending' || status == 'confirmed';
+  }
+
+  /// السماح بإعادة الطلب في الحالات المنتهية
+  bool _canReorder(String status) {
+    return status == 'delivered' || status == 'canceled';
+  }
+
+  /// جلب بيانات الطلب من Get.arguments بشكل آمن
+  /// يمنع الانهيار في حال لم يتم تمرير arguments
+  OrderModel? _getOrderFromArgs() {
+    final args = Get.arguments;
+    if (args is OrderModel) return args;
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final order = Get.arguments as OrderModel;
+    final order = _getOrderFromArgs();
+
+    /// في حال تم فتح الشاشة بدون تمرير OrderModel
+    /// نعرض واجهة بديلة بدل حدوث crash
+    if (order == null) {
+      return Scaffold(
+        backgroundColor: context.background,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.receipt_long_outlined,
+                    size: 56,
+                    color: context.muted,
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'بيانات الطلب غير متوفرة'.tr,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: context.foreground,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 17,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'يبدو أن صفحة تتبع الطلب فُتحت بدون تمرير بيانات الطلب.'.tr,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: context.muted,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: 140,
+                    height: 46,
+                    child: ElevatedButton(
+                      onPressed: () => Get.back(),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: context.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        'رجوع'.tr,
+                        style: TextStyle(
+                          color: context.primaryForeground,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    /// بعد التأكد من وجود الطلب نبدأ استخراج البيانات
     final steps = controller.buildTrackingSteps(order);
 
-    final id = order.id;
-    final status = order.status;
-    final addressLine = order.addressLine;
+    final String id = order.id;
+    final String status = order.status;
+    final String? addressLine = order.addressLine;
 
-    final createdAt = order.createdAt;
-    final itemsCount = order.itemsCount;
-    final total = order.total;
+    final DateTime createdAt = order.createdAt;
+    final int itemsCount = order.itemsCount;
+    final double total = order.total;
 
-    final deliveryName = order.deliveryName;
-    final deliveryPhone = order.deliveryPhone;
+    final String? deliveryName = order.deliveryName;
+    final String? deliveryPhone = order.deliveryPhone;
 
     return Scaffold(
       backgroundColor: context.background,
@@ -88,14 +177,17 @@ class OrderTrackingScreen extends GetView<OrdersController> {
         child: ListView(
           padding: const EdgeInsetsDirectional.fromSTEB(18, 12, 18, 18),
           children: [
-            // =========================
+            // =========================================================
             // Header
-            // =========================
+            // =========================================================
             Row(
               children: [
                 IconButton(
                   onPressed: () => Get.back(),
-                  icon: Icon(Icons.arrow_back_rounded, color: context.foreground),
+                  icon: Icon(
+                    Icons.arrow_back_rounded,
+                    color: context.foreground,
+                  ),
                 ),
                 const SizedBox(width: 6),
                 Expanded(
@@ -110,21 +202,25 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                 ),
               ],
             ),
+
             const SizedBox(height: 12),
 
-            // =========================
+            // =========================================================
             // Order summary card
-            // =========================
+            // =========================================================
             Material(
               color: context.card,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
-                side: BorderSide(color: context.border.withOpacity(.35)),
+                side: BorderSide(
+                  color: context.border.withOpacity(.35),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(
                   children: [
+                    // رقم الطلب + حالة الطلب
                     Row(
                       children: [
                         Expanded(
@@ -140,8 +236,10 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                         OrderStatusPill(status: status),
                       ],
                     ),
+
                     const SizedBox(height: 12),
 
+                    // معلومات مختصرة: التاريخ - عدد العناصر - المجموع
                     Row(
                       children: [
                         _MiniInfo(
@@ -152,11 +250,11 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                         const SizedBox(width: 12),
                         _MiniInfo(
                           icon: Icons.shopping_bag_outlined,
-                          text: '${itemsCount.toString()} ${'عنصر'.tr}',
+                          text: '$itemsCount ${'عنصر'.tr}',
                         ),
                         const Spacer(),
                         Text(
-                          '${_money(total)}',
+                          _money(total),
                           style: TextStyle(
                             color: context.primary,
                             fontWeight: FontWeight.w900,
@@ -166,13 +264,17 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                       ],
                     ),
 
+                    // عنوان التوصيل إن وجد
                     if ((addressLine ?? '').trim().isNotEmpty) ...[
                       const SizedBox(height: 12),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.location_on_outlined,
-                              size: 18, color: context.muted),
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 18,
+                            color: context.muted,
+                          ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
@@ -190,7 +292,7 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                       ),
                     ],
 
-                    // Recipient (اختياري)
+                    // بيانات المستلم إن وجدت
                     if (((deliveryName ?? '').trim().isNotEmpty) ||
                         ((deliveryPhone ?? '').trim().isNotEmpty)) ...[
                       const SizedBox(height: 12),
@@ -199,12 +301,17 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                         decoration: BoxDecoration(
                           color: context.input,
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: context.border.withOpacity(.25)),
+                          border: Border.all(
+                            color: context.border.withOpacity(.25),
+                          ),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.person_outline_rounded,
-                                size: 18, color: context.muted),
+                            Icon(
+                              Icons.person_outline_rounded,
+                              size: 18,
+                              color: context.muted,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -234,19 +341,25 @@ class OrderTrackingScreen extends GetView<OrdersController> {
 
             const SizedBox(height: 12),
 
-            // =========================
-            // ETA Card
-            // =========================
+            // =========================================================
+            // ETA / Current status card
+            // =========================================================
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: context.primary.withOpacity(.08),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: context.primary.withOpacity(.16)),
+                border: Border.all(
+                  color: context.primary.withOpacity(.16),
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(_statusIcon(status), color: context.primary, size: 20),
+                  Icon(
+                    _statusIcon(status),
+                    color: context.primary,
+                    size: 20,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -266,9 +379,9 @@ class OrderTrackingScreen extends GetView<OrdersController> {
 
             const SizedBox(height: 16),
 
-            // =========================
-            // Timeline
-            // =========================
+            // =========================================================
+            // Timeline title
+            // =========================================================
             Text(
               'حالة الطلب'.tr,
               style: TextStyle(
@@ -277,13 +390,19 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                 fontSize: 14,
               ),
             ),
+
             const SizedBox(height: 10),
 
+            // =========================================================
+            // Timeline card
+            // =========================================================
             Material(
               color: context.card,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(18),
-                side: BorderSide(color: context.border.withOpacity(.35)),
+                side: BorderSide(
+                  color: context.border.withOpacity(.35),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(14),
@@ -296,9 +415,9 @@ class OrderTrackingScreen extends GetView<OrdersController> {
 
             const SizedBox(height: 16),
 
-            // =========================
-            // Actions (حسب الحالة)
-            // =========================
+            // =========================================================
+            // Actions
+            // =========================================================
             Row(
               children: [
                 if (_canCancel(status))
@@ -307,30 +426,52 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                       text: 'إلغاء الطلب'.tr,
                       outlined: true,
                       onTap: () {
-                        Get.snackbar('إلغاء الطلب'.tr, 'تم (Mock)'.tr);
+                        Get.snackbar(
+                          'إلغاء الطلب'.tr,
+                          'تم تنفيذ العملية تجريبيًا'.tr,
+                        );
                       },
                     ),
                   ),
                 if (_canCancel(status)) const SizedBox(width: 10),
                 Expanded(
                   child: _ActionButton(
-                    text: _canReorder(status) ? 'إعادة الطلب'.tr : 'مساعدة'.tr,
+                    text: _canReorder(status)
+                        ? 'إعادة الطلب'.tr
+                        : 'مساعدة'.tr,
                     onTap: () {
-                      Get.snackbar('تم'.tr, 'Mock action'.tr);
+                      Get.snackbar(
+                        'تم'.tr,
+                        'Mock action'.tr,
+                      );
                     },
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
 
+            // =========================================================
+            // Review button (only when delivered)
+            // =========================================================
             if (status == 'delivered')
               _ActionButton(
                 text: 'تقييم الطلب'.tr,
                 outlined: true,
                 onTap: () {
-                  Get.snackbar('تقييم'.tr, 'Mock action'.tr);
+                  ReviewDialog.show(
+                    context,
+                    title: 'Review',
+                    userName: 'Zain Alzubair',
+                    orderId: id,
+                    onSubmit: (rating, comment) {
+                      Get.snackbar(
+                        'Done',
+                        'Review submitted',
+                      );
+                    },
+                  );
                 },
               ),
           ],
@@ -340,18 +481,26 @@ class OrderTrackingScreen extends GetView<OrdersController> {
   }
 }
 
+/// ويدجت صغيرة لعرض معلومة مختصرة مع أيقونة
 class _MiniInfo extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _MiniInfo({required this.icon, required this.text});
+  const _MiniInfo({
+    required this.icon,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: context.muted),
+        Icon(
+          icon,
+          size: 18,
+          color: context.muted,
+        ),
         const SizedBox(width: 6),
         Text(
           text,
@@ -366,6 +515,11 @@ class _MiniInfo extends StatelessWidget {
   }
 }
 
+/// زر موحد لاستخدامات الشاشة مثل:
+/// - إلغاء الطلب
+/// - إعادة الطلب
+/// - المساعدة
+/// - تقييم الطلب
 class _ActionButton extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
@@ -379,8 +533,11 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = outlined ? Colors.transparent : context.primary;
-    final fg = outlined ? context.primary : context.primaryForeground;
+    final Color backgroundColor =
+        outlined ? Colors.transparent : context.primary;
+
+    final Color foregroundColor =
+        outlined ? context.primary : context.primaryForeground;
 
     return SizedBox(
       height: 48,
@@ -388,11 +545,13 @@ class _ActionButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
-          backgroundColor: bg,
           elevation: 0,
+          backgroundColor: backgroundColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            side: outlined ? BorderSide(color: fg) : BorderSide.none,
+            side: outlined
+                ? BorderSide(color: foregroundColor)
+                : BorderSide.none,
           ),
         ),
         child: Text(
@@ -400,7 +559,7 @@ class _ActionButton extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: fg,
+            color: foregroundColor,
             fontWeight: FontWeight.w900,
             fontSize: 13.5,
           ),

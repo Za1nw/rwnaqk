@@ -2,32 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
-import 'package:rwnaqk/models/home_product_item.dart';
-import 'package:rwnaqk/models/product_review.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
+import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
 import 'package:rwnaqk/widgets/home/product_card.dart';
-import 'package:rwnaqk/widgets/product_details/product_countdown_pill.dart';
+import 'package:rwnaqk/widgets/home/product_grid_section.dart';
 import 'package:rwnaqk/widgets/product_details/product_details_header_card.dart';
 import 'package:rwnaqk/widgets/product_details/product_reviews_section.dart';
 
 import '../controllers/product_details_controller.dart';
+
+const double _sectionGap = 18;
+const double _innerGap = 12;
+const double _gridSpacing = 12;
 
 class ProductDetailsScreen extends GetView<ProductDetailsController> {
   const ProductDetailsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+
+    final justCols = width >= 1100
+        ? 4
+        : width >= 780
+            ? 3
+            : 2;
+
     return Obx(() {
-      final item = controller.item.value;
-
-      final hasDiscount = controller.hasDiscount;
-      final salePrice = controller.salePriceText;
-      final price = controller.price;
-      final discount = controller.discount;
-
-      final images = controller.images;
-      final variationImages = controller.variationImages;
-
       return Scaffold(
         backgroundColor: context.background,
         bottomNavigationBar: _BottomBar(
@@ -42,35 +43,43 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
             children: [
               ProductDetailsHeaderCard(
-                images: images,
-                priceText: '\$${salePrice.replaceAll(".00", "")}',
-                oldPriceText: hasDiscount
-                    ? '\$${price.toStringAsFixed(2)}'
+                images: controller.images,
+                title: controller.title,
+                description: controller.description,
+                priceText:
+                    '\$${controller.salePriceText.replaceAll(".00", "")}',
+                oldPriceText: controller.hasDiscount
+                    ? '\$${controller.oldPriceText}'
                     : null,
-                discountText: hasDiscount ? '-$discount%' : null,
-                timerWidget: hasDiscount
-                    ? ProductCountdownPill(
-                        endsAt: DateTime.now().add(
-                          const Duration(hours: 1, minutes: 36),
-                        ),
-                      )
+                discountText: controller.hasDiscount
+                    ? '-${controller.discount}%'
                     : null,
-                description:
-                    item?.title ??
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam arcu mauris, scelerisque eu mauris id, pretium pulvinar sapien.',
-                variationImages: variationImages,
-                selectedVariationImageIndex: controller.selectedThumb.value
-                    .clamp(
-                      0,
-                      (variationImages.isEmpty
-                          ? 0
-                          : variationImages.length - 1),
-                    ),
+                timerWidget: null,
+                rating: controller.hasReviews ? controller.averageRating : null,
+                reviewsCount:
+                    controller.hasReviews ? controller.reviewsCount : null,
+                infoText: controller.stockText,
+                isFavorite: controller.isFavorite.value,
+                onFavorite: controller.toggleFavorite,
+                availableColors: controller.availableColors,
+                selectedColorId: controller.selectedColorId.value,
+                onSelectColor: controller.setSelectedColor,
+                availableSizes: controller.availableSizes,
+                selectedSize: controller.selectedSize.value,
+                onSelectSize: controller.setSelectedSize,
+                variationsTitle: 'Variations',
+                selectedChips: controller.selectedOptionChips,
+                variationImages: controller.variationImages,
+                selectedVariationImageIndex: controller.selectedThumb.value,
                 onSelectVariationImage: controller.selectThumb,
-                onShare: () => Get.snackbar('Share', 'Share product'),
+                onShare: () {
+                  // share logic
+                },
+                showArrowButton: false,
+                onArrowTap: null,
               ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: _sectionGap),
 
               _SectionTitle(title: 'Specifications'),
               const SizedBox(height: 10),
@@ -79,136 +88,90 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
                 chips: ['Cotton 95%', 'Nylon 5%'],
               ),
               const SizedBox(height: 10),
-              const _SpecRow(title: 'Origin', chips: ['EU']),
+              const _SpecRow(
+                title: 'Origin',
+                chips: ['EU'],
+              ),
               const SizedBox(height: 10),
               _LinkRow(
                 text: 'Size guide',
                 onTap: () => Get.snackbar('Size guide', 'Open size guide'),
               ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: _sectionGap),
 
-              _SectionTitle(title: 'Delivery'),
-              const SizedBox(height: 10),
-
-              _DeliveryOption(
-                title: 'Standart',
-                subtitle: '5-7 days',
-                price: '\$3.00',
-                selected: controller.deliverySelected.value == 'standard',
-                onTap: () => controller.setDelivery('standard'),
+              ShippingMethodSelector(
+                headerTitle: 'Delivery',
+                options: const [
+                  {
+                    'id': 'standard',
+                    'title': 'Standard',
+                    'eta': '5-7 days',
+                    'price': '\$3.00',
+                    'note': 'Delivered within 5 to 7 business days.',
+                  },
+                  {
+                    'id': 'express',
+                    'title': 'Express',
+                    'eta': '1-2 days',
+                    'price': '\$12.00',
+                    'note': 'Fast delivery within 1 to 2 business days.',
+                  },
+                ],
+                selectedId: controller.deliverySelected.value,
+                onChanged: controller.setDelivery,
               ),
-              const SizedBox(height: 10),
-              _DeliveryOption(
-                title: 'Express',
-                subtitle: '1-2 days',
-                price: '\$12.00',
-                selected: controller.deliverySelected.value == 'express',
-                onTap: () => controller.setDelivery('express'),
-              ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: _sectionGap),
 
               ProductReviewsSection(
                 reviews: controller.reviews.toList(),
                 onViewAll: () => Get.toNamed(
                   AppRoutes.reviews,
-                  arguments: {'reviews': controller.reviews.toList()},
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
-              _SectionTitle(
-                title: 'Most Popular',
-                trailing: _SectionAction(
-                  text: 'See All',
-                  onTap: () => Get.snackbar('Most Popular', 'See all'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 140,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: 6,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (_, i) {
-                    final list = controller.mostPopular;
-                    if (list.isNotEmpty) {
-                      final p = list[i % list.length];
-                      return SizedBox(
-                        width: 170,
-                        child: ProductCard(
-                          item: p,
-                          onTap: (_) => Get.toNamed(
-                            AppRoutes.product,
-                            arguments: {
-                              'item': p,
-                              'mostPopular': controller.mostPopular,
-                              'recommended': controller.recommended,
-                              'reviews': controller.reviews,
-                            },
-                          ),
-                        ),
-                      );
-                    }
-
-                    // fallback
-                    return _MiniProductCard(
-                      imageUrl: 'https://picsum.photos/200/200?mp=$i',
-                      priceText: '\$17.80',
-                      badgeText: i == 1
-                          ? 'New'
-                          : (i == 3 ? 'Sale' : (i == 4 ? 'Hot' : null)),
-                      onTap: () {},
-                    );
+                  arguments: {
+                    'reviews': controller.reviews.toList(),
                   },
                 ),
               ),
 
-              const SizedBox(height: 18),
+              
+              const SizedBox(height: _innerGap),
 
-              _SectionTitle(title: 'You Might Like'),
-              const SizedBox(height: 12),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: 6,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.78,
+           
+              Text(
+                'home.just_for_you'.tr,
+                style: TextStyle(
+                  color: context.foreground,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
                 ),
-                itemBuilder: (_, i) {
-                  final list = controller.recommended;
-                  if (list.isNotEmpty) {
-                    final p = list[i % list.length];
-                    return ProductCard(
-                      item: p,
-                      showAddToCart: true,
-                      onTap: (_) => Get.toNamed(
-                        AppRoutes.product,
-                        arguments: {
-                          'item': p,
-                          'mostPopular': controller.mostPopular,
-                          'recommended': controller.recommended,
-                          'reviews': controller.reviews,
-                        },
-                      ),
-                    );
-                  }
-
-                  return _GridProductCard(
-                    imageUrl: 'https://picsum.photos/300/360?ym=$i',
-                    title: 'Lorem ipsum dolor',
-                    priceText: '\$17.00',
-                    onTap: () {},
-                  );
-                },
               ),
+
+              const SizedBox(height: _innerGap),
+
+              Obx(() {
+                final items = controller.recommended.toList();
+                if (items.isEmpty) return const SizedBox.shrink();
+
+                return ProductGridSection(
+                  items: items,
+                  crossAxisCount: justCols,
+                  crossAxisSpacing: _gridSpacing,
+                  mainAxisSpacing: _gridSpacing,
+                  onTap: (p) => Get.toNamed(
+                    AppRoutes.product,
+                    arguments: {
+                      'item': p,
+                      'mostPopular': controller.mostPopular.toList(),
+                      'recommended': controller.recommended.toList(),
+                      'reviews': controller.reviews.toList(),
+                    },
+                  ),
+                  childAspectRatio: 1.0,
+                );
+              }),
+
+              const SizedBox(height: _sectionGap),
             ],
           ),
         ),
@@ -217,15 +180,14 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
   }
 }
 
-// =====================
-// UI parts (نفس ملفك تقريبًا)
-// =====================
-
 class _SectionTitle extends StatelessWidget {
   final String title;
   final Widget? trailing;
 
-  const _SectionTitle({required this.title, this.trailing});
+  const _SectionTitle({
+    required this.title,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -246,51 +208,15 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _SectionAction extends StatelessWidget {
-  final String text;
-  final VoidCallback onTap;
-
-  const _SectionAction({required this.text, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Row(
-        children: [
-          Text(
-            text,
-            style: TextStyle(
-              color: context.mutedForeground,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: context.primary,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              Icons.arrow_forward_rounded,
-              color: context.primaryForeground,
-              size: 16,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _SpecRow extends StatelessWidget {
   final String title;
   final List<String> chips;
 
-  const _SpecRow({required this.title, required this.chips});
+  const _SpecRow({
+    required this.title,
+    required this.chips,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -320,7 +246,9 @@ class _SpecRow extends StatelessWidget {
                       context.isDark ? 0.18 : 0.75,
                     ),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: context.border.withOpacity(0.35)),
+                    border: Border.all(
+                      color: context.border.withOpacity(0.35),
+                    ),
                   ),
                   child: Text(
                     t,
@@ -343,7 +271,10 @@ class _LinkRow extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
 
-  const _LinkRow({required this.text, required this.onTap});
+  const _LinkRow({
+    required this.text,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -379,247 +310,6 @@ class _LinkRow extends StatelessWidget {
   }
 }
 
-class _DeliveryOption extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String price;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _DeliveryOption({
-    required this.title,
-    required this.subtitle,
-    required this.price,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected
-                ? context.primary
-                : context.border.withOpacity(0.55),
-            width: selected ? 1.4 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: selected
-                      ? context.primary
-                      : context.border.withOpacity(0.8),
-                  width: 2,
-                ),
-              ),
-              child: selected
-                  ? Center(
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: context.primary,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                color: context.foreground,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              subtitle,
-              style: TextStyle(
-                color: context.primary,
-                fontWeight: FontWeight.w800,
-                fontSize: 12,
-              ),
-            ),
-            const Spacer(),
-            Text(
-              price,
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                color: context.foreground,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MiniProductCard extends StatelessWidget {
-  final String imageUrl;
-  final String priceText;
-  final String? badgeText;
-  final VoidCallback onTap;
-
-  const _MiniProductCard({
-    required this.imageUrl,
-    required this.priceText,
-    this.badgeText,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        width: 110,
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: context.border.withOpacity(0.55)),
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(imageUrl, fit: BoxFit.cover),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  priceText,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    color: context.foreground,
-                  ),
-                ),
-                const Spacer(),
-                if (badgeText != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.background.withOpacity(
-                        context.isDark ? 0.18 : 0.75,
-                      ),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color: context.border.withOpacity(0.35),
-                      ),
-                    ),
-                    child: Text(
-                      badgeText!,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        color: context.mutedForeground,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _GridProductCard extends StatelessWidget {
-  final String imageUrl;
-  final String title;
-  final String priceText;
-  final VoidCallback onTap;
-
-  const _GridProductCard({
-    required this.imageUrl,
-    required this.title,
-    required this.priceText,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: context.border.withOpacity(0.55)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
-                ),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: context.mutedForeground,
-                      fontSize: 12.5,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    priceText,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: context.foreground,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _BottomBar extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback onFavorite;
@@ -642,7 +332,9 @@ class _BottomBar extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.background,
           border: Border(
-            top: BorderSide(color: context.border.withOpacity(0.35)),
+            top: BorderSide(
+              color: context.border.withOpacity(0.35),
+            ),
           ),
         ),
         child: Row(
@@ -656,7 +348,9 @@ class _BottomBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: context.card,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: context.border.withOpacity(0.55)),
+                  border: Border.all(
+                    color: context.border.withOpacity(0.55),
+                  ),
                 ),
                 child: Icon(
                   isFavorite
@@ -680,7 +374,11 @@ class _BottomBar extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: AppButton(text: 'Buy now', onPressed: onBuy, height: 44),
+              child: AppButton(
+                text: 'Buy now',
+                onPressed: onBuy,
+                height: 44,
+              ),
             ),
           ],
         ),

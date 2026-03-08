@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import '../../models/home_product_item.dart';
+import 'package:rwnaqk/controllers/wishlist_controller.dart';
+import 'package:rwnaqk/widgets/dialogs/favorite_added_dialog.dart';
 
 class ProductCard extends StatelessWidget {
   final HomeProductItem item;
@@ -22,16 +24,25 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasDiscount = (item.discountPercent ?? 0) > 0;
     final originalPrice = item.price;
-    final discountedPrice =
-        hasDiscount ? originalPrice * (1 - (item.discountPercent! / 100)) : null;
+    final discountedPrice = hasDiscount
+        ? originalPrice * (1 - (item.discountPercent! / 100))
+        : null;
 
     return LayoutBuilder(
       builder: (context, c) {
         final w = c.maxWidth;
 
         /// responsive sizes based on width
-        final titleSize = w < 150 ? 11.5 : w < 180 ? 12.5 : 14.0;
-        final priceSize = w < 150 ? 13.0 : w < 180 ? 14.0 : 16.0;
+        final titleSize = w < 150
+            ? 11.5
+            : w < 180
+            ? 12.5
+            : 14.0;
+        final priceSize = w < 150
+            ? 13.0
+            : w < 180
+            ? 14.0
+            : 16.0;
         final iconSize = w < 150 ? 16.0 : 18.0;
         final pad = w < 150 ? 8.0 : 10.0;
 
@@ -44,9 +55,7 @@ class ProductCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: context.card,
                 borderRadius: BorderRadius.circular(radius),
-                border: Border.all(
-                  color: context.border.withOpacity(.5),
-                ),
+                border: Border.all(color: context.border.withOpacity(.5)),
                 boxShadow: [
                   BoxShadow(
                     color: context.shadow.withOpacity(.10),
@@ -56,14 +65,14 @@ class ProductCard extends StatelessWidget {
                 ],
               ),
               child: Column(
-                 mainAxisSize: MainAxisSize.min,
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   /// ✅ responsive image ratio (no overflow ever)
                   AspectRatio(
                     aspectRatio: 1.05, // الصورة كبيرة دائمًا
                     child: _ImageSection(
+                      item: item,
                       imageUrl: item.imageUrl,
                       radius: radius,
                       hasDiscount: hasDiscount,
@@ -72,17 +81,15 @@ class ProductCard extends StatelessWidget {
                   ),
 
                   /// content tight
-                  Padding( 
+                  Padding(
                     padding: EdgeInsets.all(pad),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         /// name + icon
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
                             Expanded(
                               child: Text(
                                 item.title,
@@ -116,11 +123,9 @@ class ProductCard extends StatelessWidget {
                           ],
                         ),
 
-
                         /// price
                         Row(
                           children: [
-
                             Flexible(
                               child: Text(
                                 '${'home.currency'.tr}${(hasDiscount ? discountedPrice! : originalPrice).toStringAsFixed(0)}',
@@ -144,8 +149,7 @@ class ProductCard extends StatelessWidget {
                                   fontSize: priceSize - 3,
                                   fontWeight: FontWeight.w700,
                                   color: context.mutedForeground,
-                                  decoration:
-                                      TextDecoration.lineThrough,
+                                  decoration: TextDecoration.lineThrough,
                                 ),
                               ),
                             ],
@@ -165,12 +169,14 @@ class ProductCard extends StatelessWidget {
 }
 
 class _ImageSection extends StatelessWidget {
+  final HomeProductItem item;
   final String imageUrl;
   final double radius;
   final bool hasDiscount;
   final int discountPercent;
 
   const _ImageSection({
+    required this.item,
     required this.imageUrl,
     required this.radius,
     required this.hasDiscount,
@@ -179,13 +185,15 @@ class _ImageSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<WishlistController>();
+
     return Stack(
       children: [
-
         Positioned.fill(
           child: ClipRRect(
-            borderRadius:
-                BorderRadius.vertical(top: Radius.circular(radius)),
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(radius),
+            ),
             child: Image.network(
               imageUrl,
               fit: BoxFit.cover,
@@ -220,18 +228,36 @@ class _ImageSection extends StatelessWidget {
         Positioned(
           top: 8,
           right: 8,
-          child: Container(
-            decoration: BoxDecoration(
-              color: context.background.withOpacity(.9),
-              shape: BoxShape.circle,
-            ),
-            padding: const EdgeInsets.all(6),
-            child: Icon(
-              Icons.favorite_border_rounded,
-              size: 18,
-              color: context.primary,
-            ),
-          ),
+          child: Obx(() {
+            final isFav = controller.isInWishlist(item.id);
+
+            return InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: () {
+                final wasFav = controller.isInWishlist(item.id);
+
+                controller.toggleWishlist(item);
+
+                if (!wasFav) {
+                  FavoriteAddedDialog.show(context);
+                }
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.background.withOpacity(.9),
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(6),
+                child: Icon(
+                  isFav
+                      ? Icons.favorite_rounded
+                      : Icons.favorite_border_rounded,
+                  size: 18,
+                  color: isFav ? Colors.red : context.primary,
+                ),
+              ),
+            );
+          }),
         ),
       ],
     );
