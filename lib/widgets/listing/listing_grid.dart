@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
-import 'package:rwnaqk/widgets/home/product_card.dart';
+import 'package:rwnaqk/widgets/card/product_card.dart';
 
 class ListingGridSliver extends StatelessWidget {
   final List<HomeProductItem> items;
@@ -18,7 +18,7 @@ class ListingGridSliver extends StatelessWidget {
           final item = items[index];
           return ProductCard(
             item: item,
-            showAddToCart: true,
+            // showAddToCart: true,
             onTap: (_) =>
                 Get.toNamed(AppRoutes.product, arguments: {'item': item}),
           );

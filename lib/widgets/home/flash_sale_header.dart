@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/utils/app_date_utils.dart';
 
 class FlashSaleHeader extends StatelessWidget {
   final int hh;
@@ -16,12 +17,9 @@ class FlashSaleHeader extends StatelessWidget {
     this.onSeeAll,
   });
 
-  String _two(int v) => v.toString().padLeft(2, '0');
-
   @override
   Widget build(BuildContext context) {
-    final timeText = '${_two(hh)}:${_two(mm)}:${_two(ss)}';
-
+    final timeText = AppDateUtils.formatTimer(hh: hh, mm: mm, ss: ss);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -47,20 +45,14 @@ class FlashSaleHeader extends StatelessWidget {
                 Expanded(
                   child: Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: _TimerPill(
-                      text: timeText,
-                      compact: narrow,
-                    ),
+                    child: _TimerPill(text: timeText, compact: narrow),
                   ),
                 ),
                 if (onSeeAll != null) ...[
                   const SizedBox(width: 10),
                   Align(
                     alignment: AlignmentDirectional.centerEnd,
-                    child: _SeeAllPill(
-                      onTap: onSeeAll!,
-                      compact: narrow,
-                    ),
+                    child: _SeeAllPill(onTap: onSeeAll!, compact: narrow),
                   ),
                 ],
               ],
@@ -76,10 +68,7 @@ class _TimerPill extends StatelessWidget {
   final String text;
   final bool compact;
 
-  const _TimerPill({
-    required this.text,
-    required this.compact,
-  });
+  const _TimerPill({required this.text, required this.compact});
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +92,11 @@ class _TimerPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.timer_outlined, color: context.primary, size: compact ? 16 : 18),
+          Icon(
+            Icons.timer_outlined,
+            color: context.primary,
+            size: compact ? 16 : 18,
+          ),
           const SizedBox(width: 8),
           Text(
             text,
@@ -124,10 +117,7 @@ class _SeeAllPill extends StatelessWidget {
   final VoidCallback onTap;
   final bool compact;
 
-  const _SeeAllPill({
-    required this.onTap,
-    required this.compact,
-  });
+  const _SeeAllPill({required this.onTap, required this.compact});
 
   @override
   Widget build(BuildContext context) {

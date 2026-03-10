@@ -14,8 +14,6 @@ import 'package:rwnaqk/widgets/common/app_empty_state.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 
 // ✅ استخدم مكوّن السلة
-import 'package:rwnaqk/widgets/cart/cart_item_tile.dart';
-
 class WishlistScreen extends GetView<WishlistController> {
   const WishlistScreen({super.key});
 
@@ -118,6 +116,7 @@ class WishlistScreen extends GetView<WishlistController> {
                           ),
                   ),
                 ],
+              
               ],
             );
           }),

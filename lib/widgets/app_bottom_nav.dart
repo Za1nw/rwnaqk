@@ -33,16 +33,7 @@ class AppBottomNav extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // خط علوي رفيع
-            Container(
-              width: 36,
-              height: 3,
-              margin: const EdgeInsets.only(bottom: 4),
-              decoration: BoxDecoration(
-                color: context.border.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(99),
-              ),
-            ),
+        
             
             // عناصر التنقل
             Row(
@@ -156,20 +147,8 @@ class _NavItem extends StatelessWidget {
                 ),
               ),
               
-              const SizedBox(height: 2),
               
-              // النقطة السفلية للتحديد
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                width: selected ? 4 : 0,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: context.primary,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ],
+             ],
           ),
         ),
       ),

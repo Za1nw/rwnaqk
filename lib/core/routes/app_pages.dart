@@ -12,7 +12,7 @@ import 'package:rwnaqk/core/bindings/register_binding.dart';
 import 'package:rwnaqk/core/bindings/reviews_binding.dart';
 import 'package:rwnaqk/core/bindings/search_binding.dart';
 import 'package:rwnaqk/core/bindings/search_results_binding.dart';
-import 'package:rwnaqk/core/bindings/settings_binding.dart';
+import 'package:rwnaqk/core/bindings/app_settings_binding.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/screens/auth/forgot_password_method_screen.dart';
 import 'package:rwnaqk/screens/auth/login_screen.dart';
@@ -140,6 +140,6 @@ class AppPages {
       page: () => const ProductsListingScreen(),
       binding: ProductsListingBinding(),
     ),
-    GetPage(name: AppRoutes.test, page: ()=>TestStatesScreen()),
+   
   ];
 }

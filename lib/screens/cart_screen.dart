@@ -4,18 +4,41 @@ import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
 
 import '../../controllers/cart_controller.dart';
-
-import '../../widgets/cart/cart_header.dart';
 import '../../widgets/cart/address_section.dart';
-
+import '../../widgets/cart/cart_header.dart';
 import '../../widgets/cart/cart_items_list.dart';
 import '../../widgets/cart/cart_total_bar.dart';
 import '../../widgets/cart/cart_wishlist_section.dart';
-
 import '../../widgets/common/app_empty_state.dart';
 
 class CartScreen extends GetView<CartController> {
   const CartScreen({super.key});
+
+  void _openShippingSheet(BuildContext context, {required bool isEdit}) {
+    if (isEdit) {
+      controller.prepareEditShipping();
+    } else {
+      controller.prepareAddShipping();
+    }
+
+    ShippingAddressSheet.showShipping(
+      context,
+      addressController: controller.shippingAddressCtrl,
+      cityController: controller.shippingCityCtrl,
+      postcodeController: controller.shippingPostcodeCtrl,
+      country: controller.shippingAddress.value.country,
+      countries: controller.shippingCountries,
+      onCountryChanged: (value) {
+        if (value != null) {
+          controller.setShippingCountry(value);
+        }
+      },
+      onSave: () {
+        controller.saveShippingFromForm();
+        Navigator.pop(context);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,47 +47,33 @@ class CartScreen extends GetView<CartController> {
       body: SafeArea(
         child: Column(
           children: [
-            /// TOP (Header + Address)
+            /// TOP
             Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 16, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  /// Header
                   Obx(
                     () => CartHeader(
                       title: 'Cart',
                       count: controller.cartItems.length,
                     ),
                   ),
-
                   const SizedBox(height: 12),
 
-                  /// Address Section (Edit إذا موجود / Add إذا فاضي)
-                  AddressSection(
-                    title: 'Shipping Address',
-
-                    // خليها فاضية عشان يظهر AddInfoCard
-                    address: '',
-
-                    // عند الضغط على زر (+) يفتح الفورم مباشرة
-                    onEdit: () {
-                      ShippingAddressSheet.showShipping(
+                  Obx(
+                    () => AddressSection(
+                      title: 'Shipping Address',
+                      address: controller.hasShippingAddress
+                          ? controller.shippingAddressText
+                          : '',
+                      onEdit: () => _openShippingSheet(
                         context,
-                        addressController: TextEditingController(),
-                        cityController: TextEditingController(),
-                        postcodeController: TextEditingController(),
-                        country: 'Yemen',
-                        countries: const [
-                          'Yemen',
-                          'Saudi Arabia',
-                          'UAE',
-                          'India',
-                        ],
-                        onCountryChanged: (_) {},
-                        onSave: () => Navigator.pop(context),
-                      );
-                    },
+                        isEdit: controller.hasShippingAddress,
+                      ),
+                      allowAddWhenEmpty: true,
+                      emptyHint: 'اضف عنوان الشحن',
+                    ),
                   ),
                 ],
               ),
@@ -108,21 +117,16 @@ class CartScreen extends GetView<CartController> {
                   padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 16),
                   child: Column(
                     children: [
-                      /// CART ITEMS
                       CartItemsList(
                         items: controller.cartItems,
                         onRemove: controller.removeFromCart,
                       ),
-
                       const SizedBox(height: 16),
-
-                      /// FROM WISHLIST
                       if (controller.wishlistItems.isNotEmpty)
                         CartWishlistSection(
                           items: controller.wishlistItems,
                           onAdd: controller.addToCart,
                         ),
-
                       const SizedBox(height: 90),
                     ],
                   ),
@@ -135,7 +139,7 @@ class CartScreen extends GetView<CartController> {
               () => CartTotalBar(
                 total: controller.total,
                 enabled: controller.cartItems.isNotEmpty,
-                onCheckout: controller.goCheckout,
+                onCheckout: controller.openPayment,
               ),
             ),
           ],

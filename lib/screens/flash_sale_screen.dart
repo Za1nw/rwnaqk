@@ -4,7 +4,8 @@ import 'package:rwnaqk/controllers/flash_sale_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 import 'package:rwnaqk/widgets/app_categories_filter_sheet.dart';
-import 'package:rwnaqk/widgets/home/product_card.dart';
+import 'package:rwnaqk/widgets/card/product_card.dart';
+import 'package:rwnaqk/core/utils/app_date_utils.dart';
 
 class FlashSaleScreen extends GetView<FlashSaleController> {
   const FlashSaleScreen({super.key});
@@ -35,8 +36,9 @@ class FlashSaleScreen extends GetView<FlashSaleController> {
                     const SizedBox(height: 14),
                     Obx(() {
                       final d = controller.selectedDiscount.value;
-                      final title =
-                          d == 0 ? 'All Discount'.tr : '$d% Discount'.tr;
+                      final title = d == 0
+                          ? 'All Discount'.tr
+                          : '$d% Discount'.tr;
                       return _SectionRowExactLikeImage(
                         title: title,
                         onFilterTap: () {
@@ -99,10 +101,12 @@ class _HeaderExactLikeImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final primary = context.primary;
     final accent = context.accent;
-    final headerBg =
-        context.isDark ? context.card.withOpacity(0.96) : context.background;
-    final softCircle =
-        context.isDark ? accent.withOpacity(0.18) : accent.withOpacity(0.90);
+    final headerBg = context.isDark
+        ? context.card.withOpacity(0.96)
+        : context.background;
+    final softCircle = context.isDark
+        ? accent.withOpacity(0.18)
+        : accent.withOpacity(0.90);
     final deepCircle = context.isDark ? primary.withOpacity(0.85) : primary;
 
     return ClipRRect(
@@ -158,8 +162,9 @@ class _HeaderExactLikeImage extends StatelessWidget {
                         Text(
                           'Choose Your Discount'.tr,
                           style: TextStyle(
-                            color: context.mutedForeground
-                                .withOpacity(context.isDark ? 0.9 : 0.85),
+                            color: context.mutedForeground.withOpacity(
+                              context.isDark ? 0.9 : 0.85,
+                            ),
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                             height: 1.1,
@@ -169,9 +174,9 @@ class _HeaderExactLikeImage extends StatelessWidget {
                     ),
                   ),
                   Obx(() {
-                    final hh = _pad2(controller.hh.value);
-                    final mm = _pad2(controller.mm.value);
-                    final ss = _pad2(controller.ss.value);
+                    final hh = AppDateUtils.pad2(controller.hh.value);
+                    final mm = AppDateUtils.pad2(controller.mm.value);
+                    final ss = AppDateUtils.pad2(controller.ss.value);
 
                     return Row(
                       mainAxisSize: MainAxisSize.min,
@@ -194,8 +199,6 @@ class _HeaderExactLikeImage extends StatelessWidget {
       ),
     );
   }
-
-  static String _pad2(int v) => v.toString().padLeft(2, '0');
 }
 
 class _MiniTimeBox extends StatelessWidget {
@@ -297,8 +300,9 @@ class _DiscountTabsExactLikeImage extends StatelessWidget {
                 border: Border.all(color: context.primary, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: context.primary
-                        .withOpacity(context.isDark ? 0.22 : 0.20),
+                    color: context.primary.withOpacity(
+                      context.isDark ? 0.22 : 0.20,
+                    ),
                     blurRadius: 12,
                     offset: const Offset(0, 8),
                   ),

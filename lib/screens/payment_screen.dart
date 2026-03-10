@@ -1,36 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
-import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
-
-import '../../controllers/cart_controller.dart';
-
-import 'package:rwnaqk/widgets/cart/cart_header.dart';
+import 'package:rwnaqk/controllers/cart_controller.dart';
+import 'package:rwnaqk/core/utils/app_money_utils.dart';
+import 'package:rwnaqk/widgets/app_button.dart';
 import 'package:rwnaqk/widgets/cart/address_section.dart';
-
-import 'package:rwnaqk/widgets/cart/payment_items_header.dart';
+import 'package:rwnaqk/widgets/cart/cart_header.dart';
 import 'package:rwnaqk/widgets/cart/miniItem_price_tile.dart';
-import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
+import 'package:rwnaqk/widgets/cart/payment_contact_section.dart';
+import 'package:rwnaqk/widgets/cart/payment_items_header.dart';
 import 'package:rwnaqk/widgets/cart/payment_method_section.dart';
-import '../../widgets/app_button.dart';
+import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
+import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
 
 class PaymentScreen extends GetView<CartController> {
   const PaymentScreen({super.key});
-  void _openShippingSheet(BuildContext context) {
+
+  void _openShippingSheet(BuildContext context, {required bool isEdit}) {
+    if (isEdit) {
+      controller.prepareEditShipping();
+    } else {
+      controller.prepareAddShipping();
+    }
+
     ShippingAddressSheet.showShipping(
       context,
-      addressController: TextEditingController(
-        text: 'Magadi Main Rd, next to Prasanna Theatre',
-      ),
-      cityController: TextEditingController(text: 'Bengaluru'),
-      postcodeController: TextEditingController(text: '560023'),
-      country: 'India',
-      countries: const ['India', 'Yemen', 'Saudi Arabia', 'UAE'],
+      addressController: controller.shippingAddressCtrl,
+      cityController: controller.shippingCityCtrl,
+      postcodeController: controller.shippingPostcodeCtrl,
+      country: controller.shippingAddress.value.country,
+      countries: controller.shippingCountries,
       onCountryChanged: (v) {
-        debugPrint('Selected country: $v');
+        if (v != null) controller.setShippingCountry(v);
       },
       onSave: () {
-        debugPrint('Shipping saved');
+        controller.saveShippingFromForm();
         Navigator.pop(context);
       },
     );
@@ -41,9 +45,8 @@ class PaymentScreen extends GetView<CartController> {
     return Scaffold(
       backgroundColor: context.background,
       bottomNavigationBar: Obx(() {
-        final totalText = _formatMoney(controller.total);
         return _PaymentBottomBar(
-          totalText: totalText,
+          totalText: AppMoneyUtils.currency(controller.total),
           onPay: controller.payNow,
         );
       }),
@@ -54,57 +57,53 @@ class PaymentScreen extends GetView<CartController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // =========================
-              // TOP: Header + Shipping + Contact (كلها Edit)
-              CartHeader(title: 'Payment', count: controller.cartItems.length),
+              Obx(
+                () => CartHeader(
+                  title: 'Payment',
+                  count: controller.cartItems.length,
+                ),
+              ),
               const SizedBox(height: 12),
 
-              // Shipping (قد تكون فاضية مستقبلاً -> تسمح بـ Add)
-              AddressSection(
-                title: 'Shipping Address',
-                address: 'Magadi Main Rd ...', // بيانات وهمية حالياً
-                onEdit: () => _openShippingSheet(context),
-
-                allowAddWhenEmpty: true,
-                emptyHint: 'اضف عنوان الشحن',
+              Obx(
+                () => AddressSection(
+                  title: 'Shipping Address',
+                  address: controller.shippingAddressText,
+                  onEdit: () => _openShippingSheet(
+                    context,
+                    isEdit: controller.hasShippingAddress,
+                  ),
+                  allowAddWhenEmpty: true,
+                  emptyHint: 'اضف عنوان الشحن',
+                ),
               ),
 
               const SizedBox(height: 12),
 
-              // Contact (لن تكون فاضية مستقبلاً -> Edit فقط)
-              AddressSection(
-                title: 'Contact Information',
-                lines: const [
-                  '+91987654321',
-                  'gmail@example.com',
-                ], // بيانات وهمية
-                onEdit: () {
-                  // افتح شيت/صفحة تعديل التواصل
-                },
-                allowAddWhenEmpty: false, // ✅ ما نعرض Add هنا
-                emptyHint: 'اضف معلومات التواصل',
+              Obx(
+                () => PaymentContactSection(
+                  lines: controller.contactLines,
+                  onEdit: () {
+                    Get.snackbar('Info', 'Contact edit action');
+                  },
+                ),
               ),
 
               const SizedBox(height: 18),
 
-              // =========================
-              // Items header + discount
-              Obx(() {
-                return PaymentItemsHeader(
+              Obx(
+                () => PaymentItemsHeader(
                   title: 'Items',
                   count: controller.cartItems.length,
                   discountText: '5% Discount',
                   onRemoveDiscount: () {},
-                );
-              }),
+                ),
+              ),
 
               const SizedBox(height: 10),
 
-              // =========================
-              // Items list (من السلة)
               Obx(() {
                 final items = controller.cartItems;
-
                 return Column(
                   children: [
                     for (final item in items) ...[
@@ -113,7 +112,7 @@ class PaymentScreen extends GetView<CartController> {
                         badgeCount: 1,
                         title: item.title,
                         subtitle: 'consectetur.',
-                        priceText: _formatMoney(item.price),
+                        priceText: AppMoneyUtils.currency(item.price),
                       ),
                       const SizedBox(height: 10),
                     ],
@@ -123,36 +122,28 @@ class PaymentScreen extends GetView<CartController> {
 
               const SizedBox(height: 20),
 
-              // =========================
-              // Shipping Options
               Obx(() {
                 return ShippingMethodSelector(
-                  headerTitle: "Shipping Options",
+                  headerTitle: 'Shipping Options',
                   selectedId: controller.selectedShippingId.value,
                   onChanged: controller.setShipping,
-                  options: [
-                    {
-                      "id": "standard",
-                      "title": "Standard",
-                      "eta": "5-7 days",
-                      "price": "FREE",
-                      "note": "Delivered on or before Thursday, 23 April 2020",
-                    },
-                    {
-                      "id": "express",
-                      "title": "Express",
-                      "eta": "1-2 days",
-                      "price": "\$12.00",
-                      "note": "Fast delivery (extra fees may apply)",
-                    },
-                  ],
+                  options: controller.shippingOptions
+                      .map(
+                        (e) => {
+                          'id': e.id,
+                          'title': e.title,
+                          'eta': e.eta,
+                          'price': e.priceText,
+                          'note': e.note,
+                          'icon': e.icon,
+                        },
+                      )
+                      .toList(),
                 );
               }),
 
               const SizedBox(height: 20),
 
-              // =========================
-              // Payment Method
               const _PaymentMethodBlock(),
             ],
           ),
@@ -160,55 +151,26 @@ class PaymentScreen extends GetView<CartController> {
       ),
     );
   }
-
-  String _formatMoney(num v) => '\$${v.toStringAsFixed(2)}';
 }
 
-class _PaymentMethodBlock extends StatefulWidget {
+class _PaymentMethodBlock extends StatelessWidget {
   const _PaymentMethodBlock();
-
-  @override
-  State<_PaymentMethodBlock> createState() => _PaymentMethodBlockState();
-}
-
-class _PaymentMethodBlockState extends State<_PaymentMethodBlock> {
-  late final TextEditingController receiverCtrl;
-  late final TextEditingController walletCtrl;
-
-  @override
-  void initState() {
-    super.initState();
-    final c = Get.find<CartController>();
-
-    receiverCtrl = TextEditingController(text: c.receiverName.value);
-    walletCtrl = TextEditingController(text: c.walletNumber.value);
-  }
-
-  @override
-  void dispose() {
-    receiverCtrl.dispose();
-    walletCtrl.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<CartController>();
 
-    return Obx(
-      () => PaymentMethodSection(
+    return Obx(() {
+      return PaymentMethodSection(
         titleText: 'Payment Method',
         cashTitle: 'Cash on Delivery',
         cashSubtitle: 'Pay when you receive',
         walletTitle: 'Wallet Transfer',
         walletSubtitle: 'Transfer via partners',
-
         receiverNameLabel: 'Receiver name',
         walletNumberLabel: 'Wallet number',
-
         receiverNameValue: controller.receiverName.value,
         walletNumberValue: controller.walletNumber.value,
-
         walletCompanies: const [
           WalletCompany(
             name: 'Jib',
@@ -218,15 +180,13 @@ class _PaymentMethodBlockState extends State<_PaymentMethodBlock> {
           WalletCompany(name: 'Kuraimi', icon: Icons.account_balance),
           WalletCompany(name: 'M-Floos', icon: Icons.currency_exchange),
         ],
-
         selectedId: controller.paymentMethodId.value,
         onChanged: controller.setPaymentMethodId,
-
-        infoMessage: controller.paymentMethodId.value == 'wallet'
+        infoMessage: controller.isWalletPayment
             ? 'Use any company below. Name & number are unified.'
             : 'You will pay cash upon delivery.',
-      ),
-    );
+      );
+    });
   }
 }
 

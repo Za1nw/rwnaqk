@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
-import 'package:rwnaqk/widgets/home/product_card.dart';
+import 'package:rwnaqk/widgets/card/product_card.dart';
 
 class ProductHorizontalList extends StatelessWidget {
   final List<HomeProductItem> items;
@@ -24,7 +24,7 @@ class ProductHorizontalList extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: items.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => const SizedBox(width: 10),
         itemBuilder: (_, i) => SizedBox(
           width: itemWidth,
           child: ProductCard(

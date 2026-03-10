@@ -175,12 +175,8 @@ class HomeController extends GetxController {
 
   void openFlashSaleScreen() {
     Get.toNamed(
-      AppRoutes.listing,
-      arguments: {
-        'title': 'Flash Sale',
-        'source': 'flash_sale',
-        'items': flashSale.toList(),
-      },
+      AppRoutes.flashSale,
+     
     );
   }
 

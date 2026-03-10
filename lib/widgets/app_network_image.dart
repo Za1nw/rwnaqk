@@ -7,6 +7,13 @@ class AppNetworkImage extends StatelessWidget {
   final double? width;
   final double? height;
   final BorderRadius? borderRadius;
+  final Alignment alignment;
+  final Color? color;
+  final BlendMode? colorBlendMode;
+  final FilterQuality filterQuality;
+  final Widget? loadingWidget;
+  final Widget? errorWidget;
+  final Color? backgroundColor;
 
   const AppNetworkImage({
     super.key,
@@ -15,51 +22,73 @@ class AppNetworkImage extends StatelessWidget {
     this.width,
     this.height,
     this.borderRadius,
+    this.alignment = Alignment.center,
+    this.color,
+    this.colorBlendMode,
+    this.filterQuality = FilterQuality.medium,
+    this.loadingWidget,
+    this.errorWidget,
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    final child = Image.network(
+    final bgColor = backgroundColor ?? context.card;
+
+    Widget buildPlaceholder() {
+      return Container(
+        width: width,
+        height: height,
+        color: bgColor,
+        alignment: Alignment.center,
+        child: loadingWidget ??
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(context.primary),
+              ),
+            ),
+      );
+    }
+
+    Widget buildError() {
+      return Container(
+        width: width,
+        height: height,
+        color: bgColor,
+        alignment: Alignment.center,
+        child: errorWidget ??
+            Icon(
+              Icons.image_not_supported_outlined,
+              size: 22,
+              color: context.mutedForeground.withOpacity(0.8),
+            ),
+      );
+    }
+
+    final imageWidget = Image.network(
       url,
       width: width,
       height: height,
       fit: fit,
-      errorBuilder: (_, __, ___) {
-        return Container(
-          width: width,
-          height: height,
-          color: context.card,
-          alignment: Alignment.center,
-          child: Icon(
-            Icons.image_not_supported_outlined,
-            color: context.mutedForeground.withOpacity(0.8),
-          ),
-        );
-      },
+      alignment: alignment,
+      color: color,
+      colorBlendMode: colorBlendMode,
+      filterQuality: filterQuality,
+      errorBuilder: (_, __, ___) => buildError(),
       loadingBuilder: (_, child, progress) {
         if (progress == null) return child;
-        return Container(
-          width: width,
-          height: height,
-          color: context.card,
-          alignment: Alignment.center,
-          child: SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation(context.primary),
-            ),
-          ),
-        );
+        return buildPlaceholder();
       },
     );
 
-    if (borderRadius == null) return child;
+    if (borderRadius == null) return imageWidget;
 
     return ClipRRect(
       borderRadius: borderRadius!,
-      child: child,
+      child: imageWidget,
     );
   }
 }

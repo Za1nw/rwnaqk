@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/screens/payment_screen.dart';
-import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
 
 import '../models/home_product_item.dart';
+import '../models/shipping_option_model.dart';
+import '../models/shipping_address_model.dart';
+import '../models/contact_info_model.dart';
 
 enum CartStep { cart, payment }
 
 class CartController extends GetxController {
   // =========================
-  // DATA
+  // CART DATA
   final cartItems = <HomeProductItem>[].obs;
   final wishlistItems = <HomeProductItem>[].obs;
 
@@ -17,135 +18,136 @@ class CartController extends GetxController {
   bool get isEmpty => cartItems.isEmpty;
 
   // =========================
-  // FLOW STEP (Cart -> Payment)
-  final Rx<CartStep> step = CartStep.cart.obs;
+  // FLOW
+  final step = CartStep.cart.obs;
   bool get isPayment => step.value == CartStep.payment;
 
-  void openPayment() => step.value = CartStep.payment;
+  void openPayment() {
+    if (cartItems.isEmpty) return;
+    Get.toNamed('/payment');
+  }
+
   void backToCart() => step.value = CartStep.cart;
+
+  // =========================
+  // SHIPPING ADDRESS FORM CONTROLLERS
+  late final TextEditingController shippingAddressCtrl;
+  late final TextEditingController shippingCityCtrl;
+  late final TextEditingController shippingPostcodeCtrl;
+
+  final shippingCountries = const ['Yemen', 'Saudi Arabia', 'UAE', 'India'];
+
+  final shippingAddress = ShippingAddressModel.empty().obs;
+
+  bool get hasShippingAddress => !shippingAddress.value.isEmpty;
+  String get shippingAddressText => shippingAddress.value.formatted;
+
+  void setShippingCountry(String value) {
+    shippingAddress.value = shippingAddress.value.copyWith(country: value);
+  }
+
+  void fillShippingFormFromState() {
+    shippingAddressCtrl.text = shippingAddress.value.addressLine;
+    shippingCityCtrl.text = shippingAddress.value.city;
+    shippingPostcodeCtrl.text = shippingAddress.value.postcode;
+  }
+
+  void clearShippingForm() {
+    shippingAddressCtrl.clear();
+    shippingCityCtrl.clear();
+    shippingPostcodeCtrl.clear();
+    shippingAddress.value = shippingAddress.value.copyWith(
+      country: shippingAddress.value.country.isEmpty
+          ? 'Yemen'
+          : shippingAddress.value.country,
+    );
+  }
+
+  void prepareAddShipping() {
+    shippingAddress.value = ShippingAddressModel.empty();
+    clearShippingForm();
+  }
+
+  void prepareEditShipping() {
+    fillShippingFormFromState();
+  }
+
+  void saveShippingFromForm() {
+    shippingAddress.value = ShippingAddressModel(
+      country: shippingAddress.value.country,
+      addressLine: shippingAddressCtrl.text.trim(),
+      city: shippingCityCtrl.text.trim(),
+      postcode: shippingPostcodeCtrl.text.trim(),
+    );
+  }
+
+  // =========================
+  // SHIPPING OPTION
   final selectedShippingId = 'standard'.obs;
+
+  final shippingOptions = <ShippingOptionModel>[
+    const ShippingOptionModel(
+      id: 'standard',
+      title: 'Standard',
+      eta: '5-7 days',
+      priceText: 'FREE',
+    ),
+    const ShippingOptionModel(
+      id: 'express',
+      title: 'Express',
+      eta: '1-2 days',
+      priceText: '\$12.00',
+      note: 'Fast delivery (extra fees may apply)',
+    ),
+  ].obs;
 
   void setShipping(String id) {
     selectedShippingId.value = id;
   }
 
-  // (لو تبغى نفس اسم الدالة القديمة بدون ما تعدل الشاشة)
-  void goCheckout() {
-    Get.to(() => const PaymentScreen());
-  }
+  // =========================
+  // CONTACT
+  final contactInfo = const ContactInfoModel(
+    phone: '+91987654321',
+    email: 'gmail@example.com',
+  ).obs;
+
+  List<String> get contactLines => contactInfo.value.lines;
 
   // =========================
-  // SHIPPING (Address Form)
-  late final TextEditingController shippingAddressCtrl;
-  late final TextEditingController shippingCityCtrl;
-  late final TextEditingController shippingPostcodeCtrl;
-
-  final RxString shippingCountry = 'Yemen'.obs;
-  final List<String> shippingCountries = const [
-    'Yemen',
-    'Saudi Arabia',
-    'UAE',
-    'India',
-  ];
-
-  /// النص المعروض في الواجهة (Cart/Payment)
-  /// - إذا كان فاضي => AddressSection يعرض AddInfoCard
-  final RxString shippingAddressText = ''.obs;
-
-  /// ✅ فورم إضافة: يفتح الشيت والحقول فاضية
-  void openAddShippingSheet(BuildContext context) {
-    shippingAddressCtrl.clear();
-    shippingCityCtrl.clear();
-    shippingPostcodeCtrl.clear();
-    _showShippingSheet(context);
-  }
-
-  /// ✅ فورم تعديل: يفتح الشيت بالقيم الحالية الموجودة في controllers
-  void openEditShippingSheet(BuildContext context) {
-    _showShippingSheet(context);
-  }
-
-  void _showShippingSheet(BuildContext context) {
-    ShippingAddressSheet.showShipping(
-      context,
-      addressController: shippingAddressCtrl,
-      cityController: shippingCityCtrl,
-      postcodeController: shippingPostcodeCtrl,
-      country: shippingCountry.value,
-      countries: shippingCountries,
-      onCountryChanged: (v) {
-        if (v != null) shippingCountry.value = v;
-      },
-      onSave: () {
-        _commitShippingAddress();
-        Navigator.pop(context);
-      },
-    );
-  }
-
-  void _commitShippingAddress() {
-    final a = shippingAddressCtrl.text.trim();
-    final c = shippingCityCtrl.text.trim();
-    final p = shippingPostcodeCtrl.text.trim();
-
-    final line2 = [if (c.isNotEmpty) c, if (p.isNotEmpty) p].join(', ').trim();
-
-    shippingAddressText.value = [
-      if (a.isNotEmpty) a,
-      if (line2.isNotEmpty) line2,
-      if (shippingCountry.value.trim().isNotEmpty) shippingCountry.value,
-    ].join('\n');
-  }
-
-  bool get hasShippingAddress => shippingAddressText.value.trim().isNotEmpty;
-
-  // =========================
-  // SHIPPING OPTIONS (بدون موديل)
-  final shippingId = 'standard'.obs;
-
-  final shippingOptions = <Map<String, dynamic>>[
-    {
-      "id": "standard",
-      "title": "Standard",
-      "eta": "5-7 days",
-      "price": "FREE",
-      "icon": null,
-    },
-    {
-      "id": "express",
-      "title": "Express",
-      "eta": "1-2 days",
-      "price": "\$12,00",
-      "note": "Delivered on or before Thursday, 23 April 2020",
-      "icon": null,
-    },
-  ].obs;
-
-
-  // =========================
-  // PAYMENT METHOD
+  // PAYMENT
   final paymentMethodId = 'cod'.obs;
-  void setPaymentMethodId(String id) => paymentMethodId.value = id;
+
+  final receiverName = 'Zain'.obs;
+  final walletNumber = '777123456'.obs;
+
   bool get isWalletPayment => paymentMethodId.value == 'wallet';
 
-  // Wallet fields
-  final receiverName = ''.obs;
-  final walletNumber = ''.obs;
+  void setPaymentMethodId(String id) {
+    paymentMethodId.value = id;
+  }
 
+  void setReceiverName(String value) {
+    receiverName.value = value;
+  }
+
+  void setWalletNumber(String value) {
+    walletNumber.value = value;
+  }
 
   // =========================
-  // CART ACTIONS
+  // ACTIONS
   void removeFromCart(String id) {
     cartItems.removeWhere((e) => e.id == id);
-    if (cartItems.isEmpty && isPayment) backToCart();
+    if (cartItems.isEmpty && isPayment) {
+      backToCart();
+    }
   }
 
   void addToCart(HomeProductItem item) {
     cartItems.add(item);
   }
 
-  // =========================
-  // CONFIRM PAY (mock)
   void payNow() {
     if (isWalletPayment) {
       if (receiverName.value.trim().isEmpty ||
@@ -159,16 +161,17 @@ class CartController extends GetxController {
     backToCart();
   }
 
+  // =========================
+  // INIT / DISPOSE
   @override
   void onInit() {
     super.onInit();
 
-    // ✅ init shipping controllers once
     shippingAddressCtrl = TextEditingController();
     shippingCityCtrl = TextEditingController();
     shippingPostcodeCtrl = TextEditingController();
 
-    _mock();
+    seedMockData();
   }
 
   @override
@@ -179,8 +182,10 @@ class CartController extends GetxController {
     super.onClose();
   }
 
-  void _mock() {
-    cartItems.addAll([
+  // =========================
+  // MOCK DATA
+  void seedMockData() {
+    cartItems.assignAll([
       HomeProductItem(
         id: '1',
         title: 'Pink Dress',
@@ -195,7 +200,7 @@ class CartController extends GetxController {
       ),
     ]);
 
-    wishlistItems.addAll([
+    wishlistItems.assignAll([
       HomeProductItem(
         id: '3',
         title: 'Wishlist Item',
@@ -204,21 +209,13 @@ class CartController extends GetxController {
       ),
     ]);
 
-    // قيم افتراضية للاختبار (Payment)
-    receiverName.value = 'Zain';
-    walletNumber.value = '777123456';
-    paymentMethodId.value = 'cod';
+    shippingAddress.value = const ShippingAddressModel(
+      country: 'India',
+      addressLine: 'Magadi Main Rd, next to Prasanna Theatre',
+      city: 'Bengaluru',
+      postcode: '560023',
+    );
 
-    // =========================
-    // اختبار العنوان:
-    // ✅ لو تبغى يظهر زر الإضافة (+) خلّيه فاضي:
-    // shippingAddressText.value = '';
-
-    // ✅ لو تبغى اختبار "التعديل" حط قيم:
-    shippingCountry.value = 'India';
-    shippingAddressCtrl.text = 'Magadi Main Rd, next to Prasanna Theatre';
-    shippingCityCtrl.text = 'Bengaluru';
-    shippingPostcodeCtrl.text = '560023';
-    _commitShippingAddress();
+    fillShippingFormFromState();
   }
 }

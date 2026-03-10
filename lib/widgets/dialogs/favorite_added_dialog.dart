@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 
 class FavoriteAddedDialog extends StatelessWidget {

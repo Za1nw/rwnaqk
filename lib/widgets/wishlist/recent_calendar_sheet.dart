@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/utils/app_date_utils.dart';
 
 class RecentCalendarSheet extends StatefulWidget {
   final DateTime? initialDate;
@@ -47,7 +48,7 @@ class _RecentCalendarSheetState extends State<RecentCalendarSheet> {
                 color: context.shadow.withOpacity(context.isDark ? 0.18 : 0.10),
                 blurRadius: 24,
                 offset: const Offset(0, -6),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -65,13 +66,16 @@ class _RecentCalendarSheetState extends State<RecentCalendarSheet> {
                   Expanded(
                     child: Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: context.primary.withOpacity(0.10),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          _monthName(_month.month),
+                          AppDateUtils.monthName(_month.month),
                           style: TextStyle(
                             color: context.primary,
                             fontWeight: FontWeight.w900,
@@ -114,7 +118,9 @@ class _RecentCalendarSheetState extends State<RecentCalendarSheet> {
                     backgroundColor: context.primary,
                     foregroundColor: context.primaryForeground,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   child: const Text('Choose date'),
                 ),
@@ -124,14 +130,6 @@ class _RecentCalendarSheetState extends State<RecentCalendarSheet> {
         ),
       ),
     );
-  }
-
-  String _monthName(int m) {
-    const months = [
-      'January','February','March','April','May','June',
-      'July','August','September','October','November','December'
-    ];
-    return months[(m - 1).clamp(0, 11)];
   }
 }
 
@@ -182,7 +180,8 @@ class _CalendarGrid extends StatelessWidget {
           if (!inMonth) return const SizedBox();
 
           final d = DateTime(month.year, month.month, dayNum);
-          final isSelected = selected != null &&
+          final isSelected =
+              selected != null &&
               selected!.year == d.year &&
               selected!.month == d.month &&
               selected!.day == d.day;
@@ -195,14 +194,18 @@ class _CalendarGrid extends StatelessWidget {
                 color: isSelected ? context.primary : context.card,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? context.primary : context.border.withOpacity(0.25),
+                  color: isSelected
+                      ? context.primary
+                      : context.border.withOpacity(0.25),
                 ),
               ),
               child: Center(
                 child: Text(
                   '$dayNum',
                   style: TextStyle(
-                    color: isSelected ? context.primaryForeground : context.foreground,
+                    color: isSelected
+                        ? context.primaryForeground
+                        : context.foreground,
                     fontWeight: FontWeight.w900,
                     fontSize: compact ? 11.5 : 12.5,
                   ),

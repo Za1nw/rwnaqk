@@ -74,7 +74,6 @@ class WishlistTopBar extends StatelessWidget {
     );
   }
 }
-
 class _TabPill extends StatelessWidget {
   final String text;
   final bool selected;
@@ -89,23 +88,29 @@ class _TabPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: InkWell(
-        onTap: onTap,
+      child: AnimatedPhysicalModel(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        shape: BoxShape.rectangle,
         borderRadius: BorderRadius.circular(999),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? context.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(999),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            text,
-            style: TextStyle(
-              color: selected ? context.primaryForeground : context.mutedForeground,
-              fontWeight: FontWeight.w900,
-              fontSize: 12.8,
+        elevation: selected ? 4 : 0,
+        color: selected ? context.primary : Colors.transparent,
+        shadowColor: context.primary.withOpacity(0.3),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(999),
+          splashColor: context.primaryForeground.withOpacity(0.3),
+          highlightColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            alignment: Alignment.center,
+            child: Text(
+              text,
+              style: TextStyle(
+                color: selected ? context.primaryForeground : context.mutedForeground,
+                fontWeight: FontWeight.w900,
+                fontSize: 12.8,
+              ),
             ),
           ),
         ),

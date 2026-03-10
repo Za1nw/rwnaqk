@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
+import 'package:rwnaqk/core/utils/app_date_utils.dart';
 
 enum RecentFilter { today, yesterday, date }
 
@@ -64,16 +65,13 @@ class WishlistController extends GetxController {
       case RecentFilter.date:
         final d = selectedDate.value;
         if (d == null) return 'Choose date';
-        return '${_monthName(d.month)}, ${d.day}';
+        return AppDateUtils.formatMonthDay(d);
     }
   }
 
   void openProduct(HomeProductItem p) {
     final isSale = (p.discountPercent ?? 0) > 0;
-    Get.toNamed(
-      AppRoutes.product,
-      arguments: {'item': p, 'forceSale': isSale},
-    );
+    Get.toNamed(AppRoutes.product, arguments: {'item': p, 'forceSale': isSale});
   }
 
   void addToCart(HomeProductItem p) {
@@ -113,23 +111,5 @@ class WishlistController extends GetxController {
         tagKey: tagKey,
       );
     });
-  }
-
-  String _monthName(int m) {
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return months[(m - 1).clamp(0, 11)];
   }
 }

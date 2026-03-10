@@ -6,10 +6,9 @@ import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
 
 import '../../controllers/main_controller.dart';
-import '../../controllers/settings_controller.dart';
 import '../../widgets/settings/settings_list_tile.dart';
 
-class SettingsScreen extends GetView<SettingsController> {
+class SettingsScreen extends GetView<AppSettingsController> {
   const SettingsScreen({super.key});
 
   @override

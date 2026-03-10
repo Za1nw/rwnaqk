@@ -4,10 +4,9 @@ import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 
 import '../controllers/app_search_controller.dart';
-import '../widgets/common/app_row_header.dart';
-import '../widgets/common/app_section_title.dart';
 import '../widgets/home/product_horizontal_list.dart';
 import '../widgets/home/shop_top_bar.dart';
+import '../widgets/common/app_section_header.dart';
 
 class SearchScreen extends GetView<AppSearchController> {
   const SearchScreen({super.key});
@@ -32,10 +31,13 @@ class SearchScreen extends GetView<AppSearchController> {
                 onCamera: controller.openCamera,
               ),
               const SizedBox(height: 16),
-              AppRowHeader(
+              AppSectionHeader(
                 title: 'Search history',
                 actionIcon: Icons.delete_outline_rounded,
                 onActionTap: controller.clearHistory,
+                titleFontSize: 15,
+                titleFontWeight: FontWeight.w800,
+                titleColor: context.mutedForeground,
               ),
               const SizedBox(height: 10),
               Obx(() {
@@ -52,11 +54,11 @@ class SearchScreen extends GetView<AppSearchController> {
                 return _ChipsWrap(items: items, onTap: controller.onTapChip);
               }),
               const SizedBox(height: 18),
-              AppSectionTitle(
+              AppSectionHeader(
                 title: 'Recommendations',
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                color: context.mutedForeground,
+                titleFontSize: 14,
+                titleFontWeight: FontWeight.w800,
+                titleColor: context.mutedForeground,
               ),
               const SizedBox(height: 10),
               Obx(() {
@@ -65,7 +67,7 @@ class SearchScreen extends GetView<AppSearchController> {
                 return _ChipsWrap(items: items, onTap: controller.onTapChip);
               }),
               const SizedBox(height: 22),
-              const AppSectionTitle(title: 'Discover'),
+              const AppSectionHeader(title: 'Discover'),
               const SizedBox(height: 12),
               LayoutBuilder(
                 builder: (_, c) {

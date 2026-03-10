@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/utils/app_mask_utils.dart';
 
 enum RecoveryMethod { sms, email }
 
@@ -30,10 +31,10 @@ class ForgotPasswordController extends GetxController {
   void goNextFromMethod() {
     if (method.value == RecoveryMethod.sms) {
       target.value = '+967777777777';
-      maskedTarget.value = _maskPhone(target.value);
+      maskedTarget.value = AppMaskUtils.maskPhone(target.value);
     } else {
       target.value = 'name@example.com';
-      maskedTarget.value = _maskEmail(target.value);
+      maskedTarget.value = AppMaskUtils.maskEmail(target.value);
     }
 
     _startResendTimer();
@@ -99,28 +100,7 @@ class ForgotPasswordController extends GetxController {
 
   void cancel() => Get.back();
 
-  String _maskPhone(String phone) {
-    if (phone.length <= 6) return phone;
-    final start = phone.substring(0, 3);
-    final end = phone.substring(phone.length - 2);
-    return '$start******$end';
-  }
-
-  String _maskEmail(String email) {
-    final parts = email.split('@');
-    if (parts.length != 2) return email;
-
-    final name = parts[0];
-    final domain = parts[1];
-
-    if (name.isEmpty) return '***@$domain';
-    if (name.length == 1) return '${name[0]}***@$domain';
-    if (name.length == 2) return '${name.substring(0, 2)}***@$domain';
-
-    final first2 = name.substring(0, 2);
-    return '$first2***@$domain';
-  }
-
+ 
   @override
   void onClose() {
     _timer?.cancel();

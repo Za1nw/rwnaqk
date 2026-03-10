@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 
 /// زر أيقونة موحّد
-/// ✅ الافتراضي = Primary background + White icon
+/// ✅ الاستدعاء والمنطق كما هو
+/// ✅ الشكل الافتراضي: دائرة ناعمة بخلفية primary خفيفة + أيقونة primary
 /// ✅ يمكن override الألوان من مكان الاستدعاء
 class AppActionIconButton extends StatelessWidget {
   final IconData icon;
@@ -32,25 +33,24 @@ class AppActionIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    /// ✅ defaults (نفس تصميمك الحالي)
-    final bg = backgroundColor ?? context.primary;
-    final ic = iconColor ?? Colors.white;
+    final bg = backgroundColor ?? context.primary.withOpacity(.10);
+    final ic = iconColor ?? context.primary;
     final bd = borderColor;
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(radius),
-      child: Ink(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(radius),
-          border: bd != null ? Border.all(color: bd) : null,
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(radius),
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Ink(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: bg,
+            shape: BoxShape.circle,
+            border: bd != null ? Border.all(color: bd) : null,
+          ),
           child: Center(
             child: Icon(
               icon,

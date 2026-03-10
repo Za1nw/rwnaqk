@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/models/order_model.dart';
+import 'package:rwnaqk/core/utils/app_date_utils.dart';
+import 'package:rwnaqk/core/utils/app_order_utils.dart';
 
 class OrderTimeline extends StatelessWidget {
   final List<OrderStatusStep> steps;
@@ -12,26 +14,15 @@ class OrderTimeline extends StatelessWidget {
     required this.currentStatus,
   });
 
-  bool _isDone(String key) {
-    const order = ['pending', 'confirmed', 'shipped', 'delivered'];
-
-    if (currentStatus == 'canceled') {
-      return key == 'pending' || key == 'canceled';
-    }
-
-    final ci = order.indexOf(currentStatus);
-    final ki = order.indexOf(key);
-
-    if (ki == -1) return key == currentStatus;
-    return ki <= ci;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: List.generate(steps.length, (i) {
         final s = steps[i];
-        final done = _isDone(s.key);
+        final done = AppOrderUtils.isStepDone(
+          currentStatus: currentStatus,
+          key: s.key,
+        );
         final isLast = i == steps.length - 1;
 
         final dotColor = done ? context.primary : context.border;
@@ -91,8 +82,7 @@ class OrderTimeline extends StatelessWidget {
                     if (s.time != null) ...[
                       const SizedBox(height: 6),
                       Text(
-                        '${s.time!.year}/${s.time!.month.toString().padLeft(2, '0')}/${s.time!.day.toString().padLeft(2, '0')}  '
-                        '${s.time!.hour.toString().padLeft(2, '0')}:${s.time!.minute.toString().padLeft(2, '0')}',
+                        AppDateUtils.formatYmdHm(s.time!),
                         style: TextStyle(
                           color: context.muted.withOpacity(.85),
                           fontWeight: FontWeight.w700,
@@ -100,7 +90,6 @@ class OrderTimeline extends StatelessWidget {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 14),
                   ],
                 ),
               ),
