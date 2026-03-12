@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/app_settings_controller.dart';
+import '../controllers/app_settings/app_settings_controller.dart';
 import '../core/constants/app_colors.dart';
 
 class AppToggles extends GetView<AppSettingsController> {

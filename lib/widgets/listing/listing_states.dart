@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/widgets/common/app_empty_state.dart';
+import 'package:rwnaqk/widgets/common/app_error_state.dart';
 
 class ListingSkeletonSliver extends StatelessWidget {
   const ListingSkeletonSliver({super.key});
@@ -59,57 +61,34 @@ class ListingEmptySliver extends StatelessWidget {
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18),
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: context.card,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: context.border.withOpacity(0.35),
+        child: Column(
+          children: [
+            const AppEmptyState(
+              title: 'No products found',
+              subtitle: 'Try adjusting the filters or refresh the page.',
+              icon: Icons.inventory_2_outlined,
             ),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                Icons.inventory_2_outlined,
-                size: 34,
-                color: context.mutedForeground,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'No products found',
-                style: TextStyle(
-                  color: context.foreground,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Try adjusting the filters or refresh the page.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: context.mutedForeground,
-                ),
-              ),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                height: 46,
-                child: ElevatedButton(
-                  onPressed: onRefresh,
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: context.primary,
-                    foregroundColor: context.primaryForeground,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: ElevatedButton(
+                onPressed: onRefresh,
+                style: ElevatedButton.styleFrom(
+                  elevation: 0,
+                  backgroundColor: context.primary,
+                  foregroundColor: context.primaryForeground,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: const Text('Refresh'),
+                ),
+                child: const Text(
+                  'Refresh',
+                  style: TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -129,53 +108,12 @@ class ListingErrorSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: context.card,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: context.border.withOpacity(0.35),
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                Icons.error_outline_rounded,
-                size: 34,
-                color: context.destructive,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: context.foreground,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                height: 46,
-                child: ElevatedButton(
-                  onPressed: onRetry,
-                  style: ElevatedButton.styleFrom(
-                    elevation: 0,
-                    backgroundColor: context.primary,
-                    foregroundColor: context.primaryForeground,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: const Text('Retry'),
-                ),
-              ),
-            ],
-          ),
-        ),
+      child: AppErrorState(
+        title: message,
+        subtitle: 'Please try again.',
+        buttonText: 'Retry',
+        onRetry: onRetry,
+        expanded: false,
       ),
     );
   }

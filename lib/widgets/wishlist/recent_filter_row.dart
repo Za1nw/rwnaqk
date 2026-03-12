@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/wishlist/wishlist_ui_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
-import 'package:rwnaqk/controllers/wishlist_controller.dart';
+import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
 import 'package:rwnaqk/widgets/wishlist/recent_calendar_sheet.dart';
 
 class RecentFilterRow extends StatelessWidget {

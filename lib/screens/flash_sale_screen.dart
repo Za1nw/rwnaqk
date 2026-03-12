@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/flash_sale_controller.dart';
+import 'package:rwnaqk/controllers/flash_sale/flash_sale_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/utils/app_date_utils.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 import 'package:rwnaqk/widgets/app_categories_filter_sheet.dart';
-import 'package:rwnaqk/widgets/card/product_card.dart';
-import 'package:rwnaqk/core/utils/app_date_utils.dart';
+import 'package:rwnaqk/widgets/app_filter_button.dart';
+import 'package:rwnaqk/widgets/card/product_grid_section.dart';
+import 'package:rwnaqk/widgets/common/app_empty_state.dart';
+import 'package:rwnaqk/widgets/common/app_section_header.dart';
+import 'package:rwnaqk/widgets/home/home_layout.dart';
 
 class FlashSaleScreen extends GetView<FlashSaleController> {
   const FlashSaleScreen({super.key});
@@ -15,87 +19,101 @@ class FlashSaleScreen extends GetView<FlashSaleController> {
     return Scaffold(
       backgroundColor: context.background,
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(18, 12, 18, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _HeaderExactLikeImage(controller: controller),
-                    const SizedBox(height: 12),
-                    Obx(() {
-                      return _DiscountTabsExactLikeImage(
-                        discounts: controller.discounts,
-                        selected: controller.selectedDiscount.value,
-                        onChanged: controller.selectDiscount,
-                      );
-                    }),
-                    const SizedBox(height: 14),
-                    Obx(() {
-                      final d = controller.selectedDiscount.value;
-                      final title = d == 0
-                          ? 'All Discount'.tr
-                          : '$d% Discount'.tr;
-                      return _SectionRowExactLikeImage(
-                        title: title,
-                        onFilterTap: () {
-                          Get.bottomSheet(
-                            const AppCategoriesFilterSheet(),
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            elevation: 0,
-                          );
-                        },
-                      );
-                    }),
-                  ],
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsetsDirectional.fromSTEB(18, 0, 18, 18),
-              sliver: Obx(() {
-                final rxItems = controller.flashSaleProducts;
-                final count = rxItems.length;
+        child: LayoutBuilder(
+          builder: (context, c) {
+            final w = c.maxWidth;
+            final cols = AppBreakpoints.productGridColumns(w);
 
-                return SliverLayoutBuilder(
-                  builder: (_, cons) {
-                    final w = cons.crossAxisExtent;
-                    final cols = AppBreakpoints.productGridColumns(w);
-                    final aspect = w >= AppBreakpoints.compact ? 0.72 : 0.68;
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsetsDirectional.fromSTEB(18, 12, 18, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _FlashSaleHeroHeader(controller: controller),
+                  const SizedBox(height: 12),
 
-                    return SliverGrid(
-                      delegate: SliverChildBuilderDelegate((_, i) {
-                        final item = rxItems[i];
-                        return ProductCard(
-                          item: item,
-                          onTap: controller.openProduct,
-                        );
-                      }, childCount: count),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: cols,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: aspect,
-                      ),
+                  Obx(() {
+                    return _FlashSaleDiscountTabs(
+                      discounts: controller.discounts,
+                      selected: controller.selectedDiscount.value,
+                      onChanged: controller.selectDiscount,
                     );
-                  },
-                );
-              }),
-            ),
-          ],
+                  }),
+
+                  const SizedBox(height: 14),
+
+                  Obx(() {
+                    final d = controller.selectedDiscount.value;
+                    final title = d == 0
+                        ? 'All Discount'.tr
+                        : '$d% Discount'.tr;
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: AppSectionHeader(
+                            title: title,
+                            titleFontSize: 18,
+                            titleFontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        AppFilterButton(
+                          onTap: () {
+                            Get.bottomSheet(
+                              const AppCategoriesFilterSheet(),
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              elevation: 0,
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  }),
+
+                  const SizedBox(height: 12),
+
+                  Obx(() {
+                    final items = controller.flashSaleProducts.toList();
+
+                    if (items.isEmpty) {
+                      return const Padding(
+                        padding: EdgeInsets.only(top: 16),
+                        child: AppEmptyState(
+                          title: 'No offers found',
+                          subtitle: 'Try another discount or adjust filters.',
+                          icon: Icons.local_offer_outlined,
+                        ),
+                      );
+                    }
+
+                    return ProductGridSection(
+                      items: items,
+                      crossAxisCount: cols,
+                      crossAxisSpacing: HomeLayout.gridSpacing,
+                      mainAxisSpacing: HomeLayout.gridSpacing,
+                      childAspectRatio: 1.0,
+                      onTap: controller.openProduct,
+                    );
+                  }),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class _HeaderExactLikeImage extends StatelessWidget {
+class _FlashSaleHeroHeader extends StatelessWidget {
   final FlashSaleController controller;
-  const _HeaderExactLikeImage({required this.controller});
+
+  const _FlashSaleHeroHeader({
+    required this.controller,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -183,11 +201,11 @@ class _HeaderExactLikeImage extends StatelessWidget {
                       children: [
                         Icon(Icons.alarm, color: context.primary, size: 18),
                         const SizedBox(width: 8),
-                        _MiniTimeBox(text: hh),
+                        _FlashSaleCountdownBox(text: hh),
                         const SizedBox(width: 6),
-                        _MiniTimeBox(text: mm),
+                        _FlashSaleCountdownBox(text: mm),
                         const SizedBox(width: 6),
-                        _MiniTimeBox(text: ss),
+                        _FlashSaleCountdownBox(text: ss),
                       ],
                     );
                   }),
@@ -201,9 +219,12 @@ class _HeaderExactLikeImage extends StatelessWidget {
   }
 }
 
-class _MiniTimeBox extends StatelessWidget {
+class _FlashSaleCountdownBox extends StatelessWidget {
   final String text;
-  const _MiniTimeBox({required this.text});
+
+  const _FlashSaleCountdownBox({
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -241,12 +262,12 @@ class _MiniTimeBox extends StatelessWidget {
   }
 }
 
-class _DiscountTabsExactLikeImage extends StatelessWidget {
+class _FlashSaleDiscountTabs extends StatelessWidget {
   final List<int> discounts;
   final int selected;
   final ValueChanged<int> onChanged;
 
-  const _DiscountTabsExactLikeImage({
+  const _FlashSaleDiscountTabs({
     required this.discounts,
     required this.selected,
     required this.onChanged,
@@ -320,45 +341,6 @@ class _DiscountTabsExactLikeImage extends StatelessWidget {
           );
         }).toList(),
       ),
-    );
-  }
-}
-
-class _SectionRowExactLikeImage extends StatelessWidget {
-  final String title;
-  final VoidCallback onFilterTap;
-
-  const _SectionRowExactLikeImage({
-    required this.title,
-    required this.onFilterTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: TextStyle(
-              color: context.foreground,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ),
-        IconButton(
-          onPressed: onFilterTap,
-          icon: Icon(
-            Icons.tune,
-            color: context.mutedForeground.withOpacity(0.8),
-            size: 20,
-          ),
-          splashRadius: 22,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        ),
-      ],
     );
   }
 }

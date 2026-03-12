@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/products_listing_controller.dart';
-import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/controllers/products_listing/products_listing_controller.dart';
+import 'package:rwnaqk/widgets/common/app_page_loading.dart';
 
 class ListingLoadingMoreSliver extends StatelessWidget {
   final ProductsListingController controller;
@@ -15,24 +15,16 @@ class ListingLoadingMoreSliver extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
       child: Obx(() {
-        if (!controller.hasMore.value) {
-          return const SizedBox(height: 20);
-        }
-
-        if (!controller.isLoadingMore.value) {
-          return const SizedBox(height: 20);
+        if (!controller.hasMore.value || !controller.isLoadingMore.value) {
+          return const SizedBox.shrink();
         }
 
         return Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Center(
-            child: SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.4,
-                valueColor: AlwaysStoppedAnimation<Color>(context.primary),
-              ),
+            child: AppPageLoading(
+              expanded: false,
+              customIndicator: AppPageLoading.productCardIndicator,
             ),
           ),
         );

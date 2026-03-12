@@ -6,8 +6,8 @@ abstract class AppRoutes {
   static const otp = '/otp';
   static const reset = '/reset';
   static const home = '/home';
-  static const search = '/search';
-  static const results = '/results';
+  static const search = '/Search';
+  static const searchResults = '/searchResults';
   static const flashSale = '/flashSale';
   static const product = '/product';
   static const reviews = '/reviews';

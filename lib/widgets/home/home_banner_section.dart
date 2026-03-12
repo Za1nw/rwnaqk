@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/home_controller.dart';
+import 'package:rwnaqk/controllers/home/home_controller.dart';
 import 'package:rwnaqk/widgets/home/banner_carousel.dart';
 
 class HomeBannerSection extends GetView<HomeController> {

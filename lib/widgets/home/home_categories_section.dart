@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/home_controller.dart';
+import 'package:rwnaqk/controllers/home/home_controller.dart';
 import 'package:rwnaqk/widgets/common/app_section_header.dart';
 import 'package:rwnaqk/widgets/home/category_grid.dart';
 import 'package:rwnaqk/widgets/home/home_layout.dart';

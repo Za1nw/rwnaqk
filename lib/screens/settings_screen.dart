@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/app_settings_controller.dart';
+import 'package:rwnaqk/controllers/app_settings/app_settings_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
-import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
+import 'package:rwnaqk/widgets/common/app_back_header.dart';
+import 'package:rwnaqk/widgets/common/app_section_header.dart';
+import 'package:rwnaqk/widgets/settings/settings_profile_card.dart';
 
-import '../../controllers/main_controller.dart';
+import '../controllers/main/main_controller.dart';
 import '../../widgets/settings/settings_list_tile.dart';
 
 class SettingsScreen extends GetView<AppSettingsController> {
@@ -24,11 +26,11 @@ class SettingsScreen extends GetView<AppSettingsController> {
         child: ListView(
           padding: const EdgeInsetsDirectional.fromSTEB(18, 12, 18, 18),
           children: [
-            _TopBar(
+            AppBackHeader(
               title: 'Settings'.tr,
               onBack: () {
                 if (main != null) {
-                  main.changeTab(0); // رجّعه Home
+                  main.changeTab(0);
                 } else {
                   Get.back();
                 }
@@ -36,7 +38,7 @@ class SettingsScreen extends GetView<AppSettingsController> {
             ),
             const SizedBox(height: 14),
 
-            _ProfileHeaderCard(
+            SettingsProfileCard(
               name: 'Eng Zain'.tr,
               phone: '+967 7xx xxx xxx'.tr,
               onEdit: () => Get.toNamed(AppRoutes.editProfile),
@@ -44,7 +46,11 @@ class SettingsScreen extends GetView<AppSettingsController> {
 
             const SizedBox(height: 16),
 
-            _SectionTitle(title: 'Account'.tr),
+            AppSectionHeader(
+              title: 'Account'.tr,
+              titleFontSize: 12.5,
+              titleColor: context.muted,
+            ),
             const SizedBox(height: 10),
 
             SettingsListTile(
@@ -74,10 +80,13 @@ class SettingsScreen extends GetView<AppSettingsController> {
 
             const SizedBox(height: 18),
 
-            _SectionTitle(title: 'Preferences'.tr),
+            AppSectionHeader(
+              title: 'Preferences'.tr,
+              titleFontSize: 12.5,
+              titleColor: context.muted,
+            ),
             const SizedBox(height: 10),
 
-            // ===== Theme (Switch فقط)
             Obx(() {
               final isDark = app.themeMode.value == ThemeMode.dark;
 
@@ -90,14 +99,13 @@ class SettingsScreen extends GetView<AppSettingsController> {
                   value: isDark,
                   onChanged: (_) => app.toggleTheme(),
                 ),
-                tapWholeTile: false, // ✅ مهم عشان السويتش ما يعلق
+                tapWholeTile: false,
                 showChevron: false,
               );
             }),
 
             const SizedBox(height: 10),
 
-            // ===== Language (الصف كامل tappable + badge ثابت)
             SettingsListTile(
               icon: Icons.language_outlined,
               title: 'Language'.tr,
@@ -113,7 +121,9 @@ class SettingsScreen extends GetView<AppSettingsController> {
                   decoration: BoxDecoration(
                     color: context.primary.withOpacity(.08),
                     borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: context.primary.withOpacity(.18)),
+                    border: Border.all(
+                      color: context.primary.withOpacity(.18),
+                    ),
                   ),
                   child: Text(
                     code,
@@ -134,7 +144,11 @@ class SettingsScreen extends GetView<AppSettingsController> {
 
             const SizedBox(height: 18),
 
-            _SectionTitle(title: 'Support'.tr),
+            AppSectionHeader(
+              title: 'Support'.tr,
+              titleFontSize: 12.5,
+              titleColor: context.muted,
+            ),
             const SizedBox(height: 10),
 
             SettingsListTile(
@@ -146,7 +160,11 @@ class SettingsScreen extends GetView<AppSettingsController> {
 
             const SizedBox(height: 18),
 
-            _SectionTitle(title: 'Danger zone'.tr),
+            AppSectionHeader(
+              title: 'Danger zone'.tr,
+              titleFontSize: 12.5,
+              titleColor: context.muted,
+            ),
             const SizedBox(height: 10),
 
             SettingsListTile(
@@ -164,177 +182,6 @@ class SettingsScreen extends GetView<AppSettingsController> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ========================= UI Pieces =========================
-
-class _TopBar extends StatelessWidget {
-  final String title;
-  final VoidCallback onBack;
-
-  const _TopBar({required this.title, required this.onBack});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        AppActionIconButton(
-          icon: Icons.arrow_back_rounded,
-          onTap: onBack,
-          backgroundColor: context.card,
-          iconColor: context.foreground,
-          borderColor: context.border.withOpacity(.35),
-          size: 40,
-          radius: 14,
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: context.foreground,
-            ),
-          ),
-        ),
-        AppActionIconButton(
-          icon: Icons.notifications_none_rounded,
-          onTap: () {},
-          backgroundColor: context.card,
-          iconColor: context.foreground,
-          borderColor: context.border.withOpacity(.35),
-          size: 40,
-          radius: 14,
-        ),
-      ],
-    );
-  }
-}
-
-class _ProfileHeaderCard extends StatelessWidget {
-  final String name;
-  final String phone;
-  final VoidCallback onEdit;
-
-  const _ProfileHeaderCard({
-    required this.name,
-    required this.phone,
-    required this.onEdit,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: context.card,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: context.border.withOpacity(.35)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: context.input,
-                shape: BoxShape.circle,
-                border: Border.all(color: context.border.withOpacity(.35)),
-              ),
-              child: Icon(Icons.person_rounded, color: context.foreground),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: context.foreground,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 15.5,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    phone,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: context.muted,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            Material(
-              color: Colors.transparent,
-              child: Ink(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: context.input,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: context.border.withOpacity(.35)),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(14),
-                  onTap: onEdit,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.edit_rounded,
-                        size: 18,
-                        color: context.foreground,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Edit'.tr,
-                        style: TextStyle(
-                          color: context.foreground,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-
-  const _SectionTitle({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: TextStyle(
-        color: context.muted,
-        fontWeight: FontWeight.w900,
-        fontSize: 12.5,
-        letterSpacing: .2,
       ),
     );
   }

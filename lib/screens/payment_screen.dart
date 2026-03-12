@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
-import 'package:rwnaqk/controllers/cart_controller.dart';
+import 'package:rwnaqk/controllers/cart/cart_controller.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
 import 'package:rwnaqk/widgets/cart/address_section.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/home_controller.dart';
+import 'package:rwnaqk/controllers/home/home_controller.dart';
 import 'package:rwnaqk/widgets/common/app_section_header.dart';
-import 'package:rwnaqk/widgets/home/product_avatar_row.dart';
+import 'package:rwnaqk/widgets/card/product_avatar_row.dart';
 import 'package:rwnaqk/widgets/home/home_layout.dart';
 
 class HomeTopProductsSection extends GetView<HomeController> {

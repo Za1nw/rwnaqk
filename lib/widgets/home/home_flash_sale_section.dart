@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/home_controller.dart';
+import 'package:rwnaqk/controllers/home/home_controller.dart';
 import 'package:rwnaqk/widgets/home/flash_sale_header.dart';
 import 'package:rwnaqk/widgets/home/home_layout.dart';
-import 'package:rwnaqk/widgets/home/product_grid_section.dart';
+import 'package:rwnaqk/widgets/card/product_grid_section.dart';
 
 class HomeFlashSaleSection extends GetView<HomeController> {
   final int crossAxisCount;

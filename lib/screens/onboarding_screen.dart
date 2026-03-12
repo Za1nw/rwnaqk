@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 
-import '../controllers/onboarding_controller.dart';
+import '../controllers/onboarding/onboarding_controller.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_link_button.dart';
 import '../widgets/app_toggles.dart';

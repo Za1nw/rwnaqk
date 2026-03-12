@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
 
-import '../../controllers/cart_controller.dart';
+import '../controllers/cart/cart_controller.dart';
 import '../../widgets/cart/address_section.dart';
 import '../../widgets/cart/cart_header.dart';
 import '../../widgets/cart/cart_items_list.dart';
@@ -42,14 +43,15 @@ class CartScreen extends GetView<CartController> {
 
   @override
   Widget build(BuildContext context) {
+    final wishlistController = Get.find<WishlistController>();
+
     return Scaffold(
       backgroundColor: context.background,
       body: SafeArea(
         child: Column(
           children: [
-            /// TOP
             Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 16, 10),
+              padding: const EdgeInsetsDirectional.fromSTEB(18, 10, 18, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -60,7 +62,6 @@ class CartScreen extends GetView<CartController> {
                     ),
                   ),
                   const SizedBox(height: 12),
-
                   Obx(
                     () => AddressSection(
                       title: 'Shipping Address',
@@ -79,54 +80,40 @@ class CartScreen extends GetView<CartController> {
               ),
             ),
 
-            /// BODY
             Expanded(
               child: Obx(() {
                 final isEmpty = controller.cartItems.isEmpty;
-
-                if (isEmpty) {
-                  return SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsetsDirectional.fromSTEB(
-                      16,
-                      16,
-                      16,
-                      16,
-                    ),
-                    child: Column(
-                      children: [
-                        AppEmptyState(
-                          icon: Icons.shopping_bag_outlined,
-                          title: "Your cart is empty",
-                          subtitle: "Add items from your wishlist",
-                        ),
-                        const SizedBox(height: 16),
-                        if (controller.wishlistItems.isNotEmpty)
-                          CartWishlistSection(
-                            items: controller.wishlistItems,
-                            onAdd: controller.addToCart,
-                          ),
-                        const SizedBox(height: 90),
-                      ],
-                    ),
-                  );
-                }
+                final hasWishlist = wishlistController.wishlist.isNotEmpty;
 
                 return SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 16),
+                  padding: EdgeInsetsDirectional.fromSTEB(
+                    18,
+                    isEmpty ? 16 : 8,
+                    18,
+                    16,
+                  ),
                   child: Column(
                     children: [
-                      CartItemsList(
-                        items: controller.cartItems,
-                        onRemove: controller.removeFromCart,
-                      ),
-                      const SizedBox(height: 16),
-                      if (controller.wishlistItems.isNotEmpty)
+                      if (isEmpty)
+                        const AppEmptyState(
+                          icon: Icons.shopping_bag_outlined,
+                          title: 'Your cart is empty',
+                          subtitle: 'Add items from your wishlist',
+                        )
+                      else
+                        CartItemsList(
+                          items: controller.cartItems,
+                          onRemove: controller.removeFromCart,
+                        ),
+
+                      if (hasWishlist) ...[
+                        const SizedBox(height: 16),
                         CartWishlistSection(
-                          items: controller.wishlistItems,
                           onAdd: controller.addToCart,
                         ),
+                      ],
+
                       const SizedBox(height: 90),
                     ],
                   ),
@@ -134,7 +121,6 @@ class CartScreen extends GetView<CartController> {
               }),
             ),
 
-            /// TOTAL BAR
             Obx(
               () => CartTotalBar(
                 total: controller.total,

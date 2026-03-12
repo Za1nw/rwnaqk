@@ -4,11 +4,11 @@ import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
 import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
-import 'package:rwnaqk/widgets/home/product_grid_section.dart';
+import 'package:rwnaqk/widgets/card/product_grid_section.dart';
 import 'package:rwnaqk/widgets/product_details/product_details_header_card.dart';
 import 'package:rwnaqk/widgets/product_details/product_reviews_section.dart';
 
-import '../controllers/product_details_controller.dart';
+import '../controllers/product_details/product_details_controller.dart';
 
 const double _sectionGap = 18;
 const double _innerGap = 12;

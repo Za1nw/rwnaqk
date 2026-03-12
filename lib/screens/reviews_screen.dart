@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/widgets/app_network_image.dart';
-import 'package:rwnaqk/controllers/reviews_controller.dart';
+import 'package:rwnaqk/controllers/reviews/reviews_controller.dart';
 
 class ReviewsScreen extends GetView<ReviewsController> {
   const ReviewsScreen({super.key});

@@ -1,7 +1,8 @@
 import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/addresses_controller.dart';
-import 'package:rwnaqk/controllers/orders_controller.dart';
+import 'package:rwnaqk/controllers/addresses/addresses_controller.dart';
 import 'package:rwnaqk/controllers/profile/edit_profile_controller.dart';
+import 'package:rwnaqk/controllers/profile/edit_profile_service.dart';
+import 'package:rwnaqk/controllers/profile/edit_profile_ui_controller.dart';
 import 'package:rwnaqk/core/bindings/flash_sale_binding.dart';
 import 'package:rwnaqk/core/bindings/forgot_password_binding.dart';
 import 'package:rwnaqk/core/bindings/login_binding.dart';
@@ -11,8 +12,6 @@ import 'package:rwnaqk/core/bindings/products_listing_binding.dart';
 import 'package:rwnaqk/core/bindings/register_binding.dart';
 import 'package:rwnaqk/core/bindings/reviews_binding.dart';
 import 'package:rwnaqk/core/bindings/search_binding.dart';
-import 'package:rwnaqk/core/bindings/search_results_binding.dart';
-import 'package:rwnaqk/core/bindings/app_settings_binding.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/screens/auth/forgot_password_method_screen.dart';
 import 'package:rwnaqk/screens/auth/login_screen.dart';
@@ -30,12 +29,13 @@ import 'package:rwnaqk/screens/payment_screen.dart';
 import 'package:rwnaqk/screens/product_details_screen.dart';
 import 'package:rwnaqk/screens/products_listing_screen.dart';
 import 'package:rwnaqk/screens/profile/addresses_screen.dart';
+import 'package:rwnaqk/controllers/addresses/addresses_service.dart';
+import 'package:rwnaqk/controllers/addresses/addresses_ui_controller.dart';
 import 'package:rwnaqk/screens/profile/edit_profile_screen.dart';
 import 'package:rwnaqk/screens/reviews_screen.dart';
 import 'package:rwnaqk/screens/search_results_screen.dart';
 import 'package:rwnaqk/screens/search_screen.dart';
 import 'package:rwnaqk/screens/settings_screen.dart';
-import 'package:rwnaqk/screens/test_states_screen.dart';
 import 'package:rwnaqk/screens/wishlist_screen.dart';
 
 class AppPages {
@@ -77,9 +77,9 @@ class AppPages {
       binding: SearchBinding(),
     ),
     GetPage(
-      name: AppRoutes.results,
+      name: AppRoutes.searchResults,
       page: () => const SearchResultsScreen(),
-      binding: SearchResultsBinding(),
+      binding: SearchBinding(),
     ),
     GetPage(
       name: AppRoutes.flashSale,
@@ -107,20 +107,27 @@ class AppPages {
     GetPage(
       name: AppRoutes.settings,
       page: () => const SettingsScreen(),
-      binding: SettingsBinding(),
     ),
     GetPage(
       name: AppRoutes.editProfile,
       page: () => const EditProfileScreen(),
       binding: BindingsBuilder(() {
-        Get.lazyPut(() => EditProfileController());
+        Get.lazyPut<EditProfileUiController>(() => EditProfileUiController());
+        Get.lazyPut<EditProfileService>(() => EditProfileService());
+        Get.lazyPut<EditProfileController>(
+          () => EditProfileController(Get.find<EditProfileService>()),
+        );
       }),
     ),
     GetPage(
       name: AppRoutes.addresses,
       page: () => const AddressesScreen(),
       binding: BindingsBuilder(() {
-        Get.lazyPut(() => AddressesController());
+        Get.lazyPut<AddressesUiController>(() => AddressesUiController());
+        Get.lazyPut<AddressesService>(() => AddressesService());
+        Get.lazyPut<AddressesController>(
+          () => AddressesController(Get.find<AddressesService>()),
+        );
       }),
     ),
     GetPage(
@@ -140,6 +147,5 @@ class AppPages {
       page: () => const ProductsListingScreen(),
       binding: ProductsListingBinding(),
     ),
-   
   ];
 }

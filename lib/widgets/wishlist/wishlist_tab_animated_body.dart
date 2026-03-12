@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/wishlist_controller.dart';
+import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
-import 'package:rwnaqk/models/home_product_item.dart';
-import 'package:rwnaqk/widgets/cart/cart_wishlist_section.dart';
 import 'package:rwnaqk/widgets/common/app_empty_state.dart';
-import 'package:rwnaqk/widgets/home/product_grid_section.dart';
+import 'package:rwnaqk/widgets/card/product_grid_section.dart';
 import 'package:rwnaqk/widgets/wishlist/recent_filter_row.dart';
+import 'package:rwnaqk/widgets/wishlist/wishlist_item_tile.dart';
 
 class WishlistTabAnimatedBody extends StatelessWidget {
   final WishlistController controller;
@@ -32,7 +30,7 @@ class WishlistTabAnimatedBody extends StatelessWidget {
         );
 
         final slide = Tween<Offset>(
-          begin: const Offset(0.06, 0),
+          begin: const Offset(0.05, 0),
           end: Offset.zero,
         ).animate(
           CurvedAnimation(
@@ -105,29 +103,17 @@ class _WishlistTabContent extends StatelessWidget {
     return ListView.separated(
       key: const ValueKey('wishlist_list'),
       physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 18),
       itemCount: controller.wishlist.length,
       separatorBuilder: (_, __) => const SizedBox(height: 14),
       itemBuilder: (_, i) {
-        final p = controller.wishlist[i];
+        final item = controller.wishlist[i];
 
-        return GestureDetector(
-          onTap: () => controller.openProduct(p),
-          child: CartWishlistSection(
-            items: [
-              HomeProductItem(
-                id: p.id,
-                title: p.title,
-                imageUrl: p.imageUrl,
-                price: p.price,
-              ),
-            ],
-            onAdd: (item) {
-              debugPrint('Add to cart: ${item.title}');
-            },
-            onRemove: (item) {
-              debugPrint('Remove: ${item.title}');
-            },
-          ),
+        return WishlistItemTile(
+          item: item,
+          onTap: () => controller.openProduct(item),
+          onRemove: () => controller.removeFromWishlist(item.id),
+          onAddToCart: () => controller.addToCart(item),
         );
       },
     );
@@ -144,37 +130,50 @@ class _RecentTabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      key: const ValueKey('recent_column'),
-      children: [
-        const RecentFilterRow(),
-        const SizedBox(height: 14),
-        Expanded(
-          child: controller.recentlyViewed.isEmpty
-              ? const AppEmptyState(
-                  icon: Icons.history_rounded,
-                  title: 'No recently viewed items',
-                  subtitle: 'Products you open will appear here.',
-                )
-              : LayoutBuilder(
-                  builder: (_, c) {
-                    final w = c.maxWidth;
-                    final cols = AppBreakpoints.productGridColumns(w);
-                    final ratio =
-                        w >= AppBreakpoints.compact ? 0.78 : 0.72;
+    if (controller.recentlyViewed.isEmpty) {
+      return Column(
+        key: const ValueKey('recent_empty_column'),
+        children: const [
+          RecentFilterRow(),
+          SizedBox(height: 14),
+          Expanded(
+            child: AppEmptyState(
+              icon: Icons.history_rounded,
+              title: 'No recently viewed items',
+              subtitle: 'Products you open will appear here.',
+            ),
+          ),
+        ],
+      );
+    }
 
-                    return ProductGridSection(
-                      items: controller.recentlyViewed,
-                      crossAxisCount: cols,
-                      mainAxisSpacing: 14,
-                      crossAxisSpacing: 14,
-                      childAspectRatio: ratio,
-                      onTap: controller.openProduct,
-                    );
-                  },
-                ),
-        ),
-      ],
+    return SingleChildScrollView(
+      key: const ValueKey('recent_scroll'),
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const RecentFilterRow(),
+          const SizedBox(height: 14),
+          LayoutBuilder(
+            builder: (_, c) {
+              final w = c.maxWidth;
+              final cols = AppBreakpoints.productGridColumns(w);
+              final ratio = w >= AppBreakpoints.compact ? 0.78 : 0.72;
+
+              return ProductGridSection(
+                items: controller.recentlyViewed,
+                crossAxisCount: cols,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 14,
+                childAspectRatio: ratio,
+                onTap: controller.openProduct,
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

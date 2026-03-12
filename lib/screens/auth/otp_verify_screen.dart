@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/forgot_password/forgot_password_service.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 
-import '../../controllers/forgot_password_controller.dart';
+import '../../controllers/forgot_password/forgot_password_controller.dart';
 import '../../widgets/auth_blob_background.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/auth/auth_centered_container.dart';

@@ -50,7 +50,9 @@ class CartItemTile extends StatelessWidget {
     final radius = BorderRadius.circular(tileRadius);
     final w = MediaQuery.of(context).size.width;
     final isSmall = w < 360;
-
+    final hasDiscount = item.hasDiscount;
+    final salePrice = item.salePrice;
+    final originalPrice = item.price;
     return Material(
       color: context.card,
       shape: RoundedRectangleBorder(
@@ -127,30 +129,47 @@ class CartItemTile extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // PRICE like wishlist (small & clear)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 7,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.primary.withOpacity(0.10),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '\$${item.price.toStringAsFixed(2)}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: context.primary,
-                              fontWeight: FontWeight.w900,
-                              fontSize: isSmall ? 13.5 : 15,
-                              height: 1.0,
-                            ),
+                        Expanded(
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: context.primary.withOpacity(0.10),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '\$${salePrice.toStringAsFixed(2)}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: context.primary,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: isSmall ? 13.5 : 15,
+                                    height: 1.0,
+                                  ),
+                                ),
+                              ),
+                              if (hasDiscount)
+                                Text(
+                                  '\$${originalPrice.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    color: context.mutedForeground,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: isSmall ? 11 : 12,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-
-                        const Spacer(),
+                        const SizedBox(width: 8),
                         QuantityStepper(
                           value: quantity,
                           onIncrement: onIncrement,
@@ -196,7 +215,7 @@ class _ImageWithDelete extends StatelessWidget {
             child: AppNetworkImage(url: imageUrl, fit: BoxFit.cover),
           ),
         ),
-         PositionedDirectional(
+        PositionedDirectional(
           top: -6,
           end: -6,
           child: AppActionIconButton(
@@ -204,13 +223,12 @@ class _ImageWithDelete extends StatelessWidget {
             iconColor: context.destructive,
             onTap: onRemove,
 
-            size: 30, 
-            iconSize: 25, 
-            radius: 99, 
+            size: 30,
+            iconSize: 25,
+            radius: 99,
             borderColor: context.background,
-            
 
-            backgroundColor: context.destructive.withOpacity(.5), 
+            backgroundColor: context.destructive.withOpacity(.5),
             // iconColor = أبيض افتراضياً
           ),
         ),
@@ -218,4 +236,3 @@ class _ImageWithDelete extends StatelessWidget {
     );
   }
 }
-

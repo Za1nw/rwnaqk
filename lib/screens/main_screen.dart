@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/main_controller.dart';
+import 'package:rwnaqk/controllers/main/main_controller.dart';
 import 'package:rwnaqk/screens/cart_screen.dart';
 import 'package:rwnaqk/screens/orders_screen.dart';
 import 'package:rwnaqk/screens/settings_screen.dart';

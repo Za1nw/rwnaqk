@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/controllers/products_listing_controller.dart';
+import 'package:rwnaqk/controllers/products_listing/products_listing_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 
 import 'package:rwnaqk/widgets/listing/listing_top_bar.dart';
@@ -21,7 +21,9 @@ class ProductsListingScreen extends GetView<ProductsListingController> {
         child: Obx(() {
           final isLoading = controller.isLoading.value;
           final error = controller.errorMessage.value;
-          final items = controller.items.toList();
+          final items = controller.items.toList(growable: false);
+
+          final showGrid = !isLoading && error == null && items.isNotEmpty;
 
           return CustomScrollView(
             controller: controller.scrollController,
@@ -34,30 +36,27 @@ class ProductsListingScreen extends GetView<ProductsListingController> {
                 onSort: () => openListingSortSheet(context, controller),
                 onFilter: () => controller.openFilters(),
               ),
-
               const SliverToBoxAdapter(
                 child: SizedBox(height: 8),
               ),
-
               if (isLoading)
                 const ListingSkeletonSliver()
               else if (error != null)
                 ListingErrorSliver(
                   message: error,
-                  onRetry: () => controller.refreshList(),
+                  onRetry: controller.refreshList,
                 )
               else if (items.isEmpty)
                 ListingEmptySliver(
-                  onRefresh: () => controller.refreshList(),
+                  onRefresh: controller.refreshList,
                 )
               else
                 ListingGridSliver(items: items),
-
-              ListingLoadingMoreSliver(controller: controller),
-
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 20),
-              ),
+              if (showGrid) ListingLoadingMoreSliver(controller: controller),
+              if (showGrid)
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 20),
+                ),
             ],
           );
         }),

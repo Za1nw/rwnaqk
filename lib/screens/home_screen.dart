@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
-import 'package:rwnaqk/controllers/home_controller.dart';
+import 'package:rwnaqk/controllers/home/home_controller.dart';
 import 'package:rwnaqk/widgets/home/home_banner_section.dart';
 import 'package:rwnaqk/widgets/home/home_categories_section.dart';
 import 'package:rwnaqk/widgets/home/home_flash_sale_section.dart';

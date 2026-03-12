@@ -4,11 +4,6 @@ import 'package:rwnaqk/widgets/app_network_image.dart';
 import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
 import '../../models/home_product_item.dart';
 
-/// ✅ Wishlist card (similar to cart card)
-/// - Image + delete
-/// - Title + optional variant
-/// - Price
-/// - Add-to-cart icon button (instead of stepper)
 class WishlistItemTile extends StatelessWidget {
   final HomeProductItem item;
 
@@ -16,13 +11,15 @@ class WishlistItemTile extends StatelessWidget {
   final VoidCallback? onTap;
 
   /// remove from wishlist
-  final VoidCallback onRemove;
+  final VoidCallback? onRemove;
 
   /// add item to cart
   final VoidCallback onAddToCart;
 
   /// optional variant line
   final String? variantText;
+
+  final bool showRemoveButton;
 
   // Layout
   final double imageSize;
@@ -33,10 +30,11 @@ class WishlistItemTile extends StatelessWidget {
   const WishlistItemTile({
     super.key,
     required this.item,
-    required this.onRemove,
     required this.onAddToCart,
+    this.onRemove,
     this.onTap,
     this.variantText,
+    this.showRemoveButton = true,
     this.imageSize = 90,
     this.tileRadius = 18,
     this.imageRadius = 14,
@@ -48,7 +46,9 @@ class WishlistItemTile extends StatelessWidget {
     final radius = BorderRadius.circular(tileRadius);
     final w = MediaQuery.of(context).size.width;
     final isSmall = w < 360;
-
+    final hasDiscount = item.hasDiscount;
+    final salePrice = item.salePrice;
+    final originalPrice = item.price;
     return Material(
       color: context.card,
       shape: RoundedRectangleBorder(
@@ -70,15 +70,14 @@ class WishlistItemTile extends StatelessWidget {
                 size: imageSize,
                 radius: imageRadius,
                 onRemove: onRemove,
+                showRemoveButton: showRemoveButton,
               ),
               const SizedBox(width: 12),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // TITLE
                     Text(
                       item.title,
                       maxLines: 2,
@@ -91,8 +90,6 @@ class WishlistItemTile extends StatelessWidget {
                         letterSpacing: 0.1,
                       ),
                     ),
-
-                    // VARIANT (مرة واحدة فقط)
                     if (variantText != null &&
                         variantText!.trim().isNotEmpty) ...[
                       const SizedBox(height: 6),
@@ -118,45 +115,56 @@ class WishlistItemTile extends StatelessWidget {
                         ),
                       ),
                     ],
-
                     const SizedBox(height: 10),
-
-                    // PRICE + ADD TO CART ICON (الزر في طرف الكرت)
                     Row(
                       children: [
-                        // PRICE
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 7,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.primary.withOpacity(0.10),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '\$${item.price.toStringAsFixed(2)}',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: context.primary,
-                              fontWeight: FontWeight.w900,
-                              fontSize: isSmall ? 13.5 : 15,
-                              height: 1.0,
-                            ),
+                        Expanded(
+                          child: Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: context.primary.withOpacity(0.10),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '\$${salePrice.toStringAsFixed(2)}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: context.primary,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: isSmall ? 13.5 : 15,
+                                    height: 1.0,
+                                  ),
+                                ),
+                              ),
+                              if (hasDiscount)
+                                Text(
+                                  '\$${originalPrice.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    color: context.mutedForeground,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: isSmall ? 11 : 12,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-
-                        const Spacer(),
-
+                        const SizedBox(width: 8),
                         AppActionIconButton(
                           icon: Icons.shopping_cart_outlined,
                           onTap: onAddToCart,
                           size: isSmall ? 40 : 44,
                           iconSize: isSmall ? 18 : 20,
                           radius: 14,
-
-                          // اختياري: لو تبغاه يطلع "برايمري" مثل زرّك القديم:
                         ),
                       ],
                     ),
@@ -175,13 +183,15 @@ class _ImageWithDelete extends StatelessWidget {
   final String imageUrl;
   final double size;
   final double radius;
-  final VoidCallback onRemove;
+  final VoidCallback? onRemove;
+  final bool showRemoveButton;
 
   const _ImageWithDelete({
     required this.imageUrl,
     required this.size,
     required this.radius,
     required this.onRemove,
+    required this.showRemoveButton,
   });
 
   @override
@@ -197,22 +207,21 @@ class _ImageWithDelete extends StatelessWidget {
             child: AppNetworkImage(url: imageUrl, fit: BoxFit.cover),
           ),
         ),
-        PositionedDirectional(
-          top: -6,
-          end: -6,
-          child: AppActionIconButton(
-            icon: Icons.delete_outline_rounded,
-            iconColor: context.destructive,
-            onTap: onRemove,
-
-            size: 30,
-            iconSize: 25,
-            radius: 99,
-            borderColor: context.background,
-            backgroundColor: context.destructive.withOpacity(.5),
-            // iconColor = أبيض افتراضياً
+        if (showRemoveButton && onRemove != null)
+          PositionedDirectional(
+            top: 50,
+            end: 50,
+            child: AppActionIconButton(
+              icon: Icons.delete,
+              iconColor: context.destructive,
+              onTap: onRemove,
+              size: 35,
+              iconSize: 30,
+              radius: 99,
+              borderColor: context.primary,
+              backgroundColor: context.background.withOpacity(.5),
+            ),
           ),
-        ),
       ],
     );
   }

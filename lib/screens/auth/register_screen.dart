@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 
-import '../../controllers/register_controller.dart';
+import '../../controllers/register/register_controller.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_input_field.dart';
 import '../../widgets/app_password_field.dart';

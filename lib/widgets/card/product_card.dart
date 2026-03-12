@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/cart/cart_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
 import '../../models/home_product_item.dart';
@@ -10,7 +12,6 @@ class ProductCard extends StatelessWidget {
   final ValueChanged<HomeProductItem> onTap;
   final double radius;
   final bool showAddToCart;
-  final VoidCallback? onAddToCart;
 
   const ProductCard({
     super.key,
@@ -18,8 +19,12 @@ class ProductCard extends StatelessWidget {
     required this.onTap,
     this.radius = 22,
     this.showAddToCart = true,
-    this.onAddToCart,
   });
+
+  void _addToCart() {
+    final cartController = Get.find<CartController>();
+    cartController.addToCart(item);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +54,7 @@ class ProductCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: context.card,
                 borderRadius: BorderRadius.circular(radius),
-                border: Border.all(
-                  color: context.border.withOpacity(.45),
-                ),
+                border: Border.all(color: context.border.withOpacity(.45)),
                 boxShadow: [
                   BoxShadow(
                     color: context.shadow.withOpacity(.08),
@@ -111,7 +114,6 @@ class ProductCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
@@ -122,7 +124,8 @@ class ProductCard extends StatelessWidget {
                                 runSpacing: 4,
                                 children: [
                                   _PriceBadge(
-                                    text: '₹${discountedPrice.toStringAsFixed(0)}',
+                                    text:
+                                        '₹${discountedPrice.toStringAsFixed(0)}',
                                     fontSize: priceSize,
                                   ),
                                   if (hasDiscount)
@@ -138,16 +141,16 @@ class ProductCard extends StatelessWidget {
                                 ],
                               ),
                             ),
-
                             if (showAddToCart) ...[
                               const SizedBox(width: 8),
                               AppActionIconButton(
                                 icon: Icons.shopping_cart_outlined,
-                                onTap: onAddToCart,
+                                onTap: _addToCart,
                                 size: 30,
                                 iconSize: 15,
-                                backgroundColor:
-                                    context.primary.withOpacity(.10),
+                                backgroundColor: context.primary.withOpacity(
+                                  .10,
+                                ),
                                 iconColor: context.primary,
                                 borderColor: context.primary.withOpacity(.14),
                               ),
@@ -171,10 +174,7 @@ class _PriceBadge extends StatelessWidget {
   final String text;
   final double fontSize;
 
-  const _PriceBadge({
-    required this.text,
-    required this.fontSize,
-  });
+  const _PriceBadge({required this.text, required this.fontSize});
 
   @override
   Widget build(BuildContext context) {
@@ -183,9 +183,7 @@ class _PriceBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.primary.withOpacity(.10),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: context.primary.withOpacity(.12),
-        ),
+        border: Border.all(color: context.primary.withOpacity(.12)),
       ),
       child: Text(
         text,
