@@ -41,6 +41,12 @@ class OrdersController extends GetxController {
     ui.setFilter(value);
   }
 
+  /// هذه الدالة تضيف طلبًا جديدًا في أعلى القائمة.
+  void addOrder(OrderModel order) {
+    orders.insert(0, order);
+    ui.setFilter(OrdersFilter.all);
+  }
+
   /// هذه الدالة تعيد الطلبات بعد تطبيق الفلتر الحالي.
   List<OrderModel> get filteredOrders {
     return _service.filterOrders(

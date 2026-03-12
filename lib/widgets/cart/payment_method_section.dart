@@ -35,6 +35,7 @@ class PaymentMethodSection extends StatelessWidget {
 
   final String selectedId;
   final ValueChanged<String> onChanged;
+  final VoidCallback? onEditWalletInfo;
 
   final String? infoMessage;
   final IconData infoIcon;
@@ -53,6 +54,7 @@ class PaymentMethodSection extends StatelessWidget {
     required this.walletCompanies,
     required this.selectedId,
     required this.onChanged,
+    this.onEditWalletInfo,
     this.infoMessage,
     this.infoIcon = Icons.info_outline_rounded,
   });
@@ -74,47 +76,57 @@ class PaymentMethodSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-
-        PaymentOptionTile(
-          selected: selectedId == 'cod',
-          title: cashTitle,
-          subtitle: cashSubtitle,
-          leadingIcon: Icons.payments_outlined,
-          onTap: () => onChanged('cod'),
-        ),
-
-        const SizedBox(height: 10),
-
-        PaymentOptionTile(
-          selected: _isWallet,
-          title: walletTitle,
-          subtitle: walletSubtitle,
-          leadingIcon: Icons.account_balance_wallet_outlined,
-          onTap: () => onChanged('wallet'),
-        ),
-
-        if (_showInfo) ...[
-          const SizedBox(height: 10),
-          WalletInfoMessage(
-            icon: infoIcon,
-            text: infoMessage!,
+        Material(
+          color: context.card,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+            side: BorderSide(color: context.border.withOpacity(.35)),
           ),
-        ],
-
-        AnimatedCrossFade(
-          duration: const Duration(milliseconds: 180),
-          crossFadeState: _isWallet
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
-          firstChild: const SizedBox.shrink(),
-          secondChild: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
-            child: ReceiverInfoBlock(
-              receiverNameLabel: receiverNameLabel,
-              walletNumberLabel: walletNumberLabel,
-              receiverNameValue: receiverNameValue,
-              walletNumberValue: walletNumberValue,
-              companies: walletCompanies,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                PaymentOptionTile(
+                  selected: selectedId == 'cod',
+                  title: cashTitle,
+                  subtitle: cashSubtitle,
+                  leadingIcon: Icons.payments_outlined,
+                  onTap: () => onChanged('cod'),
+                ),
+                const SizedBox(height: 10),
+                PaymentOptionTile(
+                  selected: _isWallet,
+                  title: walletTitle,
+                  subtitle: walletSubtitle,
+                  leadingIcon: Icons.account_balance_wallet_outlined,
+                  onTap: () => onChanged('wallet'),
+                ),
+                if (_showInfo) ...[
+                  const SizedBox(height: 10),
+                  WalletInfoMessage(
+                    icon: infoIcon,
+                    text: infoMessage!,
+                  ),
+                ],
+                AnimatedCrossFade(
+                  duration: const Duration(milliseconds: 180),
+                  crossFadeState: _isWallet
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+                  firstChild: const SizedBox.shrink(),
+                  secondChild: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(0, 12, 0, 0),
+                    child: ReceiverInfoBlock(
+                      receiverNameLabel: receiverNameLabel,
+                      walletNumberLabel: walletNumberLabel,
+                      receiverNameValue: receiverNameValue,
+                      walletNumberValue: walletNumberValue,
+                      companies: walletCompanies,
+                      onEdit: onEditWalletInfo,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

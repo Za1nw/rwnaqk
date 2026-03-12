@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/models/contact_info_model.dart';
 import 'package:rwnaqk/models/shipping_address_model.dart';
 
 /// هذا الملف مسؤول عن حالات الواجهة الخاصة بمنظومة السلة والدفع.
@@ -37,6 +39,14 @@ class CartUiController extends GetxController {
   /// متحكم حقل الرمز البريدي.
   late final TextEditingController shippingPostcodeCtrl;
 
+  /// متحكمات معلومات التواصل.
+  late final TextEditingController contactPhoneCtrl;
+  late final TextEditingController contactEmailCtrl;
+
+  /// متحكمات بيانات المحفظة.
+  late final TextEditingController receiverNameCtrl;
+  late final TextEditingController walletNumberCtrl;
+
   /// هل المستخدم الآن في شاشة الدفع؟
   bool get isPayment => step.value == CartStep.payment;
 
@@ -45,24 +55,40 @@ class CartUiController extends GetxController {
 
   @override
   /// هذه الدالة تُستدعى عند إنشاء الكنترولر.
-  /// نستخدمها لتهيئة متحكمات حقول العنوان.
+  /// نستخدمها لتهيئة متحكمات الحقول.
   void onInit() {
     super.onInit();
 
     shippingAddressCtrl = TextEditingController();
     shippingCityCtrl = TextEditingController();
     shippingPostcodeCtrl = TextEditingController();
+
+    contactPhoneCtrl = TextEditingController();
+    contactEmailCtrl = TextEditingController();
+
+    receiverNameCtrl = TextEditingController(text: receiverName.value);
+    walletNumberCtrl = TextEditingController(text: walletNumber.value);
   }
 
   /// هذه الدالة تفتح شاشة الدفع.
   /// نستخدمها عند الضغط على زر المتابعة من السلة.
   void openPayment() {
     step.value = CartStep.payment;
-    Get.toNamed('/payment');
+    Get.toNamed(AppRoutes.payment);
   }
 
   /// هذه الدالة تعيد الحالة إلى شاشة السلة.
   void backToCart() {
+    step.value = CartStep.cart;
+
+    if (Get.currentRoute == AppRoutes.payment &&
+        (Get.key.currentState?.canPop() ?? false)) {
+      Get.back();
+    }
+  }
+
+  /// هذه الدالة تعيد الحالة المنطقية إلى السلة بعد إتمام الطلب.
+  void completeCheckout() {
     step.value = CartStep.cart;
   }
 
@@ -79,11 +105,13 @@ class CartUiController extends GetxController {
   /// هذه الدالة تحدّث اسم المستلم.
   void setReceiverName(String value) {
     receiverName.value = value;
+    receiverNameCtrl.text = value;
   }
 
   /// هذه الدالة تحدّث رقم المحفظة.
   void setWalletNumber(String value) {
     walletNumber.value = value;
+    walletNumberCtrl.text = value;
   }
 
   /// هذه الدالة تحدّث دولة عنوان الشحن داخل الـ model.
@@ -147,6 +175,44 @@ class CartUiController extends GetxController {
     );
   }
 
+  /// هذه الدالة تعبئ نموذج التواصل من الحالة الحالية.
+  void fillContactFormFromState(ContactInfoModel info) {
+    contactPhoneCtrl.text = info.phone;
+    contactEmailCtrl.text = info.email;
+  }
+
+  /// هذه الدالة تجهز نموذج التواصل للتعديل.
+  void prepareEditContact(ContactInfoModel info) {
+    fillContactFormFromState(info);
+  }
+
+  /// هذه الدالة تبني بيانات التواصل من الحقول الحالية.
+  ContactInfoModel buildContactFromForm({
+    required ContactInfoModel current,
+  }) {
+    return current.copyWith(
+      phone: contactPhoneCtrl.text.trim(),
+      email: contactEmailCtrl.text.trim(),
+    );
+  }
+
+  /// هذه الدالة تعبئ نموذج المحفظة من الحالة الحالية.
+  void fillWalletFormFromState() {
+    receiverNameCtrl.text = receiverName.value;
+    walletNumberCtrl.text = walletNumber.value;
+  }
+
+  /// هذه الدالة تجهز نموذج المحفظة للتعديل.
+  void prepareEditWalletInfo() {
+    fillWalletFormFromState();
+  }
+
+  /// هذه الدالة تحفظ بيانات المحفظة من الحقول الحالية.
+  void saveWalletFromForm() {
+    receiverName.value = receiverNameCtrl.text.trim();
+    walletNumber.value = walletNumberCtrl.text.trim();
+  }
+
   @override
   /// هذه الدالة تُستدعى عند التخلص من الكنترولر.
   /// نستخدمها لتحرير TextEditingController.
@@ -154,6 +220,10 @@ class CartUiController extends GetxController {
     shippingAddressCtrl.dispose();
     shippingCityCtrl.dispose();
     shippingPostcodeCtrl.dispose();
+    contactPhoneCtrl.dispose();
+    contactEmailCtrl.dispose();
+    receiverNameCtrl.dispose();
+    walletNumberCtrl.dispose();
     super.onClose();
   }
 }

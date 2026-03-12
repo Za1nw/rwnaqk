@@ -58,7 +58,7 @@ class CartScreen extends GetView<CartController> {
                   Obx(
                     () => CartHeader(
                       title: 'Cart',
-                      count: controller.cartItems.length,
+                      count: controller.itemsCount,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -73,13 +73,12 @@ class CartScreen extends GetView<CartController> {
                         isEdit: controller.hasShippingAddress,
                       ),
                       allowAddWhenEmpty: true,
-                      emptyHint: 'اضف عنوان الشحن',
+                      emptyHint: 'Add your shipping details',
                     ),
                   ),
                 ],
               ),
             ),
-
             Expanded(
               child: Obx(() {
                 final isEmpty = controller.cartItems.isEmpty;
@@ -104,27 +103,33 @@ class CartScreen extends GetView<CartController> {
                       else
                         CartItemsList(
                           items: controller.cartItems,
+                          quantityFor: controller.quantityOf,
                           onRemove: controller.removeFromCart,
+                          onIncrement: controller.incrementQuantity,
+                          onDecrement: controller.decrementQuantity,
                         ),
-
                       if (hasWishlist) ...[
                         const SizedBox(height: 16),
                         CartWishlistSection(
                           onAdd: controller.addToCart,
                         ),
                       ],
-
-                      const SizedBox(height: 90),
+                      const SizedBox(height: 104),
                     ],
                   ),
                 );
               }),
             ),
-
             Obx(
               () => CartTotalBar(
-                total: controller.total,
-                enabled: controller.cartItems.isNotEmpty,
+                total: controller.itemsSubtotal,
+                enabled: controller.canCheckout,
+                totalLabel: 'Subtotal',
+                helperText: controller.cartItems.isEmpty
+                    ? 'Add products to start checkout'
+                    : '${controller.itemsCount} item(s) ready for checkout',
+                checkoutText: 'Checkout',
+                checkoutIcon: Icons.arrow_forward_rounded,
                 onCheckout: controller.openPayment,
               ),
             ),

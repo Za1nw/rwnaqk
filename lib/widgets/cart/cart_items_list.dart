@@ -4,12 +4,18 @@ import 'cart_item_tile.dart';
 
 class CartItemsList extends StatelessWidget {
   final List<HomeProductItem> items;
+  final int Function(String id) quantityFor;
   final Function(String id) onRemove;
+  final Function(String id) onIncrement;
+  final Function(String id) onDecrement;
 
   const CartItemsList({
     super.key,
     required this.items,
+    required this.quantityFor,
     required this.onRemove,
+    required this.onIncrement,
+    required this.onDecrement,
   });
 
   String? _variantText(HomeProductItem item) {
@@ -41,10 +47,10 @@ class CartItemsList extends StatelessWidget {
 
         return CartItemTile(
           item: item,
-          quantity: 1,
+          quantity: quantityFor(item.id),
           variantText: _variantText(item),
-          onIncrement: () {},
-          onDecrement: () {},
+          onIncrement: () => onIncrement(item.id),
+          onDecrement: () => onDecrement(item.id),
           onRemove: () => onRemove(item.id),
         );
       },

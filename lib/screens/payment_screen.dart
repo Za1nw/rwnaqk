@@ -4,14 +4,17 @@ import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/controllers/cart/cart_controller.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
+import 'package:rwnaqk/widgets/app_input_field.dart';
 import 'package:rwnaqk/widgets/cart/address_section.dart';
 import 'package:rwnaqk/widgets/cart/cart_header.dart';
+import 'package:rwnaqk/widgets/cart/cart_total_bar.dart';
 import 'package:rwnaqk/widgets/cart/miniItem_price_tile.dart';
 import 'package:rwnaqk/widgets/cart/payment_contact_section.dart';
 import 'package:rwnaqk/widgets/cart/payment_items_header.dart';
 import 'package:rwnaqk/widgets/cart/payment_method_section.dart';
 import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
 import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
+import 'package:rwnaqk/widgets/common/app_empty_state.dart';
 
 class PaymentScreen extends GetView<CartController> {
   const PaymentScreen({super.key});
@@ -40,33 +43,127 @@ class PaymentScreen extends GetView<CartController> {
     );
   }
 
+  void _openContactSheet(BuildContext context) {
+    controller.prepareEditContact();
+
+    ShippingAddressSheet.showContact(
+      context,
+      phoneController: controller.contactPhoneCtrl,
+      emailController: controller.contactEmailCtrl,
+      onSave: () {
+        controller.saveContactFromForm();
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  void _openWalletSheet(BuildContext context) {
+    controller.prepareEditWalletInfo();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _WalletInfoSheet(
+        nameController: controller.receiverNameCtrl,
+        numberController: controller.walletNumberCtrl,
+        onSave: () {
+          controller.saveWalletFromForm();
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.background,
       bottomNavigationBar: Obx(() {
-        return _PaymentBottomBar(
-          totalText: AppMoneyUtils.currency(controller.total),
-          onPay: controller.payNow,
+        return CartTotalBar(
+          total: controller.total,
+          enabled: controller.canCheckout,
+          totalLabel: 'Total',
+          helperText:
+              '${controller.selectedShippingTitle} • ${controller.paymentMethodLabel}',
+          checkoutText: 'Confirm Order',
+          checkoutIcon: Icons.check_circle_outline_rounded,
+          buttonWidth: 186,
+          onCheckout: controller.payNow,
         );
       }),
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 16, 120),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Obx(
-                () => CartHeader(
-                  title: 'Payment',
-                  count: controller.cartItems.length,
-                ),
-              ),
-              const SizedBox(height: 12),
+        child: Obx(() {
+          if (controller.cartItems.isEmpty) {
+            return _PaymentEmptyState(onBack: controller.backToCart);
+          }
 
-              Obx(
-                () => AddressSection(
+          return SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 16, 124),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CartHeader(
+                  title: 'Payment',
+                  count: controller.itemsCount,
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsetsDirectional.fromSTEB(14, 12, 14, 12),
+                  decoration: BoxDecoration(
+                    color: context.card,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: context.border.withOpacity(.35)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: context.primary.withOpacity(.10),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.verified_user_outlined,
+                          color: context.primary,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Review your order details',
+                              style: TextStyle(
+                                color: context.foreground,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Delivery, contact information, shipping option, and payment method are all ready for confirmation.',
+                              style: TextStyle(
+                                color: context.mutedForeground,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12.5,
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                AddressSection(
                   title: 'Shipping Address',
                   address: controller.shippingAddressText,
                   onEdit: () => _openShippingSheet(
@@ -74,56 +171,54 @@ class PaymentScreen extends GetView<CartController> {
                     isEdit: controller.hasShippingAddress,
                   ),
                   allowAddWhenEmpty: true,
-                  emptyHint: 'اضف عنوان الشحن',
+                  emptyHint: 'Add your shipping details',
                 ),
-              ),
-
-              const SizedBox(height: 12),
-
-              Obx(
-                () => PaymentContactSection(
+                const SizedBox(height: 12),
+                PaymentContactSection(
                   lines: controller.contactLines,
-                  onEdit: () {
-                    Get.snackbar('Info', 'Contact edit action');
-                  },
+                  onEdit: () => _openContactSheet(context),
                 ),
-              ),
-
-              const SizedBox(height: 18),
-
-              Obx(
-                () => PaymentItemsHeader(
+                const SizedBox(height: 18),
+                PaymentItemsHeader(
                   title: 'Items',
-                  count: controller.cartItems.length,
-                  discountText: '5% Discount',
-                  onRemoveDiscount: () {},
+                  count: controller.itemsCount,
                 ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Obx(() {
-                final items = controller.cartItems;
-                return Column(
-                  children: [
-                    for (final item in items) ...[
-                      MiniItemPriceTile(
-                        imageUrl: item.imageUrl,
-                        badgeCount: 1,
-                        title: item.title,
-                        subtitle: 'consectetur.',
-                        priceText: AppMoneyUtils.currency(item.price),
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                  ],
-                );
-              }),
-
-              const SizedBox(height: 20),
-
-              Obx(() {
-                return ShippingMethodSelector(
+                const SizedBox(height: 10),
+                Material(
+                  color: context.card,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    side: BorderSide(color: context.border.withOpacity(.35)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      children: [
+                        for (var i = 0; i < controller.cartItems.length; i++) ...[
+                          MiniItemPriceTile(
+                            imageUrl: controller.cartItems[i].imageUrl,
+                            badgeCount:
+                                controller.quantityOf(controller.cartItems[i].id),
+                            title: controller.cartItems[i].title,
+                            subtitle: controller
+                                .paymentItemSubtitle(controller.cartItems[i]),
+                            priceText: AppMoneyUtils.currency(
+                              controller.lineTotalOf(controller.cartItems[i]),
+                            ),
+                          ),
+                          if (i != controller.cartItems.length - 1)
+                            Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: context.border.withOpacity(.18),
+                            ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ShippingMethodSelector(
                   headerTitle: 'Shipping Options',
                   selectedId: controller.selectedShippingId.value,
                   onChanged: controller.setShipping,
@@ -138,23 +233,33 @@ class PaymentScreen extends GetView<CartController> {
                           'icon': e.icon,
                         },
                       )
-                      .toList(),
-                );
-              }),
-
-              const SizedBox(height: 20),
-
-              const _PaymentMethodBlock(),
-            ],
-          ),
-        ),
+                      .toList(growable: false),
+                ),
+                const SizedBox(height: 20),
+                _PaymentMethodBlock(
+                  onEditWalletInfo: () => _openWalletSheet(context),
+                ),
+                const SizedBox(height: 20),
+                _PaymentSummaryCard(
+                  subtotal: controller.itemsSubtotal,
+                  shippingFeeText: controller.shippingFeeText,
+                  total: controller.total,
+                  shippingTitle: controller.selectedShippingTitle,
+                  paymentMethod: controller.paymentMethodLabel,
+                ),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
 }
 
 class _PaymentMethodBlock extends StatelessWidget {
-  const _PaymentMethodBlock();
+  final VoidCallback onEditWalletInfo;
+
+  const _PaymentMethodBlock({required this.onEditWalletInfo});
 
   @override
   Widget build(BuildContext context) {
@@ -164,9 +269,9 @@ class _PaymentMethodBlock extends StatelessWidget {
       return PaymentMethodSection(
         titleText: 'Payment Method',
         cashTitle: 'Cash on Delivery',
-        cashSubtitle: 'Pay when you receive',
+        cashSubtitle: 'Pay when you receive your order',
         walletTitle: 'Wallet Transfer',
-        walletSubtitle: 'Transfer via partners',
+        walletSubtitle: 'Transfer through local partners',
         receiverNameLabel: 'Receiver name',
         walletNumberLabel: 'Wallet number',
         receiverNameValue: controller.receiverName.value,
@@ -182,44 +287,248 @@ class _PaymentMethodBlock extends StatelessWidget {
         ],
         selectedId: controller.paymentMethodId.value,
         onChanged: controller.setPaymentMethodId,
+        onEditWalletInfo: onEditWalletInfo,
         infoMessage: controller.isWalletPayment
-            ? 'Use any company below. Name & number are unified.'
-            : 'You will pay cash upon delivery.',
+            ? 'Receiver name and wallet number can be updated before confirming the order.'
+            : 'Pay with cash after the courier hands over your order.',
       );
     });
   }
 }
 
-class _PaymentBottomBar extends StatelessWidget {
-  final String totalText;
-  final VoidCallback onPay;
+class _PaymentSummaryCard extends StatelessWidget {
+  final double subtotal;
+  final String shippingFeeText;
+  final double total;
+  final String shippingTitle;
+  final String paymentMethod;
 
-  const _PaymentBottomBar({required this.totalText, required this.onPay});
+  const _PaymentSummaryCard({
+    required this.subtotal,
+    required this.shippingFeeText,
+    required this.total,
+    required this.shippingTitle,
+    required this.paymentMethod,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 16),
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: context.card,
-        border: Border(top: BorderSide(color: context.border.withOpacity(.3))),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: context.border.withOpacity(.35)),
+        boxShadow: [
+          BoxShadow(
+            color: context.shadow.withOpacity(.04),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Total $totalText',
+            'Order Summary',
             style: TextStyle(
               color: context.foreground,
               fontWeight: FontWeight.w900,
-              fontSize: 20,
+              fontSize: 15,
             ),
           ),
-          const Spacer(),
-          SizedBox(
-            width: 170,
-            child: AppButton(text: 'Pay', onPressed: onPay),
+          const SizedBox(height: 12),
+          _SummaryRow(
+            label: 'Subtotal',
+            value: AppMoneyUtils.currency(subtotal),
+          ),
+          const SizedBox(height: 10),
+          _SummaryRow(
+            label: 'Shipping',
+            value: '$shippingTitle • $shippingFeeText',
+          ),
+          const SizedBox(height: 10),
+          _SummaryRow(
+            label: 'Payment',
+            value: paymentMethod,
+          ),
+          Divider(
+            height: 22,
+            thickness: 1,
+            color: context.border.withOpacity(.25),
+          ),
+          _SummaryRow(
+            label: 'Final Total',
+            value: AppMoneyUtils.currency(total),
+            emphasize: true,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool emphasize;
+
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.emphasize = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = emphasize ? context.foreground : context.mutedForeground;
+    final valueColor = emphasize ? context.primary : context.foreground;
+
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: emphasize ? FontWeight.w800 : FontWeight.w700,
+              fontSize: emphasize ? 13.5 : 12.5,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              color: valueColor,
+              fontWeight: FontWeight.w900,
+              fontSize: emphasize ? 15 : 13,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PaymentEmptyState extends StatelessWidget {
+  final VoidCallback onBack;
+
+  const _PaymentEmptyState({required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AppEmptyState(
+              icon: Icons.shopping_bag_outlined,
+              title: 'No items to checkout',
+              subtitle: 'Go back to your cart and add products first.',
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 170,
+              child: AppButton(
+                text: 'Back to Cart',
+                onPressed: onBack,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WalletInfoSheet extends StatelessWidget {
+  final TextEditingController nameController;
+  final TextEditingController numberController;
+  final VoidCallback onSave;
+
+  const _WalletInfoSheet({
+    required this.nameController,
+    required this.numberController,
+    required this.onSave,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).viewInsets.bottom;
+
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 180),
+      padding: EdgeInsets.only(bottom: bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.card,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    decoration: BoxDecoration(
+                      color: context.border,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                Text(
+                  'Wallet Details',
+                  style: TextStyle(
+                    color: context.foreground,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Update the receiver name and wallet number used for transfer.',
+                  style: TextStyle(
+                    color: context.mutedForeground,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12.5,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                AppInputField(
+                  controller: nameController,
+                  label: 'Receiver name',
+                  prefixIcon: Icons.person_outline_rounded,
+                ),
+                const SizedBox(height: 12),
+                AppInputField(
+                  controller: numberController,
+                  label: 'Wallet number',
+                  keyboardType: TextInputType.phone,
+                  prefixIcon: Icons.phone_outlined,
+                ),
+                const SizedBox(height: 18),
+                AppButton(
+                  text: 'Save Details',
+                  onPressed: onSave,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:rwnaqk/models/contact_info_model.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
+import 'package:rwnaqk/models/order_model.dart';
 import 'package:rwnaqk/models/shipping_address_model.dart';
 import 'package:rwnaqk/models/shipping_option_model.dart';
 
@@ -29,13 +30,14 @@ class CartService {
           title: 'Standard',
           eta: '5-7 days',
           priceText: 'FREE',
+          note: 'Reliable delivery with no extra fees.',
         ),
         ShippingOptionModel(
           id: 'express',
           title: 'Express',
           eta: '1-2 days',
           priceText: '\$12.00',
-          note: 'Fast delivery (extra fees may apply)',
+          note: 'Fast delivery for urgent orders.',
         ),
       ];
 
@@ -47,7 +49,74 @@ class CartService {
 
   /// هذه الدالة تحسب إجمالي أسعار العناصر داخل السلة.
   double computeTotal(List<HomeProductItem> items) {
-    return items.fold(0.0, (sum, e) => sum + e.price);
+    return items.fold(0.0, (sum, e) => sum + _unitPrice(e));
+  }
+
+  /// هذه الدالة تحسب إجمالي عناصر السلة مع الكميات.
+  double computeItemsTotal(
+    List<HomeProductItem> items,
+    Map<String, int> quantities,
+  ) {
+    return items.fold(0.0, (sum, e) {
+      final qty = (quantities[e.id] ?? 1).clamp(1, 999);
+      return sum + (_unitPrice(e) * qty);
+    });
+  }
+
+  /// هذه الدالة تعيد رسوم الشحن للخيار المختار.
+  double shippingFeeFor({
+    required List<ShippingOptionModel> options,
+    required String selectedId,
+  }) {
+    for (final option in options) {
+      if (option.id == selectedId) {
+        return parsePriceText(option.priceText);
+      }
+    }
+
+    return 0;
+  }
+
+  /// هذه الدالة تحول النص السعري إلى قيمة رقمية.
+  double parsePriceText(String text) {
+    final normalized = text.trim().toUpperCase();
+
+    if (normalized.isEmpty || normalized == 'FREE') {
+      return 0;
+    }
+
+    final match = RegExp(r'(\d+(?:\.\d+)?)').firstMatch(text);
+    if (match == null) return 0;
+
+    return double.tryParse(match.group(1) ?? '') ?? 0;
+  }
+
+  /// هذه الدالة تبني طلبًا جاهزًا بعد إتمام الدفع.
+  OrderModel buildCheckoutOrder({
+    required int itemsCount,
+    required double total,
+    required ShippingAddressModel address,
+    required ContactInfoModel contact,
+    String status = 'pending',
+  }) {
+    final now = DateTime.now();
+    final millis = now.millisecondsSinceEpoch.toString();
+    final suffix = millis.substring(millis.length - 6);
+
+    return OrderModel(
+      id: 'ORD-$suffix',
+      createdAt: now,
+      total: total,
+      itemsCount: itemsCount,
+      status: status,
+      addressLine: address.formatted,
+      deliveryPhone: contact.phone.trim().isEmpty ? null : contact.phone.trim(),
+      deliveryName: null,
+    );
+  }
+
+  double _unitPrice(HomeProductItem item) {
+    return item.hasDiscount ? item.salePrice : item.price;
   }
 
   /// هذه الدالة تعيد عناصر السلة التجريبية.
