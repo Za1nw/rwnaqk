@@ -4,12 +4,16 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/cart/cart_service.dart';
 import 'package:rwnaqk/controllers/cart/cart_ui_controller.dart';
 import 'package:rwnaqk/controllers/orders/orders_controller.dart';
+import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
+import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
 import 'package:rwnaqk/models/contact_info_model.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/models/order_model.dart';
-import 'package:rwnaqk/models/shipping_address_model.dart';
+import 'package:rwnaqk/models/shipping_address.dart';
 import 'package:rwnaqk/models/shipping_option_model.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة السلة.
@@ -28,6 +32,7 @@ class CartController extends GetxController {
   CartController(this._service);
 
   final CartService _service;
+  final _profileStore = Get.find<ProfileStoreService>();
 
   late final CartUiController ui;
 
@@ -43,7 +48,7 @@ class CartController extends GetxController {
   final wishlistItems = <HomeProductItem>[].obs;
 
   /// عنوان الشحن الحالي.
-  final shippingAddress = ShippingAddressModel.empty().obs;
+  final shippingAddress = ShippingAddress.empty().obs;
 
   /// بيانات التواصل الحالية.
   late final Rx<ContactInfoModel> contactInfo;
@@ -72,6 +77,9 @@ class CartController extends GetxController {
   /// النص المنسق لعنوان الشحن.
   String get shippingAddressText => shippingAddress.value.formatted;
 
+  String get selectedShippingCountryLabel =>
+      _service.localizedCountryLabel(shippingAddress.value.country);
+
   /// السطور الجاهزة لعرض بيانات التواصل.
   List<String> get contactLines => contactInfo.value.lines;
 
@@ -96,17 +104,20 @@ class CartController extends GetxController {
   }
 
   /// اسم خيار الشحن الحالي.
-  String get selectedShippingTitle => selectedShippingOption.title;
+  String get selectedShippingTitle =>
+      AppCheckoutUtils.cartShippingTitle(selectedShippingOption.id);
 
   /// نص سعر الشحن الحالي.
   String get shippingFeeText {
-    if (shippingFee <= 0) return 'FREE';
+    if (shippingFee <= 0) return Tk.cartFree.tr;
     return AppMoneyUtils.currency(shippingFee);
   }
 
   /// اسم طريقة الدفع الحالية.
   String get paymentMethodLabel {
-    return isWalletPayment ? 'Wallet Transfer' : 'Cash on Delivery';
+    return AppCheckoutUtils.paymentMethodLabel(
+      isWalletPayment: isWalletPayment,
+    );
   }
 
   // =========================
@@ -215,6 +226,7 @@ class CartController extends GetxController {
     shippingAddress.value = ui.buildShippingFromForm(
       current: shippingAddress.value,
     );
+    _profileStore.saveDefaultShippingAddress(shippingAddress.value);
   }
 
   // =========================
@@ -272,36 +284,6 @@ class CartController extends GetxController {
     return unit * quantityOf(item.id);
   }
 
-  String? variantTextOf(HomeProductItem item) {
-    final parts = <String>[];
-
-    if (item.availableColors.isNotEmpty) {
-      final colorName = item.availableColors.first.name.trim();
-      if (colorName.isNotEmpty) parts.add(colorName);
-    }
-
-    if (item.availableSizes.isNotEmpty) {
-      final size = item.availableSizes.first.trim();
-      if (size.isNotEmpty) parts.add(size);
-    }
-
-    if (parts.isEmpty) return null;
-    return parts.join(' • ');
-  }
-
-  String paymentItemSubtitle(HomeProductItem item) {
-    final parts = <String>[];
-    final variant = variantTextOf(item);
-
-    if (variant != null && variant.isNotEmpty) {
-      parts.add(variant);
-    }
-
-    parts.add('Qty ${quantityOf(item.id)}');
-
-    return parts.join(' • ');
-  }
-
   // =========================
   // ACTIONS
   /// هذه الدالة تحذف عنصرًا من السلة حسب المعرّف.
@@ -341,26 +323,36 @@ class CartController extends GetxController {
     if (existingIndex == -1) {
       cartItems.add(item);
       itemQuantities[item.id] = 1;
-      return;
+    } else {
+      incrementQuantity(item.id);
     }
 
-    incrementQuantity(item.id);
+    if (Get.isRegistered<WishlistController>()) {
+      Get.find<WishlistController>().removeFromWishlist(item.id);
+    }
   }
 
   /// هذه الدالة تنفذ عملية الدفع الحالية وتحوّلها إلى Order جاهز.
   void payNow() {
     if (cartItems.isEmpty) {
-      Get.snackbar('Cart', 'Your cart is empty');
+      Get.snackbar(
+          Tk.cartValidationCartTitle.tr, Tk.cartValidationCartEmpty.tr);
       return;
     }
 
     if (!hasShippingAddress) {
-      Get.snackbar('Shipping', 'Please add a shipping address first');
+      Get.snackbar(
+        Tk.cartValidationShippingTitle.tr,
+        Tk.cartValidationShippingMissing.tr,
+      );
       return;
     }
 
     if (contactInfo.value.isEmpty) {
-      Get.snackbar('Contact', 'Please add your contact information');
+      Get.snackbar(
+        Tk.cartValidationContactTitle.tr,
+        Tk.cartValidationContactMissing.tr,
+      );
       return;
     }
 
@@ -369,7 +361,10 @@ class CartController extends GetxController {
 
       if (receiverName.value.trim().isEmpty ||
           walletNumber.value.trim().isEmpty) {
-        Get.snackbar('Wallet', 'Please enter receiver name and wallet number');
+        Get.snackbar(
+          Tk.cartValidationWalletTitle.tr,
+          Tk.cartValidationWalletMissing.tr,
+        );
         return;
       }
     }
@@ -389,10 +384,14 @@ class CartController extends GetxController {
     ui.completeCheckout();
 
     Get.offNamed(AppRoutes.orderTracking, arguments: order);
-    Get.snackbar('Success', 'Your order has been created successfully');
+    Get.snackbar(
+      Tk.cartOrderCreatedTitle.tr,
+      Tk.cartOrderCreatedMessage.tr,
+    );
   }
 
   @override
+
   /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
   /// نستخدمها لتهيئة الـ UI controller وتحميل البيانات التجريبية.
   void onInit() {
@@ -400,6 +399,10 @@ class CartController extends GetxController {
 
     ui = Get.find<CartUiController>();
     contactInfo = _service.contactInfo.obs;
+    ever<List<dynamic>>(_profileStore.addresses, (_) {
+      shippingAddress.value = _service.seedShippingAddress();
+      fillShippingFormFromState();
+    });
 
     seedMockData();
   }

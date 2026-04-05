@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/profile/edit_profile_service.dart';
 import 'package:rwnaqk/controllers/profile/edit_profile_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة تعديل الملف الشخصي.
 ///
@@ -62,11 +63,16 @@ class EditProfileController extends GetxController {
     );
 
     if (!canSave) {
-      Get.snackbar('Error'.tr, 'Please fill all fields'.tr);
+      Get.snackbar(Tk.commonError.tr, Tk.profileEditFillAll.tr);
       return;
     }
 
-    Get.snackbar('Saved'.tr, 'Profile updated'.tr);
+    _service.saveProfile(
+      name: nameCtrl.text,
+      email: emailCtrl.text,
+    );
+
+    Get.snackbar(Tk.commonSaved.tr, Tk.profileEditUpdated.tr);
   }
 
   /// هذه الدالة تنقل المستخدم إلى شاشة تغيير كلمة المرور.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 
 import 'package:rwnaqk/controllers/search/app_search_controller.dart';
@@ -24,8 +25,8 @@ class SearchScreen extends GetView<AppSearchController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ShopTopBar(
-                title: 'Search',
-                searchHint: 'Search',
+                title: Tk.searchTitle.tr,
+                searchHint: Tk.searchTitle.tr,
                 controller: controller.searchC,
                 onChanged: controller.onChanged,
                 onSubmitted: controller.onSubmitted,
@@ -34,7 +35,7 @@ class SearchScreen extends GetView<AppSearchController> {
               ),
               const SizedBox(height: 16),
               AppSectionHeader(
-                title: 'Search history',
+                title: Tk.searchHistory.tr,
                 actionIcon: Icons.delete_outline_rounded,
                 onActionTap: controller.clearHistory,
                 titleFontSize: 15,
@@ -47,7 +48,7 @@ class SearchScreen extends GetView<AppSearchController> {
 
                 if (items.isEmpty) {
                   return Text(
-                    'No recent searches',
+                    Tk.searchNoRecent.tr,
                     style: TextStyle(
                       color: context.mutedForeground,
                       fontWeight: FontWeight.w600,
@@ -62,7 +63,7 @@ class SearchScreen extends GetView<AppSearchController> {
               }),
               const SizedBox(height: 18),
               AppSectionHeader(
-                title: 'Recommendations',
+                title: Tk.searchRecommendations.tr,
                 titleFontSize: 14,
                 titleFontWeight: FontWeight.w800,
                 titleColor: context.mutedForeground,
@@ -80,7 +81,7 @@ class SearchScreen extends GetView<AppSearchController> {
                 );
               }),
               const SizedBox(height: 22),
-              const AppSectionHeader(title: 'Discover'),
+              AppSectionHeader(title: Tk.searchDiscover.tr),
               const SizedBox(height: 12),
               LayoutBuilder(
                 builder: (_, c) {

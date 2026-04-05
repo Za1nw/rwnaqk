@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/product_details/product_details_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
-import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
 import 'package:rwnaqk/widgets/card/product_grid_section.dart';
+import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
 import 'package:rwnaqk/widgets/product_details/product_details_header_card.dart';
 import 'package:rwnaqk/widgets/product_details/product_reviews_section.dart';
-
-import '../controllers/product_details/product_details_controller.dart';
 
 const double _sectionGap = 18;
 const double _innerGap = 12;
@@ -46,13 +47,12 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
                 title: controller.title,
                 description: controller.description,
                 priceText:
-                    '\$${controller.salePriceText.replaceAll(".00", "")}',
+                    '\$${controller.salePriceText.replaceAll('.00', '')}',
                 oldPriceText: controller.hasDiscount
                     ? '\$${controller.oldPriceText}'
                     : null,
-                discountText: controller.hasDiscount
-                    ? '-${controller.discount}%'
-                    : null,
+                discountText:
+                    controller.hasDiscount ? '-${controller.discount}%' : null,
                 timerWidget: null,
                 rating: controller.hasReviews ? controller.averageRating : null,
                 reviewsCount:
@@ -66,63 +66,43 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
                 availableSizes: controller.availableSizes,
                 selectedSize: controller.selectedSize.value,
                 onSelectSize: controller.setSelectedSize,
-                variationsTitle: 'Variations',
+                variationsTitle: Tk.productDetailsVariations.tr,
                 selectedChips: controller.selectedOptionChips,
                 variationImages: controller.variationImages,
                 selectedVariationImageIndex: controller.selectedThumb.value,
                 onSelectVariationImage: controller.selectThumb,
-                onShare: () {
-                  // share logic
-                },
+                onShare: controller.shareProduct,
                 showArrowButton: false,
                 onArrowTap: null,
               ),
-
               const SizedBox(height: _sectionGap),
-
-              _SectionTitle(title: 'Specifications'),
+              _SectionTitle(title: Tk.productDetailsSpecifications.tr),
               const SizedBox(height: 10),
-              const _SpecRow(
-                title: 'Material',
-                chips: ['Cotton 95%', 'Nylon 5%'],
+              _SpecRow(
+                title: Tk.productDetailsMaterial.tr,
+                chips: const ['Cotton 95%', 'Nylon 5%'],
               ),
               const SizedBox(height: 10),
-              const _SpecRow(
-                title: 'Origin',
-                chips: ['EU'],
+              _SpecRow(
+                title: Tk.productDetailsOrigin.tr,
+                chips: const ['EU'],
               ),
               const SizedBox(height: 10),
               _LinkRow(
-                text: 'Size guide',
-                onTap: () => Get.snackbar('Size guide', 'Open size guide'),
+                text: Tk.productDetailsSizeGuide.tr,
+                onTap: () => Get.snackbar(
+                  Tk.productDetailsSizeGuide.tr,
+                  Tk.productDetailsSizeGuideOpened.tr,
+                ),
               ),
-
               const SizedBox(height: _sectionGap),
-
               ShippingMethodSelector(
-                headerTitle: 'Delivery',
-                options: const [
-                  {
-                    'id': 'standard',
-                    'title': 'Standard',
-                    'eta': '5-7 days',
-                    'price': '\$3.00',
-                    'note': 'Delivered within 5 to 7 business days.',
-                  },
-                  {
-                    'id': 'express',
-                    'title': 'Express',
-                    'eta': '1-2 days',
-                    'price': '\$12.00',
-                    'note': 'Fast delivery within 1 to 2 business days.',
-                  },
-                ],
+                headerTitle: Tk.productDetailsDelivery.tr,
+                options: AppCheckoutUtils.productDeliveryOptions(),
                 selectedId: controller.deliverySelected.value,
                 onChanged: controller.setDelivery,
               ),
-
               const SizedBox(height: _sectionGap),
-
               ProductReviewsSection(
                 reviews: controller.reviews.toList(),
                 onViewAll: () => Get.toNamed(
@@ -132,25 +112,21 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
                   },
                 ),
               ),
-
-              
               const SizedBox(height: _innerGap),
-
-           
               Text(
-                'home.just_for_you'.tr,
+                Tk.homeJustForYou.tr,
                 style: TextStyle(
                   color: context.foreground,
                   fontWeight: FontWeight.w900,
                   fontSize: 16,
                 ),
               ),
-
               const SizedBox(height: _innerGap),
-
               Obx(() {
                 final items = controller.recommended.toList();
-                if (items.isEmpty) return const SizedBox.shrink();
+                if (items.isEmpty) {
+                  return const SizedBox.shrink();
+                }
 
                 return ProductGridSection(
                   items: items,
@@ -169,7 +145,6 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
                   childAspectRatio: 1.0,
                 );
               }),
-
               const SizedBox(height: _sectionGap),
             ],
           ),
@@ -206,7 +181,6 @@ class _SectionTitle extends StatelessWidget {
     );
   }
 }
-
 
 class _SpecRow extends StatelessWidget {
   final String title;
@@ -364,7 +338,7 @@ class _BottomBar extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: AppButton(
-                text: 'Add to cart',
+                text: Tk.productDetailsAddToCart.tr,
                 onPressed: onAdd,
                 height: 44,
                 backgroundColor: const Color(0xFF22252B),
@@ -374,7 +348,7 @@ class _BottomBar extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: AppButton(
-                text: 'Buy now',
+                text: Tk.productDetailsBuyNow.tr,
                 onPressed: onBuy,
                 height: 44,
               ),

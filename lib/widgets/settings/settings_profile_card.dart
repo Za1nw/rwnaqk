@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class SettingsProfileCard extends StatelessWidget {
   final String name;
@@ -93,7 +94,7 @@ class SettingsProfileCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Edit'.tr,
+                        Tk.commonEdit.tr,
                         style: TextStyle(
                           color: context.foreground,
                           fontWeight: FontWeight.w900,

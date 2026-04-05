@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 
 /// حالة فارغة موحّدة للاستخدام في الشاشات التي تعرض نتائج/قوائم.
@@ -32,7 +33,7 @@ class AppEmptyState extends StatelessWidget {
             Icon(icon, size: 40, color: context.mutedForeground),
             const SizedBox(height: 10),
             Text(
-              title,
+              title.tr,
               style: TextStyle(
                 color: context.foreground,
                 fontWeight: FontWeight.w900,
@@ -41,7 +42,7 @@ class AppEmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              subtitle,
+              subtitle.tr,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: context.mutedForeground,

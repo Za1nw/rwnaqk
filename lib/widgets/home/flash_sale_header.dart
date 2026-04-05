@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/utils/app_date_utils.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class FlashSaleHeader extends StatelessWidget {
   final int hh;
@@ -25,7 +26,7 @@ class FlashSaleHeader extends StatelessWidget {
       children: [
         // ===== Line 1: Title =====
         Text(
-          'home.flash_sale'.tr,
+          Tk.homeFlashSale.tr,
           style: TextStyle(
             color: context.foreground,
             fontWeight: FontWeight.w900,
@@ -141,7 +142,7 @@ class _SeeAllPill extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'home.see_all'.tr,
+                  Tk.homeSeeAll.tr,
                   style: TextStyle(
                     color: context.primary,
                     fontWeight: FontWeight.w900,

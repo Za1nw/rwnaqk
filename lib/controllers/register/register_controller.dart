@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/register/register_service.dart';
 import 'package:rwnaqk/controllers/register/register_ui_controller.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة إنشاء الحساب.
 ///
@@ -80,18 +81,18 @@ class RegisterController extends GetxController {
     if (!isValid) return;
 
     if (governorate.value == null || governorate.value!.trim().isEmpty) {
-      Get.snackbar('register.title'.tr, 'register.governorate.required'.tr);
+      Get.snackbar(Tk.registerTitle.tr, Tk.registerGovernorateRequired.tr);
       return;
     }
 
     if (!agreed.value) {
-      Get.snackbar('register.title'.tr, 'register.terms.required'.tr);
+      Get.snackbar(Tk.registerTitle.tr, Tk.registerTermsRequired.tr);
       return;
     }
 
     if (!canContinue) return;
 
-    Get.snackbar('OK', 'register.submit'.tr);
+    Get.snackbar(Tk.commonOk.tr, Tk.registerSubmit.tr);
   }
 
   /// هذه الدالة تنقل المستخدم إلى شاشة تسجيل الدخول.

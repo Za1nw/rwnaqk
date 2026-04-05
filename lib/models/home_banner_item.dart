@@ -13,4 +13,3 @@ class HomeBannerItem {
     required this.imageUrl,
   });
 }
-

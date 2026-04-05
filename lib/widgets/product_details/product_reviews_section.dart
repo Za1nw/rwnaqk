@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
-import 'package:rwnaqk/models/product_review.dart'; // ✅ استخدم موديل واحد فقط
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/models/product_review.dart';
 
 class ProductReviewsSection extends StatelessWidget {
-  final String title;
+  final String? title;
   final List<ProductReview> reviews;
-
-  /// If null, the CTA button is hidden.
   final VoidCallback? onViewAll;
-
-  /// If null, uses default label.
   final String? viewAllText;
-
-  /// If true, show only one preview card (good for details page).
   final bool previewOnly;
 
   const ProductReviewsSection({
     super.key,
-    this.title = 'Rating & Reviews',
+    this.title,
     required this.reviews,
     this.onViewAll,
     this.viewAllText,
@@ -26,11 +22,13 @@ class ProductReviewsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedTitle = title ?? Tk.reviewsSectionTitle.tr;
+
     if (reviews.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionTitle(title: title),
+          _SectionTitle(title: resolvedTitle),
           const SizedBox(height: 10),
           const _EmptyReviews(),
         ],
@@ -42,12 +40,14 @@ class ProductReviewsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionTitle(title: title),
+        _SectionTitle(title: resolvedTitle),
         const SizedBox(height: 10),
-        ...items.map((r) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _ReviewCard(review: r),
-            )),
+        ...items.map(
+          (review) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _ReviewCard(review: review),
+          ),
+        ),
         if (onViewAll != null) ...[
           const SizedBox(height: 2),
           SizedBox(
@@ -63,7 +63,7 @@ class ProductReviewsSection extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: Text(viewAllText ?? 'View All Reviews'),
+              child: Text(viewAllText ?? Tk.reviewsViewAll.tr),
             ),
           ),
         ],
@@ -111,7 +111,7 @@ class _EmptyReviews extends StatelessWidget {
         border: Border.all(color: context.border.withOpacity(0.55)),
       ),
       child: Text(
-        'No reviews yet.',
+        Tk.reviewsEmpty.tr,
         style: TextStyle(color: context.mutedForeground),
       ),
     );
@@ -140,7 +140,9 @@ class _ReviewCard extends StatelessWidget {
             backgroundColor: context.muted,
             foregroundColor: context.foreground,
             child: Text(
-              review.name.isNotEmpty ? review.name.characters.first.toUpperCase() : '?',
+              review.name.isNotEmpty
+                  ? review.name.characters.first.toUpperCase()
+                  : '?',
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
@@ -165,7 +167,7 @@ class _ReviewCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  review.text,
+                  review.text.tr,
                   style: TextStyle(
                     color: context.mutedForeground,
                     height: 1.35,

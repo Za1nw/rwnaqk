@@ -1,26 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/utils/app_order_utils.dart';
 
 class OrderStatusPill extends StatelessWidget {
   final String status;
-  const OrderStatusPill({super.key, required this.status});
 
-  String get _label {
-    switch (status) {
-      case 'pending':
-        return 'قيد المعالجة';
-      case 'confirmed':
-        return 'مؤكد';
-      case 'shipped':
-        return 'قيد التوصيل';
-      case 'delivered':
-        return 'تم التسليم';
-      case 'canceled':
-        return 'ملغي';
-      default:
-        return status;
-    }
-  }
+  const OrderStatusPill({super.key, required this.status});
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +25,7 @@ class OrderStatusPill extends StatelessWidget {
         border: Border.all(color: base.withOpacity(.25)),
       ),
       child: Text(
-        _label,
+        AppOrderUtils.statusLabel(status).tr,
         style: TextStyle(
           color: base.withOpacity(.95),
           fontWeight: FontWeight.w900,

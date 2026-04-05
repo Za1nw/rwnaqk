@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/forgot_password/forgot_password_service.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 import '../../controllers/forgot_password/forgot_password_controller.dart';
 import '../../widgets/auth_blob_background.dart';
@@ -22,7 +23,7 @@ class OtpVerifyScreen extends GetView<ForgotPasswordController> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 AuthTitleBlock(
-                  title: 'fp.verify.title'.tr,
+                  title: Tk.fpVerifyTitle.tr,
                   subtitle: '',
                 ),
                 Obx(() {
@@ -30,8 +31,8 @@ class OtpVerifyScreen extends GetView<ForgotPasswordController> {
                       controller.method.value == RecoveryMethod.email;
 
                   final subtitle = isEmail
-                      ? 'fp.verify.subtitle_email'.tr
-                      : 'fp.verify.subtitle_sms'.tr;
+                      ? Tk.fpVerifySubtitleEmail.tr
+                      : Tk.fpVerifySubtitleSms.tr;
 
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
@@ -49,7 +50,7 @@ class OtpVerifyScreen extends GetView<ForgotPasswordController> {
                 _OtpBoxes(onChanged: controller.setOtp),
                 const SizedBox(height: 20),
                 AppButton(
-                  text: 'fp.next'.tr,
+                  text: Tk.fpNext.tr,
                   icon: Icons.verified_rounded,
                   onPressed: controller.verifyOtp,
                   height: 54,
@@ -63,8 +64,8 @@ class OtpVerifyScreen extends GetView<ForgotPasswordController> {
                     onPressed: enabled ? controller.resendCode : null,
                     child: Text(
                       enabled
-                          ? 'fp.verify.resend'.tr
-                          : 'fp.verify.resend_in'.trParams({
+                          ? Tk.fpVerifyResend.tr
+                          : Tk.fpVerifyResendIn.trParams({
                               's': '$seconds',
                             }),
                       style: TextStyle(
@@ -78,7 +79,7 @@ class OtpVerifyScreen extends GetView<ForgotPasswordController> {
                 TextButton(
                   onPressed: controller.cancel,
                   child: Text(
-                    'fp.cancel'.tr,
+                    Tk.fpCancel.tr,
                     style: TextStyle(color: context.mutedForeground),
                   ),
                 ),

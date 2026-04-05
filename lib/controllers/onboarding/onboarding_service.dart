@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 /// هذا الموديل يمثل شريحة واحدة داخل شاشة الـ Onboarding.
 ///
@@ -31,18 +32,18 @@ class OnboardingService {
   List<OnboardingSlide> get slides => const <OnboardingSlide>[
         OnboardingSlide(
           icon: Icons.shopping_bag_rounded,
-          titleKey: 'onboarding.s1_title',
-          subtitleKey: 'onboarding.s1_subtitle',
+          titleKey: Tk.onboardingS1Title,
+          subtitleKey: Tk.onboardingS1Subtitle,
         ),
         OnboardingSlide(
           icon: Icons.local_shipping_rounded,
-          titleKey: 'onboarding.s2_title',
-          subtitleKey: 'onboarding.s2_subtitle',
+          titleKey: Tk.onboardingS2Title,
+          subtitleKey: Tk.onboardingS2Subtitle,
         ),
         OnboardingSlide(
           icon: Icons.discount_rounded,
-          titleKey: 'onboarding.s3_title',
-          subtitleKey: 'onboarding.s3_subtitle',
+          titleKey: Tk.onboardingS3Title,
+          subtitleKey: Tk.onboardingS3Subtitle,
         ),
       ];
 

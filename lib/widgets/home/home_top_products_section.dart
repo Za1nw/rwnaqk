@@ -4,6 +4,7 @@ import 'package:rwnaqk/controllers/home/home_controller.dart';
 import 'package:rwnaqk/widgets/common/app_section_header.dart';
 import 'package:rwnaqk/widgets/card/product_avatar_row.dart';
 import 'package:rwnaqk/widgets/home/home_layout.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class HomeTopProductsSection extends GetView<HomeController> {
   const HomeTopProductsSection({super.key});
@@ -14,7 +15,7 @@ class HomeTopProductsSection extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppSectionHeader(
-          title: 'home.top_products'.tr,
+          title: Tk.homeTopProducts.tr,
         ),
         const SizedBox(height: HomeLayout.innerGap),
         Obx(() {

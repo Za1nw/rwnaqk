@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/orders/orders_service.dart';
 import 'package:rwnaqk/controllers/orders/orders_ui_controller.dart';
+import 'package:rwnaqk/models/order_details_model.dart';
 import 'package:rwnaqk/models/order_model.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة الطلبات.
@@ -58,6 +59,10 @@ class OrdersController extends GetxController {
   /// هذه الدالة تبني خطوات تتبع الطلب حسب حالته الحالية.
   List<OrderStatusStep> buildTrackingSteps(OrderModel order) {
     return _service.buildTrackingSteps(order);
+  }
+
+  OrderDetailsModel buildOrderDetails(OrderModel order) {
+    return _service.buildOrderDetails(order);
   }
 
   /// هذه الدالة تهيئ البيانات التجريبية الحالية للطلبات.

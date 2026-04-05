@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_ui_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/wishlist/recent_calendar_sheet.dart';
 
 class RecentFilterRow extends StatelessWidget {
@@ -32,7 +33,7 @@ class RecentFilterRow extends StatelessWidget {
         children: [
 
           _Pill(
-            text: 'Today',
+            text: Tk.wishlistFilterToday.tr,
             selected: c.recentFilter.value == RecentFilter.today,
             onTap: () => c.setRecentFilter(RecentFilter.today),
             fontSize: font,
@@ -43,7 +44,7 @@ class RecentFilterRow extends StatelessWidget {
           SizedBox(width: gap),
 
           _Pill(
-            text: 'Yesterday',
+            text: Tk.wishlistFilterYesterday.tr,
             selected: c.recentFilter.value == RecentFilter.yesterday,
             onTap: () => c.setRecentFilter(RecentFilter.yesterday),
             fontSize: font,

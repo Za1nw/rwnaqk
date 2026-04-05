@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_date_utils.dart';
 
 /// هذا الـ enum يحدد نوع فلتر العناصر التي تمت مشاهدتها مؤخرًا.
@@ -57,12 +58,12 @@ class WishlistUiController extends GetxController {
   String recentFilterLabel() {
     switch (recentFilter.value) {
       case RecentFilter.today:
-        return 'Today';
+        return Tk.wishlistFilterToday.tr;
       case RecentFilter.yesterday:
-        return 'Yesterday';
+        return Tk.wishlistFilterYesterday.tr;
       case RecentFilter.date:
         final date = selectedDate.value;
-        if (date == null) return 'Choose date';
+        if (date == null) return Tk.wishlistFilterChooseDate.tr;
         return AppDateUtils.formatMonthDay(date);
     }
   }

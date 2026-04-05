@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 import '../../controllers/login/login_controller.dart';
 import '../../core/constants/app_colors.dart';
@@ -24,7 +25,7 @@ class LoginScreen extends GetView<LoginController> {
               children: [
                 const SizedBox(height: 42),
                 Text(
-                  'login.title'.tr,
+                  Tk.loginTitle.tr,
                   textAlign: TextAlign.start,
                   style: TextStyle(
                     fontSize: 34,
@@ -35,7 +36,7 @@ class LoginScreen extends GetView<LoginController> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'login.subtitle'.tr,
+                  Tk.loginSubtitle.tr,
                   style: TextStyle(
                     fontSize: 14,
                     color: context.mutedForeground,
@@ -79,31 +80,31 @@ class LoginScreen extends GetView<LoginController> {
                         children: [
                           AppInputField(
                             controller: controller.emailController,
-                            label: 'login.email.label'.tr,
-                            hint: 'login.email.hint'.tr,
+                            label: Tk.loginEmailLabel.tr,
+                            hint: Tk.loginEmailHint.tr,
                             prefixIcon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
                             validator: (v) {
                               final value = (v ?? '').trim();
                               if (value.isEmpty)
-                                return 'login.email.required'.tr;
+                                return Tk.loginEmailRequired.tr;
                               if (!GetUtils.isEmail(value))
-                                return 'login.email.invalid'.tr;
+                                return Tk.loginEmailInvalid.tr;
                               return null;
                             },
                           ),
                           const SizedBox(height: 14),
                           AppPasswordField(
                             controller: controller.passwordController,
-                            label: 'login.password.label'.tr,
-                            hint: 'login.password.hint'.tr,
+                            label: Tk.loginPasswordLabel.tr,
+                            hint: Tk.loginPasswordHint.tr,
                             prefixIcon: Icons.lock_outline_rounded,
                             validator: (v) {
                               final value = (v ?? '');
                               if (value.isEmpty)
-                                return 'login.password.required'.tr;
+                                return Tk.loginPasswordRequired.tr;
                               if (value.length < 6)
-                                return 'login.password.short'.tr;
+                                return Tk.loginPasswordShort.tr;
                               return null;
                             },
                           ),
@@ -117,7 +118,7 @@ class LoginScreen extends GetView<LoginController> {
                                 splashFactory: NoSplash.splashFactory,
                               ),
                               child: Text(
-                                'login.forgot'.tr,
+                                Tk.loginForgot.tr,
                                 style: TextStyle(
                                   color: context.primary,
                                   fontWeight: FontWeight.w700,
@@ -128,7 +129,7 @@ class LoginScreen extends GetView<LoginController> {
                           ),
                           const SizedBox(height: 10),
                           AppButton(
-                            text: 'login.sign_in'.tr,
+                            text: Tk.loginSignIn.tr,
                             icon: Icons.login_rounded,
                             onPressed: controller.login,
                             height: 54,
@@ -175,14 +176,14 @@ class LoginScreen extends GetView<LoginController> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'login.no_account'.tr,
+                      Tk.loginNoAccount.tr,
                       style: TextStyle(color: context.mutedForeground),
                     ),
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: controller.goToRegister,
                       child: Text(
-                        'login.create_account'.tr,
+                        Tk.loginCreateAccount.tr,
                         style: TextStyle(
                           color: context.primary,
                           fontWeight: FontWeight.w800,

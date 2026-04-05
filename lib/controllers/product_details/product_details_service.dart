@@ -1,3 +1,4 @@
+import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/models/product_color_option.dart';
 import 'package:rwnaqk/models/product_review.dart';
@@ -28,14 +29,7 @@ class ProductDetailsService {
       if (out.isNotEmpty) return out;
     }
 
-    return const <ProductReview>[
-      ProductReview(
-        name: 'Veronika',
-        rating: 4.0,
-        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed diam.',
-        dateText: '2 days ago',
-      ),
-    ];
+    return AppMockContentUtils.previewReviews;
   }
 
   String resolveSelectedColorId({

@@ -1,251 +1,33 @@
 import 'package:get/get.dart';
+import 'package:rwnaqk/core/translations/maps/account_translations.dart';
+import 'package:rwnaqk/core/translations/maps/auth_translations.dart';
+import 'package:rwnaqk/core/translations/maps/common_ui_translations.dart';
+import 'package:rwnaqk/core/translations/maps/extra_ui_translations.dart';
+import 'package:rwnaqk/core/translations/maps/mock_content_translations.dart';
+import 'package:rwnaqk/core/translations/maps/shop_translations.dart';
 
 class AppTranslations extends Translations {
+  static const Map<String, String> _enUS = {
+    ...enCommonUiTranslations,
+    ...enAuthTranslations,
+    ...enAccountTranslations,
+    ...enShopTranslations,
+    ...enExtraUiTranslations,
+    ...enMockContentTranslations,
+  };
+
+  static const Map<String, String> _arYE = {
+    ...arCommonUiTranslations,
+    ...arAuthTranslations,
+    ...arAccountTranslations,
+    ...arShopTranslations,
+    ...arExtraUiTranslations,
+    ...arMockContentTranslations,
+  };
+
   @override
   Map<String, Map<String, String>> get keys => {
-    'en_US': {
-      'app.name': 'Rwnaqk',
-      'onboarding.title': 'Rwnaqk',
-      'onboarding.subtitle':
-          'Beautiful eCommerce UI Kit\nfor your online store',
-      'onboarding.get_started': "Let's get started",
-      'onboarding.have_account': 'I already have an account',
-
-      'login.title': 'Welcome Back',
-      'login.subtitle': 'Sign in to continue',
-      'login.email.label': 'Email',
-      'login.email.hint': 'example@domain.com',
-      'login.email.required': 'Email is required',
-      'login.email.invalid': 'Invalid email',
-      'login.password.label': 'Password',
-      'login.password.hint': 'Enter your password',
-      'login.password.required': 'Password is required',
-      'login.password.short': 'Password must be at least 6 characters',
-      'login.forgot': 'Forgot password?',
-      'login.sign_in': 'Sign in',
-      'login.or': 'OR',
-      'login.with_google': 'Continue with Google',
-      'login.with_apple': 'Continue with Apple',
-      'login.with_facebook': 'Continue with Facebook',
-      'login.no_account': "Don't have an account?",
-      'login.create_account': 'Create account',
-
-      // Register
-      'register.title': 'Create account',
-      'register.subtitle': 'Create a new account to continue',
-
-      'register.first_name.label': 'First name',
-      'register.first_name.hint': 'Your first name',
-      'register.first_name.required': 'First name is required',
-
-      'register.last_name.label': 'Last name',
-      'register.last_name.hint': 'Family name',
-      'register.last_name.required': 'Last name is required',
-
-      'register.phone.label': 'Phone',
-      'register.phone.hint': 'e.g. 77xxxxxxx',
-      'register.phone.required': 'Phone is required',
-      'register.phone.invalid': 'Invalid phone number',
-
-      'register.email.label': 'Email',
-      'register.email.hint': 'example@domain.com',
-      'register.email.required': 'Email is required',
-      'register.email.invalid': 'Invalid email',
-
-      'register.governorate.label': 'Governorate',
-      'register.governorate.hint': 'Select governorate',
-      'register.governorate.required': 'Please select governorate',
-
-      'register.password.label': 'Password',
-      'register.password.hint': 'Create a password',
-      'register.password.required': 'Password is required',
-      'register.password.short': 'Minimum 6 characters',
-
-      'register.terms.text': 'I agree to Terms & Privacy Policy',
-      'register.terms.required': 'You must agree to continue',
-
-      'register.submit': 'Create account',
-      'register.have_account': 'Already have an account?',
-      'register.sign_in': 'Sign in',
-
-      // Forgot Password
-      'fp.title': 'Password Recovery',
-      'fp.subtitle': 'Choose how you want to reset your password',
-      'fp.sms': 'SMS',
-      'fp.email': 'Email',
-      'fp.next': 'Next',
-      'fp.cancel': 'Cancel',
-
-      'fp.verify.title': 'Verification Code',
-      'fp.verify.subtitle': 'Enter the 4-digit code we sent to',
-      'fp.verify.subtitle_email': 'Enter the 4-digit code we sent to',
-      'fp.verify.subtitle_sms': 'Enter the 4-digit code we sent to',
-      'fp.verify.resend': 'Resend',
-      'fp.verify.resend_in': 'Resend in @s s',
-      'fp.verify.invalid': 'Invalid code',
-      'fp.verify.sent': 'Code sent',
-
-      'fp.new.title': 'Set New Password',
-      'fp.new.subtitle': 'Create a new password for your account',
-      'fp.new.password': 'New password',
-      'fp.new.confirm': 'Repeat password',
-      'fp.new.save': 'Save',
-      'fp.new.mismatch': 'Passwords do not match',
-      'fp.new.short': 'Minimum 6 characters',
-      'fp.done': 'Password updated',
-
-      'home.title': 'Shop',
-      'home.search_hint': 'Search',
-      'home.see_all': 'See All',
-      'home.categories': 'Categories',
-      'home.top_products': 'Top Products',
-      'home.new_items': 'New Items',
-      'home.flash_sale': 'Flash Sale',
-      'home.most_popular': 'Most Popular',
-      'home.just_for_you': 'Just For You',
-      'home.currency': '\$',
-
-      'main_categories.title': 'Categories',
-      'main_categories.heading': 'Shop by category',
-      'main_categories.description':
-          'Choose the section that fits you and browse products more easily by type and interest.',
-      'main_categories.beauty_title': 'Beauty',
-      'main_categories.beauty_subtitle':
-          'Makeup, skincare, hair care, and daily beauty essentials.',
-      'main_categories.fashion_title': 'Fashion',
-      'main_categories.fashion_subtitle':
-          'Modern fashion, shoes, bags, and looks for every moment.',
-      'main_categories.perfume_title': 'Perfumes',
-      'main_categories.perfume_subtitle':
-          'Women, men, and unisex fragrances with elegant and distinctive scents.',
-      'home.banner.big_sale': 'Big Sale',
-      'home.banner.up_to_50': 'Up to 50%',
-      'home.banner.happening_now': 'Happening Now',
-      'home.banner.new_collection': 'New Collection',
-      'home.banner.trending': 'Trending now',
-      'home.tags.hot': 'Hot',
-      'home.add_to_cart': 'Add to cart',
-    },
-    'ar_YE': {
-      'app.name': 'رونقك',
-      'onboarding.title': 'رونقك',
-      'onboarding.subtitle': 'واجهة متجر جميلة\nلمتجرك الإلكتروني',
-      'onboarding.get_started': 'ابدأ الآن',
-      'onboarding.have_account': 'لدي حساب بالفعل',
-
-      'login.title': 'مرحباً بعودتك',
-      'login.subtitle': 'سجّل دخولك للمتابعة',
-      'login.email.label': 'البريد الإلكتروني',
-      'login.email.hint': 'example@domain.com',
-      'login.email.required': 'البريد الإلكتروني مطلوب',
-      'login.email.invalid': 'البريد الإلكتروني غير صحيح',
-      'login.password.label': 'كلمة المرور',
-      'login.password.hint': 'اكتب كلمة المرور',
-      'login.password.required': 'كلمة المرور مطلوبة',
-      'login.password.short': 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
-      'login.forgot': 'نسيت كلمة المرور؟',
-      'login.sign_in': 'تسجيل الدخول',
-      'login.or': 'أو',
-      'login.with_google': 'متابعة باستخدام Google',
-      'login.with_apple': 'متابعة باستخدام Apple',
-      'login.with_facebook': 'متابعة باستخدام Facebook',
-      'login.no_account': 'ليس لديك حساب؟',
-      'login.create_account': 'إنشاء حساب',
-
-      // Register
-      'register.title': 'إنشاء حساب',
-      'register.subtitle': 'أنشئ حسابًا جديدًا للمتابعة',
-
-      'register.first_name.label': 'الاسم',
-      'register.first_name.hint': 'الاسم الأول',
-      'register.first_name.required': 'الاسم مطلوب',
-
-      'register.last_name.label': 'اللقب',
-      'register.last_name.hint': 'اسم العائلة',
-      'register.last_name.required': 'اللقب مطلوب',
-
-      'register.phone.label': 'رقم التلفون',
-      'register.phone.hint': 'مثال: 77xxxxxxx',
-      'register.phone.required': 'رقم التلفون مطلوب',
-      'register.phone.invalid': 'رقم التلفون غير صحيح',
-
-      'register.email.label': 'البريد الإلكتروني',
-      'register.email.hint': 'example@domain.com',
-      'register.email.required': 'البريد الإلكتروني مطلوب',
-      'register.email.invalid': 'البريد الإلكتروني غير صحيح',
-
-      'register.governorate.label': 'المحافظة',
-      'register.governorate.hint': 'اختر المحافظة',
-      'register.governorate.required': 'اختر المحافظة',
-
-      'register.password.label': 'كلمة المرور',
-      'register.password.hint': 'أنشئ كلمة مرور',
-      'register.password.required': 'كلمة المرور مطلوبة',
-      'register.password.short': 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
-
-      'register.terms.text': 'أوافق على شروط الاستخدام وسياسة الخصوصية',
-      'register.terms.required': 'يجب الموافقة على الشروط للمتابعة',
-
-      'register.submit': 'إنشاء حساب',
-      'register.have_account': 'عندك حساب؟',
-      'register.sign_in': 'تسجيل الدخول',
-
-      // Forgot Password
-      'fp.title': 'استعادة كلمة المرور',
-      'fp.subtitle': 'اختر طريقة استعادة كلمة المرور',
-      'fp.sms': 'رسالة SMS',
-      'fp.email': 'البريد الإلكتروني',
-      'fp.next': 'التالي',
-      'fp.cancel': 'إلغاء',
-
-      'fp.verify.title': 'رمز التحقق',
-      'fp.verify.subtitle': 'Enter the 4-digit code we sent to',
-      'fp.verify.subtitle_email': 'Enter the 4-digit code we sent to',
-      'fp.verify.subtitle_sms': 'Enter the 4-digit code we sent to',
-      'fp.verify.resend': 'إعادة الإرسال',
-      'fp.verify.resend_in': 'إعادة الإرسال خلال @s ث',
-      'fp.verify.invalid': 'رمز غير صحيح',
-      'fp.verify.sent': 'تم إرسال الرمز',
-
-      'fp.new.title': 'تعيين كلمة مرور جديدة',
-      'fp.new.subtitle': 'قم بإنشاء كلمة مرور جديدة لحسابك',
-      'fp.new.password': 'كلمة المرور الجديدة',
-      'fp.new.confirm': 'تأكيد كلمة المرور',
-      'fp.new.save': 'حفظ',
-      'fp.new.mismatch': 'كلمتا المرور غير متطابقتين',
-      'fp.new.short': 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
-      'fp.done': 'تم تحديث كلمة المرور',
-      'home.title': 'المتجر',
-      'home.search_hint': 'بحث',
-      'home.see_all': 'عرض الكل',
-      'home.categories': 'الأقسام',
-      'home.top_products': 'أفضل المنتجات',
-      'home.new_items': 'وصل حديثًا',
-      'home.flash_sale': 'تخفيضات سريعة',
-      'home.most_popular': 'الأكثر شعبية',
-      'home.just_for_you': 'مختار لك',
-      'home.currency': 'ر.ي ',
-
-      'main_categories.title': 'الأقسام',
-      'main_categories.heading': 'تسوّق حسب الفئة',
-      'main_categories.description':
-          'اختر القسم المناسب لك واستعرض المنتجات بسهولة حسب نوعها واهتماماتك.',
-      'main_categories.beauty_title': 'أدوات التجميل',
-      'main_categories.beauty_subtitle':
-          'مكياج، عناية بالبشرة، عناية بالشعر، وأدوات يومية.',
-      'main_categories.fashion_title': 'الملابس',
-      'main_categories.fashion_subtitle':
-          'أزياء عصرية، أحذية، حقائب، وإطلالات تناسب كل وقت.',
-      'main_categories.perfume_title': 'العطور',
-      'main_categories.perfume_subtitle':
-          'عطور نسائية ورجالية ويونيسكس بروائح راقية ومميزة.',
-      'home.banner.big_sale': 'تخفيضات كبيرة',
-      'home.banner.up_to_50': 'حتى 50%',
-      'home.banner.happening_now': 'يحدث الآن',
-      'home.banner.new_collection': 'تشكيلة جديدة',
-      'home.banner.trending': 'الأكثر رواجًا',
-      'home.tags.hot': 'الأكثر',
-      'home.add_to_cart': 'أضف للسلة',
-    },
-  };
+        'en_US': _enUS,
+        'ar_YE': _arYE,
+      };
 }

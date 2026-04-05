@@ -1,7 +1,9 @@
 import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/cart/cart_controller.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_service.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة المفضلة.
@@ -106,9 +108,13 @@ class WishlistController extends GetxController {
 
   /// هذه الدالة تضيف المنتج إلى السلة بشكل تجريبي حاليًا.
   void addToCart(HomeProductItem item) {
+    if (Get.isRegistered<CartController>()) {
+      Get.find<CartController>().addToCart(item);
+    }
+
     Get.snackbar(
-      'Cart',
-      'Added "${item.title}" to cart',
+      Tk.cartTitle.tr,
+      Tk.wishlistAddedToCartMessage.trParams({'title': item.title.tr}),
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 1),
     );

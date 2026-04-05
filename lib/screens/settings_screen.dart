@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/app_settings/app_settings_controller.dart';
+import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/common/app_back_header.dart';
 import 'package:rwnaqk/widgets/common/app_section_header.dart';
 import 'package:rwnaqk/widgets/settings/settings_profile_card.dart';
@@ -16,6 +18,7 @@ class SettingsScreen extends GetView<AppSettingsController> {
   @override
   Widget build(BuildContext context) {
     final app = Get.find<AppSettingsController>();
+    final profileStore = Get.find<ProfileStoreService>();
     final main = Get.isRegistered<MainController>()
         ? Get.find<MainController>()
         : null;
@@ -27,7 +30,7 @@ class SettingsScreen extends GetView<AppSettingsController> {
           padding: const EdgeInsetsDirectional.fromSTEB(18, 12, 18, 18),
           children: [
             AppBackHeader(
-              title: 'Settings'.tr,
+              title: Tk.settingsTitle.tr,
               onBack: () {
                 if (main != null) {
                   main.changeTab(0);
@@ -37,63 +40,54 @@ class SettingsScreen extends GetView<AppSettingsController> {
               },
             ),
             const SizedBox(height: 14),
-
-            SettingsProfileCard(
-              name: 'Eng Zain'.tr,
-              phone: '+967 7xx xxx xxx'.tr,
-              onEdit: () => Get.toNamed(AppRoutes.editProfile),
+            Obx(
+              () => SettingsProfileCard(
+                name: profileStore.name.value,
+                phone: profileStore.phone.value,
+                onEdit: () => Get.toNamed(AppRoutes.editProfile),
+              ),
             ),
-
             const SizedBox(height: 16),
-
             AppSectionHeader(
-              title: 'Account'.tr,
+              title: Tk.settingsAccount.tr,
               titleFontSize: 12.5,
               titleColor: context.muted,
             ),
             const SizedBox(height: 10),
-
             SettingsListTile(
               icon: Icons.person_outline_rounded,
-              title: 'Profile'.tr,
-              subtitle: 'Edit your info'.tr,
-              onTap: () {
-                // Get.toNamed(AppRoutes.profile);
-              },
+              title: Tk.settingsProfile.tr,
+              subtitle: Tk.settingsProfileSubtitle.tr,
+              onTap: () => Get.toNamed(AppRoutes.profile),
             ),
             const SizedBox(height: 10),
-
             SettingsListTile(
               icon: Icons.location_on_outlined,
-              title: 'Addresses'.tr,
-              subtitle: 'Manage shipping addresses'.tr,
+              title: Tk.settingsAddresses.tr,
+              subtitle: Tk.settingsAddressesSubtitle.tr,
               onTap: () => Get.toNamed(AppRoutes.addresses),
             ),
             const SizedBox(height: 10),
-
             SettingsListTile(
               icon: Icons.receipt_long_outlined,
-              title: 'طلباتي'.tr,
-              subtitle: 'تتبع وإدارة الطلبات'.tr,
+              title: Tk.settingsOrders.tr,
+              subtitle: Tk.settingsOrdersSubtitle.tr,
               onTap: () => Get.toNamed(AppRoutes.orders),
             ),
-
             const SizedBox(height: 18),
-
             AppSectionHeader(
-              title: 'Preferences'.tr,
+              title: Tk.settingsPreferences.tr,
               titleFontSize: 12.5,
               titleColor: context.muted,
             ),
             const SizedBox(height: 10),
-
             Obx(() {
               final isDark = app.themeMode.value == ThemeMode.dark;
 
               return SettingsListTile(
                 icon: Icons.dark_mode_outlined,
-                title: 'Dark mode'.tr,
-                subtitle: 'Switch theme'.tr,
+                title: Tk.settingsDarkMode.tr,
+                subtitle: Tk.settingsDarkModeSubtitle.tr,
                 trailingMaxWidth: 90,
                 trailing: Switch(
                   value: isDark,
@@ -103,13 +97,11 @@ class SettingsScreen extends GetView<AppSettingsController> {
                 showChevron: false,
               );
             }),
-
             const SizedBox(height: 10),
-
             SettingsListTile(
               icon: Icons.language_outlined,
-              title: 'Language'.tr,
-              subtitle: 'Arabic / English'.tr,
+              title: Tk.settingsLanguage.tr,
+              subtitle: Tk.settingsLanguageSubtitle.tr,
               trailingMaxWidth: 95,
               trailing: Obx(() {
                 final code = app.locale.value.languageCode.toUpperCase();
@@ -141,36 +133,30 @@ class SettingsScreen extends GetView<AppSettingsController> {
               tapWholeTile: true,
               showChevron: true,
             ),
-
             const SizedBox(height: 18),
-
             AppSectionHeader(
-              title: 'Support'.tr,
+              title: Tk.settingsSupport.tr,
               titleFontSize: 12.5,
               titleColor: context.muted,
             ),
             const SizedBox(height: 10),
-
             SettingsListTile(
               icon: Icons.help_outline_rounded,
-              title: 'Help Center'.tr,
-              subtitle: 'FAQs & support'.tr,
-              onTap: () {},
+              title: Tk.settingsHelpCenter.tr,
+              subtitle: Tk.settingsHelpCenterSubtitle.tr,
+              onTap: () => Get.toNamed(AppRoutes.helpCenter),
             ),
-
             const SizedBox(height: 18),
-
             AppSectionHeader(
-              title: 'Danger zone'.tr,
+              title: Tk.settingsDangerZone.tr,
               titleFontSize: 12.5,
               titleColor: context.muted,
             ),
             const SizedBox(height: 10),
-
             SettingsListTile(
               icon: Icons.logout_rounded,
-              title: 'Logout'.tr,
-              subtitle: 'Sign out of your account'.tr,
+              title: Tk.settingsLogout.tr,
+              subtitle: Tk.settingsLogoutSubtitle.tr,
               trailingMaxWidth: 60,
               trailing: Icon(
                 Icons.logout_rounded,
@@ -178,7 +164,8 @@ class SettingsScreen extends GetView<AppSettingsController> {
                 size: 20,
               ),
               showChevron: false,
-              onTap: () => Get.snackbar('Logout'.tr, 'Mock action'.tr),
+              onTap: () =>
+                  Get.snackbar(Tk.settingsLogout.tr, Tk.commonMockAction.tr),
             ),
           ],
         ),

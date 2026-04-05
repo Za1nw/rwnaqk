@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
 import 'package:rwnaqk/widgets/app_input_field.dart';
 import 'package:rwnaqk/widgets/app_select_field.dart';
@@ -117,8 +119,10 @@ class _ShippingAddressSheetState extends State<ShippingAddressSheet> {
 
     final isShipping = widget.section == EditSection.shipping;
 
-    final title = isShipping ? "Shipping Address" : "Contact Information";
-    final saveText = "Save Changes";
+    final title = isShipping
+        ? Tk.addressesShippingAddress.tr
+        : Tk.addressesContactInformation.tr;
+    final saveText = Tk.addressesSaveChanges.tr;
 
     return AnimatedPadding(
       duration: const Duration(milliseconds: 200),
@@ -164,8 +168,8 @@ class _ShippingAddressSheetState extends State<ShippingAddressSheet> {
                 // =========================
                 if (isShipping) ...[
                   AppSelectField<String>(
-                    label: "Country",
-                    hint: "Select country",
+                    label: Tk.addressesCountry.tr,
+                    hint: Tk.addressesSelectCountry.tr,
                     value: widget.country,
                     items: widget.countries!,
                     prefixIcon: Icons.public,
@@ -176,7 +180,7 @@ class _ShippingAddressSheetState extends State<ShippingAddressSheet> {
 
                   AppInputField(
                     controller: widget.addressController!,
-                    label: "Address",
+                    label: Tk.addressesAddress.tr,
                     prefixIcon: Icons.location_on_outlined,
                     maxLines: 2,
                   ),
@@ -184,14 +188,14 @@ class _ShippingAddressSheetState extends State<ShippingAddressSheet> {
 
                   AppInputField(
                     controller: widget.cityController!,
-                    label: "Town / City",
+                    label: Tk.addressesCity.tr,
                     prefixIcon: Icons.location_city_outlined,
                   ),
                   const SizedBox(height: 12),
 
                   AppInputField(
                     controller: widget.postcodeController!,
-                    label: "Postcode",
+                    label: Tk.addressesPostcode.tr,
                     prefixIcon: Icons.local_post_office_outlined,
                     keyboardType: TextInputType.number,
                   ),
@@ -203,7 +207,7 @@ class _ShippingAddressSheetState extends State<ShippingAddressSheet> {
                 if (!isShipping) ...[
                   AppInputField(
                     controller: widget.phoneController!,
-                    label: "Phone",
+                    label: Tk.addressesPhone.tr,
                     prefixIcon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
                   ),
@@ -211,7 +215,7 @@ class _ShippingAddressSheetState extends State<ShippingAddressSheet> {
 
                   AppInputField(
                     controller: widget.emailController!,
-                    label: "Email",
+                    label: Tk.addressesEmail.tr,
                     prefixIcon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                   ),

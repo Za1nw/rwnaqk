@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/addresses/addresses_service.dart';
+import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 import 'package:rwnaqk/controllers/addresses/addresses_ui_controller.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة العناوين.
@@ -18,11 +20,11 @@ class AddressesController extends GetxController {
   AddressesController(this._service);
 
   final AddressesService _service;
-
-  late final AddressesUiController ui;
+  final _store = Get.find<ProfileStoreService>();
+  AddressesUiController get ui => Get.find<AddressesUiController>();
 
   /// قائمة العناوين الحالية.
-  final addresses = <ShippingAddress>[].obs;
+  RxList<ShippingAddress> get addresses => _store.addresses;
 
   // =========================
   // UI BRIDGES
@@ -46,13 +48,19 @@ class AddressesController extends GetxController {
   /// نستخدمها لتهيئة الـ UI controller وتحميل البيانات التجريبية.
   void onInit() {
     super.onInit();
-    ui = Get.find<AddressesUiController>();
-    seedMockData();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    if (addresses.isEmpty) {
+      seedMockData();
+    }
   }
 
   /// هذه الدالة تهيئ البيانات التجريبية الخاصة بالعناوين.
   void seedMockData() {
-    addresses.assignAll(_service.seedMockAddresses());
+    _service.saveAddresses(_service.seedMockAddresses());
   }
 
   /// هذه الدالة تغيّر الدولة المختارة في النموذج.
@@ -82,7 +90,7 @@ class AddressesController extends GetxController {
     final p = postcodeCtrl.text.trim();
 
     if (c.isEmpty || a.isEmpty || city.isEmpty || p.isEmpty) {
-      Get.snackbar('Error'.tr, 'Please fill all fields'.tr);
+      Get.snackbar(Tk.commonError.tr, Tk.profileEditFillAll.tr);
       return;
     }
 
@@ -109,14 +117,16 @@ class AddressesController extends GetxController {
       }
     }
 
+    _service.saveAddresses(addresses.toList(growable: false));
+
     Get.back();
   }
 
   /// هذه الدالة تجعل عنوانًا واحدًا فقط هو الافتراضي.
   void setDefault(String id) {
-    addresses.assignAll(
+    _service.saveAddresses(
       _service.markDefault(
-        addresses: addresses,
+        addresses: addresses.toList(growable: false),
         id: id,
       ),
     );
@@ -129,7 +139,7 @@ class AddressesController extends GetxController {
   void deleteAddress(String id) {
     final next = addresses.where((e) => e.id != id).toList();
 
-    addresses.assignAll(
+    _service.saveAddresses(
       _service.buildDefaultAfterDelete(next),
     );
   }

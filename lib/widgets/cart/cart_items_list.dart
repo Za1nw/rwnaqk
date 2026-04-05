@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../models/home_product_item.dart';
-import 'cart_item_tile.dart';
+import 'package:rwnaqk/core/utils/app_product_utils.dart';
+import 'package:rwnaqk/models/home_product_item.dart';
+import 'package:rwnaqk/widgets/cart/cart_item_tile.dart';
 
 class CartItemsList extends StatelessWidget {
   final List<HomeProductItem> items;
-  final int Function(String id) quantityFor;
+  final Map<String, int> quantities;
   final Function(String id) onRemove;
   final Function(String id) onIncrement;
   final Function(String id) onDecrement;
@@ -12,28 +13,11 @@ class CartItemsList extends StatelessWidget {
   const CartItemsList({
     super.key,
     required this.items,
-    required this.quantityFor,
+    required this.quantities,
     required this.onRemove,
     required this.onIncrement,
     required this.onDecrement,
   });
-
-  String? _variantText(HomeProductItem item) {
-    final parts = <String>[];
-
-    if (item.availableColors.isNotEmpty) {
-      final colorName = item.availableColors.first.name.trim();
-      if (colorName.isNotEmpty) parts.add(colorName);
-    }
-
-    if (item.availableSizes.isNotEmpty) {
-      final size = item.availableSizes.first.trim();
-      if (size.isNotEmpty) parts.add(size);
-    }
-
-    if (parts.isEmpty) return null;
-    return parts.join(' • ');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +31,8 @@ class CartItemsList extends StatelessWidget {
 
         return CartItemTile(
           item: item,
-          quantity: quantityFor(item.id),
-          variantText: _variantText(item),
+          quantity: quantities[item.id] ?? 1,
+          variantText: AppProductUtils.variantText(item),
           onIncrement: () => onIncrement(item.id),
           onDecrement: () => onDecrement(item.id),
           onRemove: () => onRemove(item.id),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/forgot_password/forgot_password_service.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 import '../../controllers/forgot_password/forgot_password_controller.dart';
 import '../../widgets/auth_blob_background.dart';
@@ -44,15 +45,15 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                 const SizedBox(height: 16),
 
                 AuthTitleBlock(
-                  title: 'fp.title'.tr,
-                  subtitle: 'fp.subtitle'.tr,
+                  title: Tk.fpTitle.tr,
+                  subtitle: Tk.fpSubtitle.tr,
                 ),
                 const SizedBox(height: 18),
 
                 Obx(() {
                   return _ChoiceCard(
                     selected: controller.method.value == RecoveryMethod.sms,
-                    title: 'fp.sms'.tr,
+                    title: Tk.fpSms.tr,
                     icon: Icons.sms_outlined,
                     onTap: () => controller.selectMethod(RecoveryMethod.sms),
                   );
@@ -61,7 +62,7 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                 Obx(() {
                   return _ChoiceCard(
                     selected: controller.method.value == RecoveryMethod.email,
-                    title: 'fp.email'.tr,
+                    title: Tk.fpEmail.tr,
                     icon: Icons.email_outlined,
                     onTap: () => controller.selectMethod(RecoveryMethod.email),
                   );
@@ -70,7 +71,7 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                 const SizedBox(height: 20),
 
                 AppButton(
-                  text: 'fp.next'.tr,
+                  text: Tk.fpNext.tr,
                   icon: Icons.arrow_forward_rounded,
                   onPressed: controller.goNextFromMethod,
                   height: 54,
@@ -80,7 +81,7 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                 TextButton(
                   onPressed: controller.cancel,
                   child: Text(
-                    'fp.cancel'.tr,
+                    Tk.fpCancel.tr,
                     style: TextStyle(color: context.mutedForeground),
                   ),
                 ),

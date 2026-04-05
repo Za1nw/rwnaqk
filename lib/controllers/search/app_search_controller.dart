@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/search/search_service.dart';
 import 'package:rwnaqk/controllers/search/search_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/widgets/app_filter_sheet.dart';
 
@@ -130,7 +131,7 @@ class AppSearchController extends GetxController {
 
   /// هذه الدالة مخصصة لفتح الكاميرا لاحقًا للبحث بالصورة.
   void openCamera() {
-    Get.snackbar('Camera', 'Not implemented yet');
+    Get.snackbar(Tk.commonCamera.tr, Tk.commonNotImplementedYet.tr);
   }
 
   /// هذه الدالة تفتح نافذة الفلاتر السفلية.

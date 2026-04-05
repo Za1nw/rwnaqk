@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/cart/address_section.dart';
 
 class PaymentContactSection extends StatelessWidget {
@@ -14,11 +16,11 @@ class PaymentContactSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AddressSection(
-      title: 'Contact Information',
+      title: Tk.cartContactInformation.tr,
       lines: lines,
       onEdit: onEdit,
       allowAddWhenEmpty: false,
-      emptyHint: 'اضف معلومات التواصل',
+      emptyHint: Tk.cartAddContactInformation.tr,
     );
   }
 }

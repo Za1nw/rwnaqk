@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/widgets/app_network_image.dart';
 import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
@@ -79,7 +80,7 @@ class WishlistItemTile extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      item.title,
+                      item.title.tr,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

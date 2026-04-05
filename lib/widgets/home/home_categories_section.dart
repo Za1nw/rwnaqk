@@ -4,6 +4,7 @@ import 'package:rwnaqk/controllers/home/home_controller.dart';
 import 'package:rwnaqk/widgets/common/app_section_header.dart';
 import 'package:rwnaqk/widgets/home/category_grid.dart';
 import 'package:rwnaqk/widgets/home/home_layout.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class HomeCategoriesSection extends GetView<HomeController> {
   const HomeCategoriesSection({super.key});
@@ -14,8 +15,8 @@ class HomeCategoriesSection extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppSectionHeader(
-          title: 'home.categories'.tr,
-          actionText: 'home.see_all'.tr,
+          title: Tk.homeCategories.tr,
+          actionText: Tk.homeSeeAll.tr,
           onActionTap: controller.onSeeAllCategories,
         ),
         const SizedBox(height: HomeLayout.innerGap),

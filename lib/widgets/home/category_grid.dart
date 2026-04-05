@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import '../../models/home_category_item.dart';
 
@@ -211,7 +212,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                     // اسم الفئة
                     Expanded(
                       child: Text(
-                        widget.item.name,
+                        widget.item.name.tr,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

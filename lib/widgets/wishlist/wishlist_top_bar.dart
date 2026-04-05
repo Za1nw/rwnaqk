@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
 
 class WishlistTopBar extends StatelessWidget {
@@ -57,12 +58,12 @@ class WishlistTopBar extends StatelessWidget {
             child: Row(
               children: [
                 _TabPill(
-                  text: 'Wishlist',
+                  text: Tk.wishlistTitle.tr,
                   selected: idx == 0,
                   onTap: () => c.setTab(0),
                 ),
                 _TabPill(
-                  text: 'Recently viewed',
+                  text: Tk.wishlistRecentlyViewed.tr,
                   selected: idx == 1,
                   onTap: () => c.setTab(1),
                 ),

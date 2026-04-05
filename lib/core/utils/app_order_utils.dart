@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class AppOrderUtils {
   AppOrderUtils._();
@@ -14,15 +15,15 @@ class AppOrderUtils {
   static String statusLabel(String status) {
     switch (status) {
       case 'pending':
-        return 'قيد المعالجة';
+        return Tk.ordersStatusPending;
       case 'confirmed':
-        return 'مؤكد';
+        return Tk.ordersStatusConfirmed;
       case 'shipped':
-        return 'قيد التوصيل';
+        return Tk.ordersStatusShipped;
       case 'delivered':
-        return 'تم التسليم';
+        return Tk.ordersStatusDelivered;
       case 'canceled':
-        return 'ملغي';
+        return Tk.ordersStatusCanceled;
       default:
         return status;
     }
@@ -75,17 +76,17 @@ class AppOrderUtils {
   static String etaText(String status) {
     switch (status) {
       case 'pending':
-        return 'متوقع خلال 24 ساعة';
+        return Tk.ordersEtaPending;
       case 'confirmed':
-        return 'متوقع اليوم';
+        return Tk.ordersEtaConfirmed;
       case 'shipped':
-        return 'متوقع خلال 2-4 ساعات';
+        return Tk.ordersEtaShipped;
       case 'delivered':
-        return 'تم التسليم';
+        return Tk.ordersEtaDelivered;
       case 'canceled':
-        return 'تم الإلغاء';
+        return Tk.ordersEtaCanceled;
       default:
-        return 'قريباً';
+        return Tk.ordersEtaPending;
     }
   }
 

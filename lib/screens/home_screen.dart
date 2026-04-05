@@ -13,6 +13,7 @@ import 'package:rwnaqk/widgets/home/home_most_popular_section.dart';
 import 'package:rwnaqk/widgets/home/home_new_items_section.dart';
 import 'package:rwnaqk/widgets/home/home_top_products_section.dart';
 import 'package:rwnaqk/widgets/home/shop_top_bar.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class HomeScreen extends GetView<HomeController> {
   const HomeScreen({super.key});
@@ -42,8 +43,8 @@ class HomeScreen extends GetView<HomeController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ShopTopBar(
-                    title: 'home.title'.tr,
-                    searchHint: 'home.search_hint'.tr,
+                    title: Tk.homeTitle.tr,
+                    searchHint: Tk.homeSearchHint.tr,
                     controller: controller.searchC,
                     onTapField: () => Get.toNamed(AppRoutes.search),
                     onCamera: controller.openCamera,

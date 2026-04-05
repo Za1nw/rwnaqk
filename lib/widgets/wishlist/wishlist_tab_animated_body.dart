@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 import 'package:rwnaqk/widgets/common/app_empty_state.dart';
 import 'package:rwnaqk/widgets/card/product_grid_section.dart';
@@ -95,8 +96,8 @@ class _WishlistTabContent extends StatelessWidget {
     if (controller.wishlist.isEmpty) {
       return const AppEmptyState(
         icon: Icons.favorite_border_rounded,
-        title: 'No wishlist items',
-        subtitle: 'Items you save will appear here.',
+        title: Tk.wishlistEmptyTitle,
+        subtitle: Tk.wishlistEmptySubtitle,
       );
     }
 
@@ -139,8 +140,8 @@ class _RecentTabContent extends StatelessWidget {
           Expanded(
             child: AppEmptyState(
               icon: Icons.history_rounded,
-              title: 'No recently viewed items',
-              subtitle: 'Products you open will appear here.',
+              title: Tk.wishlistRecentEmptyTitle,
+              subtitle: Tk.wishlistRecentEmptySubtitle,
             ),
           ),
         ],

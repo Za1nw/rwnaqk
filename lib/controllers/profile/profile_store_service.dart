@@ -1,0 +1,95 @@
+import 'package:get/get.dart';
+import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
+import 'package:rwnaqk/models/shipping_address.dart';
+
+class ProfileStoreService extends GetxService {
+  final name = 'Zain Al-Hakimi'.obs;
+  final phone = '+967 770 245 819'.obs;
+  final email = 'zain@rwnaq.app'.obs;
+  final passwordPreview = '************'.obs;
+  final addresses = <ShippingAddress>[].obs;
+
+  ShippingAddress? get defaultAddress {
+    for (final address in addresses) {
+      if (address.isDefault) return address;
+    }
+    return addresses.isEmpty ? null : addresses.first;
+  }
+
+  String get location {
+    final current = defaultAddress;
+    if (current == null) return 'Taiz';
+    return '${current.city}, ${current.localizedCountry}';
+  }
+
+  void seedAddressesIfNeeded() {
+    if (addresses.isNotEmpty) return;
+
+    addresses.assignAll([
+      ShippingAddress(
+        id: '1',
+        country: Mk.countryYemen,
+        address: Mk.addressStreetMall.tr,
+        city: Mk.cityTaiz.tr,
+        postcode: '12345',
+        isDefault: true,
+      ),
+      ShippingAddress(
+        id: '2',
+        country: Mk.countrySaudiArabia,
+        address: Mk.addressKingRoad.tr,
+        city: Mk.cityRiyadh.tr,
+        postcode: '65432',
+      ),
+    ]);
+  }
+
+  void updateProfile({
+    required String nextName,
+    required String nextEmail,
+  }) {
+    name.value = nextName;
+    email.value = nextEmail;
+  }
+
+  ShippingAddress currentShippingAddress() {
+    final current = defaultAddress;
+    if (current == null) {
+      return ShippingAddress.empty();
+    }
+    return current;
+  }
+
+  void saveDefaultShippingAddress(ShippingAddress model) {
+    final next = ShippingAddress(
+      id: defaultAddress?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      country: model.country,
+      address: model.address,
+      city: model.city,
+      postcode: model.postcode,
+      isDefault: true,
+    );
+
+    if (addresses.isEmpty) {
+      addresses.assignAll([next]);
+      return;
+    }
+
+    final currentDefault = defaultAddress;
+    final existingIndex = currentDefault == null
+        ? -1
+        : addresses.indexWhere((item) => item.id == currentDefault.id);
+
+    final updated = addresses
+        .map((item) => item.copyWith(isDefault: false))
+        .toList(growable: true);
+
+    if (existingIndex != -1) {
+      updated[existingIndex] = next;
+    } else {
+      updated.insert(0, next);
+    }
+
+    addresses.assignAll(updated);
+  }
+}

@@ -1,3 +1,4 @@
+import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk/models/product_review.dart';
 
 /// هذا الملف مسؤول عن منطق البيانات الخاص بشاشة المراجعات.
@@ -47,30 +48,5 @@ class ReviewsService {
   /// هذه الدالة تعيد بيانات مراجعات تجريبية.
   ///
   /// نستخدمها كقيمة افتراضية عندما لا تصل مراجعات من الشاشة السابقة.
-  List<ProductReview> staticReviews() => const [
-        ProductReview(
-          name: 'Anna',
-          rating: 4.5,
-          text: 'Nice product, great quality and fast shipping.',
-          dateText: '2 days ago',
-        ),
-        ProductReview(
-          name: 'John',
-          rating: 5,
-          text: 'Perfect! Exactly as described.',
-          dateText: '1 week ago',
-        ),
-        ProductReview(
-          name: 'Sara',
-          rating: 4,
-          text: 'Good overall, but the packaging can be better.',
-          dateText: '3 weeks ago',
-        ),
-        ProductReview(
-          name: 'Khaled',
-          rating: 3.5,
-          text: 'It is okay, could be improved.',
-          dateText: '1 month ago',
-        ),
-      ];
+  List<ProductReview> staticReviews() => AppMockContentUtils.allReviews;
 }

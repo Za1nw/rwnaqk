@@ -15,6 +15,7 @@ import 'package:rwnaqk/controllers/main/main_ui_controller.dart';
 import 'package:rwnaqk/controllers/orders/orders_controller.dart';
 import 'package:rwnaqk/controllers/orders/orders_service.dart';
 import 'package:rwnaqk/controllers/orders/orders_ui_controller.dart';
+import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_service.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_ui_controller.dart';
@@ -59,8 +60,12 @@ class InitialBinding extends Bindings {
       AppSettingsController(Get.find<AppSettingsService>()),
       permanent: true,
     );
+    Get.put<ProfileStoreService>(ProfileStoreService(), permanent: true);
     Get.put<CartUiController>(CartUiController(), permanent: true);
-    Get.put<CartService>(CartService(), permanent: true);
+    Get.put<CartService>(
+      CartService(Get.find<ProfileStoreService>()),
+      permanent: true,
+    );
     Get.put<CartController>(
       CartController(Get.find<CartService>()),
       permanent: true,

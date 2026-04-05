@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/home/home_service.dart';
 import 'package:rwnaqk/controllers/home/home_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/models/home_banner_item.dart';
 import 'package:rwnaqk/models/home_category_item.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
@@ -66,7 +67,7 @@ class HomeController extends GetxController {
     Get.toNamed(
       AppRoutes.listing,
       arguments: {
-        'title': 'Categories',
+        'title': Tk.homeCategories.tr,
         'source': 'categories',
         'items': <HomeProductItem>[],
       },
@@ -77,7 +78,7 @@ class HomeController extends GetxController {
     Get.toNamed(
       AppRoutes.listing,
       arguments: {
-        'title': 'New Items',
+        'title': Tk.homeNewItems.tr,
         'source': 'new_items',
         'items': newItems.toList(),
       },
@@ -88,7 +89,7 @@ class HomeController extends GetxController {
     Get.toNamed(
       AppRoutes.listing,
       arguments: {
-        'title': 'Most Popular',
+        'title': Tk.homeMostPopular.tr,
         'source': 'most_popular',
         'items': mostPopular.toList(),
       },
@@ -99,7 +100,7 @@ class HomeController extends GetxController {
     Get.toNamed(
       AppRoutes.listing,
       arguments: {
-        'title': 'Just For You',
+        'title': Tk.homeJustForYou.tr,
         'source': 'just_for_you',
         'items': justForYou.toList(),
       },
@@ -136,7 +137,7 @@ class HomeController extends GetxController {
     Get.toNamed(
       AppRoutes.listing,
       arguments: {
-        'title': c.name,
+        'title': c.name.tr,
         'source': 'category_${c.id}',
         'items': pool.toList(),
       },

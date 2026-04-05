@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/flash_sale/flash_sale_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_date_utils.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 import 'package:rwnaqk/widgets/app_categories_filter_sheet.dart';
@@ -46,8 +47,10 @@ class FlashSaleScreen extends GetView<FlashSaleController> {
                   Obx(() {
                     final d = controller.selectedDiscount.value;
                     final title = d == 0
-                        ? 'All Discount'.tr
-                        : '$d% Discount'.tr;
+                        ? Tk.flashSaleAllDiscount.tr
+                        : Tk.flashSaleDiscountValue.trParams({
+                            'value': '$d',
+                          });
 
                     return Row(
                       children: [
@@ -79,11 +82,11 @@ class FlashSaleScreen extends GetView<FlashSaleController> {
                     final items = controller.flashSaleProducts.toList();
 
                     if (items.isEmpty) {
-                      return const Padding(
+                      return Padding(
                         padding: EdgeInsets.only(top: 16),
                         child: AppEmptyState(
-                          title: 'No offers found',
-                          subtitle: 'Try another discount or adjust filters.',
+                          title: Tk.flashSaleNoOffersTitle.tr,
+                          subtitle: Tk.flashSaleNoOffersSubtitle.tr,
                           icon: Icons.local_offer_outlined,
                         ),
                       );
@@ -168,7 +171,7 @@ class _FlashSaleHeroHeader extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Flash Sale'.tr,
+                          Tk.flashSaleTitle.tr,
                           style: TextStyle(
                             color: context.foreground,
                             fontSize: 24,
@@ -178,7 +181,7 @@ class _FlashSaleHeroHeader extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Choose Your Discount'.tr,
+                          Tk.flashSaleSubtitle.tr,
                           style: TextStyle(
                             color: context.mutedForeground.withOpacity(
                               context.isDark ? 0.9 : 0.85,
@@ -291,7 +294,7 @@ class _FlashSaleDiscountTabs extends StatelessWidget {
         alignment: WrapAlignment.spaceBetween,
         children: discounts.map((d) {
           final isOn = d == selected;
-          final label = d == 0 ? 'All'.tr : '$d%';
+          final label = d == 0 ? Tk.commonAll.tr : '$d%';
 
           if (!isOn) {
             return GestureDetector(

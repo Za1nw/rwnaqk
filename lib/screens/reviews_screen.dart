@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/app_network_image.dart';
 import 'package:rwnaqk/controllers/reviews/reviews_controller.dart';
 
@@ -25,7 +26,7 @@ class ReviewsScreen extends GetView<ReviewsController> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    'Reviews',
+                    Tk.reviewsTitle.tr,
                     style: TextStyle(
                       color: context.foreground,
                       fontSize: 26,
@@ -117,7 +118,7 @@ class _ReviewTile extends StatelessWidget {
                     ),
                     if (dateText != null && dateText!.trim().isNotEmpty)
                       Text(
-                        dateText!,
+                        dateText!.tr,
                         style: TextStyle(
                           color: context.mutedForeground,
                           fontWeight: FontWeight.w700,
@@ -130,7 +131,7 @@ class _ReviewTile extends StatelessWidget {
                 _StarsRow(rating: rating),
                 const SizedBox(height: 10),
                 Text(
-                  text,
+                  text.tr,
                   style: TextStyle(
                     color: context.mutedForeground,
                     height: 1.45,

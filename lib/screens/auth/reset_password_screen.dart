@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 import '../../controllers/forgot_password/forgot_password_controller.dart';
 import '../../widgets/app_button.dart';
@@ -42,33 +43,33 @@ class ResetPasswordScreen extends GetView<ForgotPasswordController> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     AuthTitleBlock(
-                      title: 'fp.new.title'.tr,
-                      subtitle: 'fp.new.subtitle'.tr,
+                      title: Tk.fpNewTitle.tr,
+                      subtitle: Tk.fpNewSubtitle.tr,
                     ),
                     const SizedBox(height: 16),
                     AppPasswordField(
                       controller: controller.passwordController,
-                      label: 'fp.new.password'.tr,
-                      hint: 'fp.new.password'.tr,
+                      label: Tk.fpNewPassword.tr,
+                      hint: Tk.fpNewPassword.tr,
                       prefixIcon: Icons.lock_outline_rounded,
                       validator: (v) {
                         final value = (v ?? '');
-                        if (value.isEmpty) return 'fp.new.short'.tr;
-                        if (value.length < 6) return 'fp.new.short'.tr;
+                        if (value.isEmpty) return Tk.fpNewShort.tr;
+                        if (value.length < 6) return Tk.fpNewShort.tr;
                         return null;
                       },
                     ),
                     const SizedBox(height: 12),
                     AppPasswordField(
                       controller: controller.confirmController,
-                      label: 'fp.new.confirm'.tr,
-                      hint: 'fp.new.confirm'.tr,
+                      label: Tk.fpNewConfirm.tr,
+                      hint: Tk.fpNewConfirm.tr,
                       prefixIcon: Icons.lock_reset_rounded,
                       textInputAction: TextInputAction.done,
                       validator: (v) {
                         final value = (v ?? '');
-                        if (value.isEmpty) return 'fp.new.short'.tr;
-                        if (value.length < 6) return 'fp.new.short'.tr;
+                        if (value.isEmpty) return Tk.fpNewShort.tr;
+                        if (value.length < 6) return Tk.fpNewShort.tr;
                         return null;
                       },
                     ),
@@ -77,7 +78,7 @@ class ResetPasswordScreen extends GetView<ForgotPasswordController> {
                       return AppButton(
                         text: controller.isLoading.value
                             ? '...'
-                            : 'fp.new.save'.tr,
+                            : Tk.fpNewSave.tr,
                         icon: Icons.save_rounded,
                         onPressed: controller.isLoading.value
                             ? () {}
@@ -89,7 +90,7 @@ class ResetPasswordScreen extends GetView<ForgotPasswordController> {
                     TextButton(
                       onPressed: controller.cancel,
                       child: Text(
-                        'fp.cancel'.tr,
+                        Tk.fpCancel.tr,
                         style: TextStyle(color: context.mutedForeground),
                       ),
                     ),

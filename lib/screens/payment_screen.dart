@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/controllers/cart/cart_controller.dart';
+import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
 import 'package:rwnaqk/widgets/app_input_field.dart';
@@ -31,7 +33,7 @@ class PaymentScreen extends GetView<CartController> {
       addressController: controller.shippingAddressCtrl,
       cityController: controller.shippingCityCtrl,
       postcodeController: controller.shippingPostcodeCtrl,
-      country: controller.shippingAddress.value.country,
+      country: controller.selectedShippingCountryLabel,
       countries: controller.shippingCountries,
       onCountryChanged: (v) {
         if (v != null) controller.setShippingCountry(v);
@@ -83,10 +85,12 @@ class PaymentScreen extends GetView<CartController> {
         return CartTotalBar(
           total: controller.total,
           enabled: controller.canCheckout,
-          totalLabel: 'Total',
-          helperText:
-              '${controller.selectedShippingTitle} • ${controller.paymentMethodLabel}',
-          checkoutText: 'Confirm Order',
+          totalLabel: Tk.cartTotal.tr,
+          helperText: AppCheckoutUtils.inlineSummary([
+            controller.selectedShippingTitle,
+            controller.paymentMethodLabel,
+          ]),
+          checkoutText: Tk.cartPaymentConfirmOrder.tr,
           checkoutIcon: Icons.check_circle_outline_rounded,
           buttonWidth: 186,
           onCheckout: controller.payNow,
@@ -105,7 +109,7 @@ class PaymentScreen extends GetView<CartController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CartHeader(
-                  title: 'Payment',
+                  title: Tk.cartPaymentTitle.tr,
                   count: controller.itemsCount,
                 ),
                 const SizedBox(height: 10),
@@ -139,7 +143,7 @@ class PaymentScreen extends GetView<CartController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Review your order details',
+                              Tk.cartPaymentReviewTitle.tr,
                               style: TextStyle(
                                 color: context.foreground,
                                 fontWeight: FontWeight.w900,
@@ -148,7 +152,7 @@ class PaymentScreen extends GetView<CartController> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Delivery, contact information, shipping option, and payment method are all ready for confirmation.',
+                              Tk.cartPaymentReviewSubtitle.tr,
                               style: TextStyle(
                                 color: context.mutedForeground,
                                 fontWeight: FontWeight.w600,
@@ -164,14 +168,14 @@ class PaymentScreen extends GetView<CartController> {
                 ),
                 const SizedBox(height: 14),
                 AddressSection(
-                  title: 'Shipping Address',
+                  title: Tk.cartShippingAddress.tr,
                   address: controller.shippingAddressText,
                   onEdit: () => _openShippingSheet(
                     context,
                     isEdit: controller.hasShippingAddress,
                   ),
                   allowAddWhenEmpty: true,
-                  emptyHint: 'Add your shipping details',
+                  emptyHint: Tk.cartAddShippingDetails.tr,
                 ),
                 const SizedBox(height: 12),
                 PaymentContactSection(
@@ -180,7 +184,7 @@ class PaymentScreen extends GetView<CartController> {
                 ),
                 const SizedBox(height: 18),
                 PaymentItemsHeader(
-                  title: 'Items',
+                  title: Tk.cartPaymentItems.tr,
                   count: controller.itemsCount,
                 ),
                 const SizedBox(height: 10),
@@ -194,14 +198,19 @@ class PaymentScreen extends GetView<CartController> {
                     padding: const EdgeInsets.all(8),
                     child: Column(
                       children: [
-                        for (var i = 0; i < controller.cartItems.length; i++) ...[
+                        for (var i = 0;
+                            i < controller.cartItems.length;
+                            i++) ...[
                           MiniItemPriceTile(
                             imageUrl: controller.cartItems[i].imageUrl,
-                            badgeCount:
-                                controller.quantityOf(controller.cartItems[i].id),
-                            title: controller.cartItems[i].title,
-                            subtitle: controller
-                                .paymentItemSubtitle(controller.cartItems[i]),
+                            badgeCount: controller
+                                .quantityOf(controller.cartItems[i].id),
+                            title: controller.cartItems[i].title.tr,
+                            subtitle: AppCheckoutUtils.paymentItemSubtitle(
+                              controller.cartItems[i],
+                              quantity: controller
+                                  .quantityOf(controller.cartItems[i].id),
+                            ),
                             priceText: AppMoneyUtils.currency(
                               controller.lineTotalOf(controller.cartItems[i]),
                             ),
@@ -219,20 +228,11 @@ class PaymentScreen extends GetView<CartController> {
                 ),
                 const SizedBox(height: 20),
                 ShippingMethodSelector(
-                  headerTitle: 'Shipping Options',
+                  headerTitle: Tk.cartPaymentShippingOptions.tr,
                   selectedId: controller.selectedShippingId.value,
                   onChanged: controller.setShipping,
                   options: controller.shippingOptions
-                      .map(
-                        (e) => {
-                          'id': e.id,
-                          'title': e.title,
-                          'eta': e.eta,
-                          'price': e.priceText,
-                          'note': e.note,
-                          'icon': e.icon,
-                        },
-                      )
+                      .map(AppCheckoutUtils.cartShippingTileData)
                       .toList(growable: false),
                 ),
                 const SizedBox(height: 20),
@@ -267,13 +267,13 @@ class _PaymentMethodBlock extends StatelessWidget {
 
     return Obx(() {
       return PaymentMethodSection(
-        titleText: 'Payment Method',
-        cashTitle: 'Cash on Delivery',
-        cashSubtitle: 'Pay when you receive your order',
-        walletTitle: 'Wallet Transfer',
-        walletSubtitle: 'Transfer through local partners',
-        receiverNameLabel: 'Receiver name',
-        walletNumberLabel: 'Wallet number',
+        titleText: Tk.cartPaymentMethod.tr,
+        cashTitle: Tk.cartPaymentCodTitle.tr,
+        cashSubtitle: Tk.cartPaymentCodSubtitle.tr,
+        walletTitle: Tk.cartPaymentWalletTitle.tr,
+        walletSubtitle: Tk.cartPaymentWalletSubtitle.tr,
+        receiverNameLabel: Tk.cartPaymentReceiverName.tr,
+        walletNumberLabel: Tk.cartPaymentWalletNumber.tr,
         receiverNameValue: controller.receiverName.value,
         walletNumberValue: controller.walletNumber.value,
         walletCompanies: const [
@@ -289,8 +289,8 @@ class _PaymentMethodBlock extends StatelessWidget {
         onChanged: controller.setPaymentMethodId,
         onEditWalletInfo: onEditWalletInfo,
         infoMessage: controller.isWalletPayment
-            ? 'Receiver name and wallet number can be updated before confirming the order.'
-            : 'Pay with cash after the courier hands over your order.',
+            ? Tk.cartPaymentWalletInfoMessage.tr
+            : Tk.cartPaymentCodInfoMessage.tr,
       );
     });
   }
@@ -332,7 +332,7 @@ class _PaymentSummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Order Summary',
+            Tk.cartPaymentSummary.tr,
             style: TextStyle(
               color: context.foreground,
               fontWeight: FontWeight.w900,
@@ -341,17 +341,20 @@ class _PaymentSummaryCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _SummaryRow(
-            label: 'Subtotal',
+            label: Tk.cartSubtotal.tr,
             value: AppMoneyUtils.currency(subtotal),
           ),
           const SizedBox(height: 10),
           _SummaryRow(
-            label: 'Shipping',
-            value: '$shippingTitle • $shippingFeeText',
+            label: Tk.cartPaymentShipping.tr,
+            value: AppCheckoutUtils.inlineSummary([
+              shippingTitle,
+              shippingFeeText,
+            ]),
           ),
           const SizedBox(height: 10),
           _SummaryRow(
-            label: 'Payment',
+            label: Tk.cartPaymentMethod.tr,
             value: paymentMethod,
           ),
           Divider(
@@ -360,7 +363,7 @@ class _PaymentSummaryCard extends StatelessWidget {
             color: context.border.withOpacity(.25),
           ),
           _SummaryRow(
-            label: 'Final Total',
+            label: Tk.cartPaymentFinalTotal.tr,
             value: AppMoneyUtils.currency(total),
             emphasize: true,
           ),
@@ -428,16 +431,16 @@ class _PaymentEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const AppEmptyState(
+            AppEmptyState(
               icon: Icons.shopping_bag_outlined,
-              title: 'No items to checkout',
-              subtitle: 'Go back to your cart and add products first.',
+              title: Tk.cartPaymentNoItemsTitle.tr,
+              subtitle: Tk.cartPaymentNoItemsSubtitle.tr,
             ),
             const SizedBox(height: 16),
             SizedBox(
               width: 170,
               child: AppButton(
-                text: 'Back to Cart',
+                text: Tk.cartPaymentBackToCart.tr,
                 onPressed: onBack,
               ),
             ),
@@ -490,7 +493,7 @@ class _WalletInfoSheet extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Wallet Details',
+                  Tk.cartPaymentWalletInfoTitle.tr,
                   style: TextStyle(
                     color: context.foreground,
                     fontWeight: FontWeight.w900,
@@ -499,7 +502,7 @@ class _WalletInfoSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Update the receiver name and wallet number used for transfer.',
+                  Tk.cartPaymentWalletInfoSubtitle.tr,
                   style: TextStyle(
                     color: context.mutedForeground,
                     fontWeight: FontWeight.w600,
@@ -510,19 +513,19 @@ class _WalletInfoSheet extends StatelessWidget {
                 const SizedBox(height: 16),
                 AppInputField(
                   controller: nameController,
-                  label: 'Receiver name',
+                  label: Tk.cartPaymentReceiverName.tr,
                   prefixIcon: Icons.person_outline_rounded,
                 ),
                 const SizedBox(height: 12),
                 AppInputField(
                   controller: numberController,
-                  label: 'Wallet number',
+                  label: Tk.cartPaymentWalletNumber.tr,
                   keyboardType: TextInputType.phone,
                   prefixIcon: Icons.phone_outlined,
                 ),
                 const SizedBox(height: 18),
                 AppButton(
-                  text: 'Save Details',
+                  text: Tk.cartPaymentSaveDetails.tr,
                   onPressed: onSave,
                 ),
               ],

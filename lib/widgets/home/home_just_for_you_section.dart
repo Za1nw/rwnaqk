@@ -4,6 +4,7 @@ import 'package:rwnaqk/controllers/home/home_controller.dart';
 import 'package:rwnaqk/widgets/common/app_section_header.dart';
 import 'package:rwnaqk/widgets/home/home_layout.dart';
 import 'package:rwnaqk/widgets/card/product_grid_section.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class HomeJustForYouSection extends GetView<HomeController> {
   final int crossAxisCount;
@@ -19,8 +20,8 @@ class HomeJustForYouSection extends GetView<HomeController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppSectionHeader(
-          title: 'home.just_for_you'.tr,
-          actionText: 'home.see_all'.tr,
+          title: Tk.homeJustForYou.tr,
+          actionText: Tk.homeSeeAll.tr,
           onActionTap: controller.onSeeAllJustForYou,
         ),
         const SizedBox(height: HomeLayout.innerGap),

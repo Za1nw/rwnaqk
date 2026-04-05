@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 import '../../widgets/app_button.dart';
 import '../../widgets/app_input_field.dart';
@@ -21,7 +22,7 @@ class EditProfileScreen extends GetView<EditProfileController> {
         child: Padding(
           padding: const EdgeInsetsDirectional.fromSTEB(18, 10, 18, 14),
           child: AppButton(
-            text: 'Save Changes'.tr,
+            text: Tk.profileEditSaveChanges.tr,
             onPressed: controller.save,
           ),
         ),
@@ -34,7 +35,7 @@ class EditProfileScreen extends GetView<EditProfileController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Settings'.tr,
+                Tk.profileEditTitle.tr,
                 style: TextStyle(
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
@@ -43,7 +44,7 @@ class EditProfileScreen extends GetView<EditProfileController> {
               ),
               const SizedBox(height: 10),
               Text(
-                'Your Profile'.tr,
+                Tk.profileEditSubtitle.tr,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -65,8 +66,8 @@ class EditProfileScreen extends GetView<EditProfileController> {
               _SoftField(
                 child: AppInputField(
                   controller: controller.nameCtrl,
-                  label: 'Name'.tr,
-                  hint: 'Romina'.tr,
+                  label: Tk.profileEditName.tr,
+                  hint: Tk.profileEditNameHint.tr,
                   textInputAction: TextInputAction.next,
                 ),
               ),
@@ -75,8 +76,8 @@ class EditProfileScreen extends GetView<EditProfileController> {
               _SoftField(
                 child: AppInputField(
                   controller: controller.emailCtrl,
-                  label: 'Email'.tr,
-                  hint: 'gmail@example.com'.tr,
+                  label: Tk.profileEditEmail.tr,
+                  hint: Tk.profileEditEmailHint.tr,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                 ),
@@ -86,7 +87,7 @@ class EditProfileScreen extends GetView<EditProfileController> {
               _SoftField(
                 child: AppInputField(
                   controller: controller.passwordPreviewCtrl,
-                  label: 'Password'.tr,
+                  label: Tk.profileEditPassword.tr,
                   hint: '************',
                   enabled: false, // ✅ مثل الصورة مجرد عرض
                   textInputAction: TextInputAction.done,
@@ -105,7 +106,7 @@ class EditProfileScreen extends GetView<EditProfileController> {
                     splashFactory: NoSplash.splashFactory,
                   ),
                   child: Text(
-                    'login.forgot'.tr, // أو غيّرها لـ "Change Password".tr
+                    Tk.loginForgot.tr, // أو غيّرها لـ "Change Password".tr
                     style: TextStyle(
                       color: context.primary,
                       fontWeight: FontWeight.w700,

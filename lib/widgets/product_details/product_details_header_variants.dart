@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/models/product_color_option.dart';
 import 'package:rwnaqk/widgets/app_network_image.dart';
 
@@ -48,7 +50,7 @@ class ProductDetailsHeaderVariants extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (availableColors.isNotEmpty) ...[
-          _SectionTitle(title: 'Available colors'),
+          _SectionTitle(title: Tk.productDetailsAvailableColors.tr),
           const SizedBox(height: 10),
           SizedBox(
             height: 72,
@@ -132,7 +134,7 @@ class ProductDetailsHeaderVariants extends StatelessWidget {
           const SizedBox(height: 14),
         ],
         if (availableSizes.isNotEmpty) ...[
-          _SectionTitle(title: 'Available sizes'),
+          _SectionTitle(title: Tk.productDetailsAvailableSizes.tr),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,

@@ -26,6 +26,7 @@ class AppSelectField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fill = context.input;
+    final selectedLabel = value == null ? null : itemLabel(value!);
 
     return Container(
       decoration: BoxDecoration(
@@ -48,14 +49,30 @@ class AppSelectField<T> extends StatelessWidget {
       ),
       child: DropdownButtonFormField<T>(
         value: value,
+        isExpanded: true,
         onChanged: onChanged,
         validator: validator,
+        menuMaxHeight: 320,
         dropdownColor: context.card,
         iconEnabledColor: context.mutedForeground,
         style: TextStyle(color: context.foreground),
+        selectedItemBuilder: (_) {
+          return items
+              .map(
+                (item) => Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    itemLabel(item),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              )
+              .toList(growable: false);
+        },
         decoration: InputDecoration(
           labelText: label,
-          hintText: hint,
+          hintText: selectedLabel == null ? hint : null,
           filled: true,
           fillColor: fill,
           prefixIcon: prefixIcon == null
@@ -85,13 +102,18 @@ class AppSelectField<T> extends StatelessWidget {
             borderSide: BorderSide(color: context.destructive, width: 1.6),
           ),
 
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         ),
         items: items
             .map(
               (e) => DropdownMenuItem<T>(
                 value: e,
-                child: Text(itemLabel(e)),
+                child: Text(
+                  itemLabel(e),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             )
             .toList(),

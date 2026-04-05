@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class AppDateUtils {
   AppDateUtils._();
@@ -8,23 +10,32 @@ class AppDateUtils {
   }
 
   static String monthName(int month) {
-    const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-
-    final safeIndex = (month - 1).clamp(0, 11);
-    return months[safeIndex];
+    switch ((month - 1).clamp(0, 11)) {
+      case 0:
+        return Tk.dateMonthJanuary.tr;
+      case 1:
+        return Tk.dateMonthFebruary.tr;
+      case 2:
+        return Tk.dateMonthMarch.tr;
+      case 3:
+        return Tk.dateMonthApril.tr;
+      case 4:
+        return Tk.dateMonthMay.tr;
+      case 5:
+        return Tk.dateMonthJune.tr;
+      case 6:
+        return Tk.dateMonthJuly.tr;
+      case 7:
+        return Tk.dateMonthAugust.tr;
+      case 8:
+        return Tk.dateMonthSeptember.tr;
+      case 9:
+        return Tk.dateMonthOctober.tr;
+      case 10:
+        return Tk.dateMonthNovember.tr;
+      default:
+        return Tk.dateMonthDecember.tr;
+    }
   }
 
   static String formatYmd(DateTime date, {String separator = '/'}) {
@@ -65,7 +76,10 @@ class AppDateUtils {
     return '${monthName(date.month)}$separator${date.day}';
   }
 
-  static String formatPriceRangeLabel(RangeValues values, {String symbol = r'$'}) {
-    return '$symbol${values.start.toInt()} — $symbol${values.end.toInt()}';
+  static String formatPriceRangeLabel(
+    RangeValues values, {
+    String symbol = r'$',
+  }) {
+    return '$symbol${values.start.toInt()} - $symbol${values.end.toInt()}';
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
 
 import '../controllers/cart/cart_controller.dart';
@@ -27,7 +28,7 @@ class CartScreen extends GetView<CartController> {
       addressController: controller.shippingAddressCtrl,
       cityController: controller.shippingCityCtrl,
       postcodeController: controller.shippingPostcodeCtrl,
-      country: controller.shippingAddress.value.country,
+      country: controller.selectedShippingCountryLabel,
       countries: controller.shippingCountries,
       onCountryChanged: (value) {
         if (value != null) {
@@ -57,14 +58,14 @@ class CartScreen extends GetView<CartController> {
                 children: [
                   Obx(
                     () => CartHeader(
-                      title: 'Cart',
+                      title: Tk.cartTitle.tr,
                       count: controller.itemsCount,
                     ),
                   ),
                   const SizedBox(height: 12),
                   Obx(
                     () => AddressSection(
-                      title: 'Shipping Address',
+                      title: Tk.cartShippingAddress.tr,
                       address: controller.hasShippingAddress
                           ? controller.shippingAddressText
                           : '',
@@ -73,7 +74,7 @@ class CartScreen extends GetView<CartController> {
                         isEdit: controller.hasShippingAddress,
                       ),
                       allowAddWhenEmpty: true,
-                      emptyHint: 'Add your shipping details',
+                      emptyHint: Tk.cartAddShippingDetails.tr,
                     ),
                   ),
                 ],
@@ -83,6 +84,7 @@ class CartScreen extends GetView<CartController> {
               child: Obx(() {
                 final isEmpty = controller.cartItems.isEmpty;
                 final hasWishlist = wishlistController.wishlist.isNotEmpty;
+                final quantities = Map<String, int>.from(controller.itemQuantities);
 
                 return SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -95,15 +97,15 @@ class CartScreen extends GetView<CartController> {
                   child: Column(
                     children: [
                       if (isEmpty)
-                        const AppEmptyState(
+                        AppEmptyState(
                           icon: Icons.shopping_bag_outlined,
-                          title: 'Your cart is empty',
-                          subtitle: 'Add items from your wishlist',
+                          title: Tk.cartEmptyTitle.tr,
+                          subtitle: Tk.cartEmptySubtitle.tr,
                         )
                       else
                         CartItemsList(
                           items: controller.cartItems,
-                          quantityFor: controller.quantityOf,
+                          quantities: quantities,
                           onRemove: controller.removeFromCart,
                           onIncrement: controller.incrementQuantity,
                           onDecrement: controller.decrementQuantity,
@@ -124,11 +126,13 @@ class CartScreen extends GetView<CartController> {
               () => CartTotalBar(
                 total: controller.itemsSubtotal,
                 enabled: controller.canCheckout,
-                totalLabel: 'Subtotal',
+                totalLabel: Tk.cartSubtotal.tr,
                 helperText: controller.cartItems.isEmpty
-                    ? 'Add products to start checkout'
-                    : '${controller.itemsCount} item(s) ready for checkout',
-                checkoutText: 'Checkout',
+                    ? Tk.cartStartCheckout.tr
+                    : Tk.cartCheckoutReady.trParams({
+                        'count': '${controller.itemsCount}',
+                      }),
+                checkoutText: Tk.cartCheckout.tr,
                 checkoutIcon: Icons.arrow_forward_rounded,
                 onCheckout: controller.openPayment,
               ),

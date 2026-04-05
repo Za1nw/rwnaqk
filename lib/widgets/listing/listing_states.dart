@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/common/app_empty_state.dart';
 import 'package:rwnaqk/widgets/common/app_error_state.dart';
 
@@ -63,9 +65,9 @@ class ListingEmptySliver extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 18),
         child: Column(
           children: [
-            const AppEmptyState(
-              title: 'No products found',
-              subtitle: 'Try adjusting the filters or refresh the page.',
+            AppEmptyState(
+              title: Tk.listingEmptyTitle.tr,
+              subtitle: Tk.listingEmptySubtitle.tr,
               icon: Icons.inventory_2_outlined,
             ),
             const SizedBox(height: 14),
@@ -82,8 +84,8 @@ class ListingEmptySliver extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
-                  'Refresh',
+                child: Text(
+                  Tk.commonRefresh.tr,
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
@@ -110,8 +112,8 @@ class ListingErrorSliver extends StatelessWidget {
     return SliverToBoxAdapter(
       child: AppErrorState(
         title: message,
-        subtitle: 'Please try again.',
-        buttonText: 'Retry',
+        subtitle: Tk.commonPleaseTryAgain.tr,
+        buttonText: Tk.commonRetry.tr,
         onRetry: onRetry,
         expanded: false,
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 import '../../controllers/register/register_controller.dart';
 import '../../widgets/app_button.dart';
@@ -46,7 +47,7 @@ class RegisterScreen extends GetView<RegisterController> {
               children: [
                 const SizedBox(height: 42),
                 Text(
-                  'register.title'.tr,
+                  Tk.registerTitle.tr,
                   style: TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w900,
@@ -56,7 +57,7 @@ class RegisterScreen extends GetView<RegisterController> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'register.subtitle'.tr,
+                  Tk.registerSubtitle.tr,
                   style: TextStyle(
                     fontSize: 14,
                     color: context.mutedForeground,
@@ -86,13 +87,13 @@ class RegisterScreen extends GetView<RegisterController> {
                             Expanded(
                               child: AppInputField(
                                 controller: controller.firstNameController,
-                                label: 'register.first_name.label'.tr,
-                                hint: 'register.first_name.hint'.tr,
+                                label: Tk.registerFirstNameLabel.tr,
+                                hint: Tk.registerFirstNameHint.tr,
                                 prefixIcon: Icons.person_outline,
                                 validator: (v) {
                                   final value = (v ?? '').trim();
                                   if (value.isEmpty)
-                                    return 'register.first_name.required'.tr;
+                                    return Tk.registerFirstNameRequired.tr;
                                   return null;
                                 },
                               ),
@@ -101,13 +102,13 @@ class RegisterScreen extends GetView<RegisterController> {
                             Expanded(
                               child: AppInputField(
                                 controller: controller.lastNameController,
-                                label: 'register.last_name.label'.tr,
-                                hint: 'register.last_name.hint'.tr,
+                                label: Tk.registerLastNameLabel.tr,
+                                hint: Tk.registerLastNameHint.tr,
                                 prefixIcon: Icons.badge_outlined,
                                 validator: (v) {
                                   final value = (v ?? '').trim();
                                   if (value.isEmpty)
-                                    return 'register.last_name.required'.tr;
+                                    return Tk.registerLastNameRequired.tr;
                                   return null;
                                 },
                               ),
@@ -117,63 +118,63 @@ class RegisterScreen extends GetView<RegisterController> {
                         const SizedBox(height: 14),
                         AppInputField(
                           controller: controller.phoneController,
-                          label: 'register.phone.label'.tr,
-                          hint: 'register.phone.hint'.tr,
+                          label: Tk.registerPhoneLabel.tr,
+                          hint: Tk.registerPhoneHint.tr,
                           prefixIcon: Icons.phone_outlined,
                           keyboardType: TextInputType.phone,
                           validator: (v) {
                             final value = (v ?? '').trim();
                             if (value.isEmpty)
-                              return 'register.phone.required'.tr;
+                              return Tk.registerPhoneRequired.tr;
                             if (value.length < 8)
-                              return 'register.phone.invalid'.tr;
+                              return Tk.registerPhoneInvalid.tr;
                             return null;
                           },
                         ),
                         const SizedBox(height: 14),
                         AppInputField(
                           controller: controller.emailController,
-                          label: 'register.email.label'.tr,
-                          hint: 'register.email.hint'.tr,
+                          label: Tk.registerEmailLabel.tr,
+                          hint: Tk.registerEmailHint.tr,
                           prefixIcon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
                             final value = (v ?? '').trim();
                             if (value.isEmpty)
-                              return 'register.email.required'.tr;
+                              return Tk.registerEmailRequired.tr;
                             if (!GetUtils.isEmail(value))
-                              return 'register.email.invalid'.tr;
+                              return Tk.registerEmailInvalid.tr;
                             return null;
                           },
                         ),
                         const SizedBox(height: 14),
                         Obx(() {
                           return AppSelectField<String>(
-                            label: 'register.governorate.label'.tr,
-                            hint: 'register.governorate.hint'.tr,
+                            label: Tk.registerGovernorateLabel.tr,
+                            hint: Tk.registerGovernorateHint.tr,
                             items: controller.governorates,
                             value: controller.governorate.value,
                             prefixIcon: Icons.location_on_outlined,
                             itemLabel: (e) => e,
                             onChanged: (v) => controller.governorate.value = v,
                             validator: (v) => v == null
-                                ? 'register.governorate.required'.tr
+                                ? Tk.registerGovernorateRequired.tr
                                 : null,
                           );
                         }),
                         const SizedBox(height: 14),
                         AppPasswordField(
                           controller: controller.passwordController,
-                          label: 'register.password.label'.tr,
-                          hint: 'register.password.hint'.tr,
+                          label: Tk.registerPasswordLabel.tr,
+                          hint: Tk.registerPasswordHint.tr,
                           prefixIcon: Icons.lock_outline_rounded,
                           textInputAction: TextInputAction.done,
                           validator: (v) {
                             final value = (v ?? '');
                             if (value.isEmpty)
-                              return 'register.password.required'.tr;
+                              return Tk.registerPasswordRequired.tr;
                             if (value.length < 6)
-                              return 'register.password.short'.tr;
+                              return Tk.registerPasswordShort.tr;
                             return null;
                           },
                         ),
@@ -214,7 +215,7 @@ class RegisterScreen extends GetView<RegisterController> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
-                                      'register.terms.text'.tr,
+                                      Tk.registerTermsText.tr,
                                       style: TextStyle(
                                         color: context.mutedForeground,
                                         fontWeight: FontWeight.w600,
@@ -229,7 +230,7 @@ class RegisterScreen extends GetView<RegisterController> {
                         }),
                         const SizedBox(height: 14),
                         AppButton(
-                          text: 'register.submit'.tr,
+                          text: Tk.registerSubmit.tr,
                           icon: Icons.person_add_alt_1_rounded,
                           onPressed: controller.register,
                           height: 54,
@@ -243,14 +244,14 @@ class RegisterScreen extends GetView<RegisterController> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'register.have_account'.tr,
+                      Tk.registerHaveAccount.tr,
                       style: TextStyle(color: context.mutedForeground),
                     ),
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: controller.goToLogin,
                       child: Text(
-                        'register.sign_in'.tr,
+                        Tk.registerSignIn.tr,
                         style: TextStyle(
                           color: context.primary,
                           fontWeight: FontWeight.w800,

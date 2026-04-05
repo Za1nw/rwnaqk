@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 
 import 'package:rwnaqk/controllers/search/app_search_controller.dart';
@@ -35,8 +36,8 @@ class SearchResultsScreen extends GetView<AppSearchController> {
                     children: [
                       Expanded(
                         child: ShopTopBar(
-                          title: 'Shop',
-                          searchHint: 'Search',
+                          title: Tk.homeTitle.tr,
+                          searchHint: Tk.searchTitle.tr,
                           controller: controller.searchC,
                           onChanged: controller.onChanged,
                           onSubmitted: controller.onSubmitted,
@@ -63,12 +64,12 @@ class SearchResultsScreen extends GetView<AppSearchController> {
                   }),
                   Obx(() {
                     if (controller.isLoading.value) {
-                      return const Padding(
+                      return Padding(
                         padding: EdgeInsets.only(top: 30),
                         child: AppPageLoading(
                           expanded: false,
-                          title: 'Searching...',
-                          subtitle: 'Finding the best matches for you.',
+                          title: Tk.searchLoadingTitle.tr,
+                          subtitle: Tk.searchLoadingSubtitle.tr,
                         ),
                       );
                     }
@@ -76,11 +77,11 @@ class SearchResultsScreen extends GetView<AppSearchController> {
                     final items = controller.results.toList();
 
                     if (items.isEmpty) {
-                      return const Padding(
+                      return Padding(
                         padding: EdgeInsets.only(top: 30),
                         child: AppEmptyState(
-                          title: 'No results',
-                          subtitle: 'Try another keyword or adjust filters.',
+                          title: Tk.searchNoResultsTitle.tr,
+                          subtitle: Tk.searchNoResultsSubtitle.tr,
                         ),
                       );
                     }
@@ -89,7 +90,9 @@ class SearchResultsScreen extends GetView<AppSearchController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppSectionHeader(
-                          title: 'Results (${items.length})',
+                          title: Tk.searchResultsCount.trParams({
+                            'count': '${items.length}',
+                          }),
                           titleFontSize: 15,
                           titleFontWeight: FontWeight.w800,
                           titleColor: context.mutedForeground,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
 import 'package:rwnaqk/widgets/app_input_field.dart';
 import 'package:rwnaqk/widgets/dialogs/app_dialog_shell.dart';
@@ -19,7 +20,7 @@ class ReviewDialog extends StatefulWidget {
 
   const ReviewDialog({
     super.key,
-    this.title = 'Review',
+    this.title = Tk.reviewsDialogTitle,
     this.userName,
     this.orderId,
     this.avatarUrl,
@@ -30,7 +31,7 @@ class ReviewDialog extends StatefulWidget {
 
   static Future<void> show(
     BuildContext context, {
-    String title = 'Review',
+    String title = Tk.reviewsDialogTitle,
     String? userName,
     String? orderId,
     String? avatarUrl,
@@ -103,8 +104,8 @@ class _ReviewDialogState extends State<ReviewDialog> {
 
           AppInputField(
             controller: _commentCtrl,
-            label: 'Your comment'.tr,
-            hint: 'Write your review here'.tr,
+            label: Tk.reviewsCommentLabel.tr,
+            hint: Tk.reviewsCommentHint.tr,
             maxLines: 3,
             keyboardType: TextInputType.multiline,
             textInputAction: TextInputAction.newline,
@@ -113,7 +114,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
           const SizedBox(height: 16),
 
           AppButton(
-            text: 'Say it!'.tr,
+            text: Tk.reviewsSubmit.tr,
             onPressed: _submit,
           ),
         ],
@@ -161,7 +162,7 @@ class _ReviewTargetInfo extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Text(
-                    '${'Order'.tr} #$orderId',
+                    Tk.reviewsOrderNumber.trParams({'id': orderId!}),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -173,7 +174,7 @@ class _ReviewTargetInfo extends StatelessWidget {
                 ),
               if (!hasName && !hasOrder)
                 Text(
-                  'Share your experience'.tr,
+                  Tk.reviewsShareExperience.tr,
                   style: TextStyle(
                     color: context.muted,
                     fontWeight: FontWeight.w700,

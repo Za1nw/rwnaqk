@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/products_listing/products_listing_controller.dart';
 import 'package:rwnaqk/controllers/products_listing/products_listing_service.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 void openListingSortSheet(
   BuildContext context,
@@ -26,7 +27,7 @@ void openListingSortSheet(
               Row(
                 children: [
                   Text(
-                    'Sort by',
+                    Tk.listingSortBy.tr,
                     style: TextStyle(
                       color: context.foreground,
                       fontSize: 17,
@@ -46,7 +47,7 @@ void openListingSortSheet(
               const SizedBox(height: 6),
 
               _SortTile(
-                title: 'Newest',
+                title: Tk.listingSortNewest.tr,
                 selected: current == ListingSort.newest,
                 onTap: () {
                   controller.setSort(ListingSort.newest);
@@ -54,7 +55,7 @@ void openListingSortSheet(
                 },
               ),
               _SortTile(
-                title: 'Price: Low to High',
+                title: Tk.listingSortPriceLow.tr,
                 selected: current == ListingSort.priceLow,
                 onTap: () {
                   controller.setSort(ListingSort.priceLow);
@@ -62,7 +63,7 @@ void openListingSortSheet(
                 },
               ),
               _SortTile(
-                title: 'Price: High to Low',
+                title: Tk.listingSortPriceHigh.tr,
                 selected: current == ListingSort.priceHigh,
                 onTap: () {
                   controller.setSort(ListingSort.priceHigh);
@@ -70,7 +71,7 @@ void openListingSortSheet(
                 },
               ),
               _SortTile(
-                title: 'Highest Discount',
+                title: Tk.listingSortDiscountHigh.tr,
                 selected: current == ListingSort.discountHigh,
                 onTap: () {
                   controller.setSort(ListingSort.discountHigh);

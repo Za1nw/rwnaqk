@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class AppErrorState extends StatelessWidget {
   final String? title;
@@ -40,7 +42,7 @@ class AppErrorState extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               Text(
-                title ?? 'Something went wrong',
+                title ?? Tk.commonSomethingWentWrong.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: context.foreground,
@@ -50,7 +52,7 @@ class AppErrorState extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                subtitle ?? 'An unexpected error happened. Please try again.',
+                subtitle ?? Tk.commonUnexpectedError.tr,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: context.mutedForeground,

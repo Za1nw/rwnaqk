@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class OrderTrackingActions extends StatelessWidget {
   final bool canCancel;
@@ -29,7 +30,7 @@ class OrderTrackingActions extends StatelessWidget {
             if (canCancel)
               Expanded(
                 child: _ActionButton(
-                  text: 'إلغاء الطلب'.tr,
+                  text: Tk.ordersActionCancel.tr,
                   outlined: true,
                   onTap: onCancel,
                 ),
@@ -37,7 +38,9 @@ class OrderTrackingActions extends StatelessWidget {
             if (canCancel) const SizedBox(width: 10),
             Expanded(
               child: _ActionButton(
-                text: canReorder ? 'إعادة الطلب'.tr : 'مساعدة'.tr,
+                text: canReorder
+                    ? Tk.ordersActionReorder.tr
+                    : Tk.ordersActionHelp.tr,
                 onTap: onHelpOrReorder,
               ),
             ),
@@ -46,7 +49,7 @@ class OrderTrackingActions extends StatelessWidget {
         if (showReview) ...[
           const SizedBox(height: 16),
           _ActionButton(
-            text: 'تقييم الطلب'.tr,
+            text: Tk.ordersActionReview.tr,
             outlined: true,
             onTap: onReview ?? () {},
           ),
@@ -69,8 +72,7 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor =
-        outlined ? Colors.transparent : context.primary;
+    final backgroundColor = outlined ? Colors.transparent : context.primary;
     final foregroundColor =
         outlined ? context.primary : context.primaryForeground;
 

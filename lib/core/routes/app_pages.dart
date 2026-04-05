@@ -1,8 +1,11 @@
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/addresses/addresses_controller.dart';
 import 'package:rwnaqk/controllers/profile/edit_profile_controller.dart';
+import 'package:rwnaqk/controllers/profile/profile_controller.dart';
 import 'package:rwnaqk/controllers/profile/edit_profile_service.dart';
+import 'package:rwnaqk/controllers/profile/profile_service.dart';
 import 'package:rwnaqk/controllers/profile/edit_profile_ui_controller.dart';
+import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 import 'package:rwnaqk/core/bindings/flash_sale_binding.dart';
 import 'package:rwnaqk/core/bindings/forgot_password_binding.dart';
 import 'package:rwnaqk/core/bindings/login_binding.dart';
@@ -12,6 +15,7 @@ import 'package:rwnaqk/core/bindings/products_listing_binding.dart';
 import 'package:rwnaqk/core/bindings/register_binding.dart';
 import 'package:rwnaqk/core/bindings/reviews_binding.dart';
 import 'package:rwnaqk/core/bindings/search_binding.dart';
+import 'package:rwnaqk/core/bindings/support_binding.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/screens/auth/forgot_password_method_screen.dart';
 import 'package:rwnaqk/screens/auth/login_screen.dart';
@@ -21,8 +25,10 @@ import 'package:rwnaqk/screens/auth/reset_password_screen.dart';
 import 'package:rwnaqk/screens/cart_screen.dart';
 import 'package:rwnaqk/screens/flash_sale_screen.dart';
 import 'package:rwnaqk/screens/home_screen.dart';
+import 'package:rwnaqk/screens/help_center_screen.dart';
 import 'package:rwnaqk/screens/main_screen.dart';
 import 'package:rwnaqk/screens/onboarding_screen.dart';
+import 'package:rwnaqk/screens/order_details_screen.dart';
 import 'package:rwnaqk/screens/order_tracking_screen.dart';
 import 'package:rwnaqk/screens/orders_screen.dart';
 import 'package:rwnaqk/screens/payment_screen.dart';
@@ -32,10 +38,12 @@ import 'package:rwnaqk/screens/profile/addresses_screen.dart';
 import 'package:rwnaqk/controllers/addresses/addresses_service.dart';
 import 'package:rwnaqk/controllers/addresses/addresses_ui_controller.dart';
 import 'package:rwnaqk/screens/profile/edit_profile_screen.dart';
+import 'package:rwnaqk/screens/profile/profile_screen.dart';
 import 'package:rwnaqk/screens/reviews_screen.dart';
 import 'package:rwnaqk/screens/search_results_screen.dart';
 import 'package:rwnaqk/screens/search_screen.dart';
 import 'package:rwnaqk/screens/settings_screen.dart';
+import 'package:rwnaqk/screens/support_chat_screen.dart';
 import 'package:rwnaqk/screens/wishlist_screen.dart';
 
 class AppPages {
@@ -109,11 +117,35 @@ class AppPages {
       page: () => const SettingsScreen(),
     ),
     GetPage(
+      name: AppRoutes.profile,
+      page: () => const ProfileScreen(),
+      binding: BindingsBuilder(() {
+        Get.lazyPut<ProfileService>(
+          () => ProfileService(Get.find<ProfileStoreService>()),
+        );
+        Get.lazyPut<ProfileController>(
+          () => ProfileController(Get.find<ProfileService>()),
+        );
+      }),
+    ),
+    GetPage(
+      name: AppRoutes.helpCenter,
+      page: () => const HelpCenterScreen(),
+      binding: SupportBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.supportChat,
+      page: () => const SupportChatScreen(),
+      binding: SupportBinding(),
+    ),
+    GetPage(
       name: AppRoutes.editProfile,
       page: () => const EditProfileScreen(),
       binding: BindingsBuilder(() {
         Get.lazyPut<EditProfileUiController>(() => EditProfileUiController());
-        Get.lazyPut<EditProfileService>(() => EditProfileService());
+        Get.lazyPut<EditProfileService>(
+          () => EditProfileService(Get.find<ProfileStoreService>()),
+        );
         Get.lazyPut<EditProfileController>(
           () => EditProfileController(Get.find<EditProfileService>()),
         );
@@ -124,7 +156,9 @@ class AppPages {
       page: () => const AddressesScreen(),
       binding: BindingsBuilder(() {
         Get.lazyPut<AddressesUiController>(() => AddressesUiController());
-        Get.lazyPut<AddressesService>(() => AddressesService());
+        Get.lazyPut<AddressesService>(
+          () => AddressesService(Get.find<ProfileStoreService>()),
+        );
         Get.lazyPut<AddressesController>(
           () => AddressesController(Get.find<AddressesService>()),
         );
@@ -136,6 +170,10 @@ class AppPages {
       // binding:BindingsBuilder(
       //    Get.lazyPut(() =>OrdersController());
       // ),
+    ),
+    GetPage(
+      name: AppRoutes.orderDetails,
+      page: () => const OrderDetailsScreen(),
     ),
     GetPage(
       name: AppRoutes.orderTracking,

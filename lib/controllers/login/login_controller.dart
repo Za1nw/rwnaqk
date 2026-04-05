@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/login/login_service.dart';
 import 'package:rwnaqk/controllers/login/login_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة تسجيل الدخول.
 ///
@@ -57,21 +58,21 @@ class LoginController extends GetxController {
   ///
   /// حاليًا هي mock فقط، ولاحقًا تُربط بـ Google Sign-In الحقيقي.
   void loginWithGoogle() {
-    Get.snackbar('Social', 'login.with_google'.tr);
+    Get.snackbar(Tk.commonSocial.tr, Tk.loginWithGoogle.tr);
   }
 
   /// هذه الدالة تمثل تسجيل الدخول عبر Apple.
   ///
   /// حاليًا هي mock فقط، ولاحقًا تُربط بالتكامل الحقيقي.
   void loginWithApple() {
-    Get.snackbar('Social', 'login.with_apple'.tr);
+    Get.snackbar(Tk.commonSocial.tr, Tk.loginWithApple.tr);
   }
 
   /// هذه الدالة تمثل تسجيل الدخول عبر Facebook.
   ///
   /// حاليًا هي mock فقط، ولاحقًا تُربط بالتكامل الحقيقي.
   void loginWithFacebook() {
-    Get.snackbar('Social', 'login.with_facebook'.tr);
+    Get.snackbar(Tk.commonSocial.tr, Tk.loginWithFacebook.tr);
   }
 
   /// هذه الدالة تنقل المستخدم إلى شاشة استعادة كلمة المرور.

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
 
 import '../../controllers/addresses/addresses_controller.dart';
-import '../../widgets/cart/address_section.dart';        // بطاقة العرض اللي أعطيتني
-import '../../widgets/cart/shipping_address_sheet.dart'; // الشيت اللي عندك
+import '../../widgets/cart/address_section.dart';
+import '../../widgets/cart/shipping_address_sheet.dart';
 
 class AddressesScreen extends GetView<AddressesController> {
   const AddressesScreen({super.key});
@@ -32,7 +33,7 @@ class AddressesScreen extends GetView<AddressesController> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Shipping Address'.tr,
+                    Tk.addressesShippingAddress.tr,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
@@ -50,42 +51,36 @@ class AddressesScreen extends GetView<AddressesController> {
                 ),
               ],
             ),
-
             const SizedBox(height: 14),
-
             Text(
-              'Choose your country'.tr,
+              Tk.addressesSelectCountry.tr,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
                 color: context.muted,
               ),
             ),
-
             const SizedBox(height: 10),
-
             Obx(() {
               if (controller.addresses.isEmpty) {
-                // لو مافي عناوين: اعرض AddInfoCard عن طريق AddressSection
                 return AddressSection(
-                  title: 'Shipping Address'.tr,
-                  address: null, // لازم واحد فقط: address أو lines
-                  // لتجاوز assert، مرر address كـ '' أو مرر lines بدلاً
-                  // الأفضل: lines: const []
+                  title: Tk.addressesShippingAddress.tr,
+                  address: null,
                   lines: const [],
                   allowAddWhenEmpty: true,
-                  emptyHint: 'اضف عنوان الشحن',
+                  emptyHint: Tk.addressesEmptyHint.tr,
                   onEdit: () => _openAdd(context),
                 );
               }
 
               return Column(
                 children: controller.addresses.map((a) {
-                  // ✅ نعرض كل عنوان بكرت + default + edit
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _AddressCard(
-                      title: a.isDefault ? 'Default Address'.tr : 'Address'.tr,
+                      title: a.isDefault
+                          ? Tk.addressesDefaultAddress.tr
+                          : Tk.addressesAddress.tr,
                       addressText: a.fullText,
                       isDefault: a.isDefault,
                       onSetDefault: () => controller.setDefault(a.id),
@@ -103,7 +98,6 @@ class AddressesScreen extends GetView<AddressesController> {
   }
 
   void _openAdd(BuildContext context) {
-    // جهز القيم
     controller.openAddSheet(context);
 
     ShippingAddressSheet.showShipping(
@@ -139,7 +133,6 @@ class _AddressCard extends StatelessWidget {
   final String title;
   final String addressText;
   final bool isDefault;
-
   final VoidCallback onSetDefault;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -155,8 +148,6 @@ class _AddressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ استخدم نفس EditableInfoCard عندك إذا تبغى
-    // هنا سويت كرت بسيط يدعم default + actions
     return Material(
       color: context.card,
       shape: RoundedRectangleBorder(
@@ -182,14 +173,19 @@ class _AddressCard extends StatelessWidget {
                 ),
                 if (isDefault)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: context.primary.withOpacity(.10),
                       borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: context.primary.withOpacity(.25)),
+                      border: Border.all(
+                        color: context.primary.withOpacity(.25),
+                      ),
                     ),
                     child: Text(
-                      'Default'.tr,
+                      Tk.addressesDefault.tr,
                       style: TextStyle(
                         color: context.primary,
                         fontWeight: FontWeight.w900,
@@ -211,10 +207,8 @@ class _AddressCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-
             Row(
               children: [
-                // ✅ اختيار الافتراضي
                 Expanded(
                   child: InkWell(
                     onTap: onSetDefault,
@@ -224,13 +218,15 @@ class _AddressCard extends StatelessWidget {
                       child: Row(
                         children: [
                           Icon(
-                            isDefault ? Icons.radio_button_checked : Icons.radio_button_off,
+                            isDefault
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off,
                             color: isDefault ? context.primary : context.muted,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Set as default'.tr,
+                            Tk.addressesSetDefault.tr,
                             style: TextStyle(
                               color: context.foreground,
                               fontWeight: FontWeight.w800,
@@ -241,16 +237,16 @@ class _AddressCard extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // Edit
                 IconButton(
                   onPressed: onEdit,
                   icon: Icon(Icons.edit_rounded, color: context.foreground),
                 ),
-                // Delete
                 IconButton(
                   onPressed: onDelete,
-                  icon: Icon(Icons.delete_outline_rounded, color: context.destructive),
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    color: context.destructive,
+                  ),
                 ),
               ],
             ),

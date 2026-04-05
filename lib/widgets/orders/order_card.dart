@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
-import 'package:rwnaqk/models/order_model.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_date_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
 import 'package:rwnaqk/core/utils/app_order_utils.dart';
+import 'package:rwnaqk/models/order_model.dart';
 
 class OrderCard extends StatelessWidget {
   final OrderModel order;
@@ -44,7 +46,6 @@ class OrderCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// Header
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -67,7 +68,7 @@ class OrderCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'طلب #$id',
+                            Tk.ordersOrderNumber.trParams({'id': id}),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -79,7 +80,7 @@ class OrderCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'تفاصيل الطلب وحالة الشحنة',
+                            Tk.ordersOrderSubtitle.tr,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -94,16 +95,13 @@ class OrderCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     _OrderStatusBadge(
-                      label: AppOrderUtils.statusLabel(status),
+                      label: AppOrderUtils.statusLabel(status).tr,
                       icon: AppOrderUtils.statusIcon(status),
                       color: statusColor,
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 14),
-
-                /// Info row
                 Row(
                   children: [
                     Expanded(
@@ -116,15 +114,14 @@ class OrderCard extends StatelessWidget {
                     Expanded(
                       child: _InfoChip(
                         icon: Icons.shopping_bag_outlined,
-                        text: '$itemsCount منتجات',
+                        text: Tk.ordersItemsCount.trParams({
+                          'count': '$itemsCount',
+                        }),
                       ),
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 12),
-
-                /// Total + arrow
                 Row(
                   children: [
                     Container(
@@ -168,7 +165,6 @@ class OrderCard extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 if ((address ?? '').trim().isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Container(

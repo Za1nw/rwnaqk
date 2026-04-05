@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
-import 'package:rwnaqk/models/order_model.dart';
 import 'package:rwnaqk/core/utils/app_date_utils.dart';
 import 'package:rwnaqk/core/utils/app_order_utils.dart';
+import 'package:rwnaqk/models/order_model.dart';
 
 class OrderTimeline extends StatelessWidget {
   final List<OrderStatusStep> steps;
@@ -18,10 +19,10 @@ class OrderTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: List.generate(steps.length, (i) {
-        final s = steps[i];
+        final step = steps[i];
         final done = AppOrderUtils.isStepDone(
           currentStatus: currentStatus,
-          key: s.key,
+          key: step.key,
         );
         final isLast = i == steps.length - 1;
 
@@ -55,43 +56,40 @@ class OrderTimeline extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    step.title.tr,
+                    style: TextStyle(
+                      color: context.foreground,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13.5,
+                    ),
+                  ),
+                  if ((step.subtitle ?? '').trim().isNotEmpty) ...[
+                    const SizedBox(height: 3),
                     Text(
-                      s.title,
+                      step.subtitle!.tr,
                       style: TextStyle(
-                        color: context.foreground,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13.5,
+                        color: context.muted,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12.2,
                       ),
                     ),
-                    if ((s.subtitle ?? '').trim().isNotEmpty) ...[
-                      const SizedBox(height: 3),
-                      Text(
-                        s.subtitle!,
-                        style: TextStyle(
-                          color: context.muted,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12.2,
-                        ),
-                      ),
-                    ],
-                    if (s.time != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        AppDateUtils.formatYmdHm(s.time!),
-                        style: TextStyle(
-                          color: context.muted.withOpacity(.85),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11.5,
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                  if (step.time != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      AppDateUtils.formatYmdHm(step.time!),
+                      style: TextStyle(
+                        color: context.muted.withOpacity(.85),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],

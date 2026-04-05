@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 import '../controllers/onboarding/onboarding_controller.dart';
 import '../widgets/app_button.dart';
@@ -99,7 +100,7 @@ class _TopBar extends StatelessWidget {
               foregroundColor: context.mutedForeground,
             ),
             child: Text(
-              'onboarding.skip'.tr,
+              Tk.onboardingSkip.tr,
               style: const TextStyle(fontWeight: FontWeight.w900),
             ),
           );
@@ -300,15 +301,15 @@ class _BottomBar extends StatelessWidget {
         Obx(
           () => AppButton(
             text: (controller.isLast
-                    ? 'onboarding.get_started'
-                    : 'onboarding.next')
+                    ? Tk.onboardingGetStarted
+                    : Tk.onboardingNext)
                 .tr,
             onPressed: controller.onNext,
           ),
         ),
         const SizedBox(height: 10),
         AppLinkButton(
-          text: 'onboarding.have_account'.tr,
+          text: Tk.onboardingHaveAccount.tr,
           onPressed: controller.onHaveAccount,
         ),
       ],

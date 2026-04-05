@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/orders/orders_ui_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class OrdersFilterTabs extends StatelessWidget {
   final OrdersFilter value;
@@ -94,34 +95,29 @@ class OrdersFilterTabs extends StatelessWidget {
         child: Row(
           children: [
             if (isRtl) const SizedBox(width: 2),
-
             chip(
-              text: 'الكل'.tr,
+              text: Tk.ordersFilterAll.tr,
               v: OrdersFilter.all,
               icon: Icons.grid_view_rounded,
             ),
             const SizedBox(width: 8),
-
             chip(
-              text: 'نشطة'.tr,
+              text: Tk.ordersFilterActive.tr,
               v: OrdersFilter.active,
               icon: Icons.timelapse_rounded,
             ),
             const SizedBox(width: 8),
-
             chip(
-              text: 'مسلّمة'.tr,
+              text: Tk.ordersFilterDelivered.tr,
               v: OrdersFilter.delivered,
               icon: Icons.check_circle_rounded,
             ),
             const SizedBox(width: 8),
-
             chip(
-              text: 'ملغاة'.tr,
+              text: Tk.ordersFilterCanceled.tr,
               v: OrdersFilter.canceled,
               icon: Icons.cancel_rounded,
             ),
-
             if (!isRtl) const SizedBox(width: 2),
           ],
         ),

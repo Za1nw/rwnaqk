@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 class OrderTrackingEtaCard extends StatelessWidget {
   final IconData icon;
@@ -31,7 +32,7 @@ class OrderTrackingEtaCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              '${'الحالة'.tr}: $statusText  •  ${'الوصول المتوقع'.tr}: $etaText',
+              '${Tk.ordersLabelStatus.tr}: $statusText  •  ${Tk.ordersLabelExpectedDelivery.tr}: $etaText',
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

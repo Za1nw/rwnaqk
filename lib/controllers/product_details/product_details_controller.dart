@@ -1,7 +1,15 @@
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/cart/cart_controller.dart';
+import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
+import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/models/product_color_option.dart';
 import 'package:rwnaqk/models/product_review.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'product_details_service.dart';
 import 'product_details_ui_controller.dart';
@@ -46,14 +54,14 @@ class ProductDetailsController extends GetxController {
 
   String get title {
     final value = product?.title.trim() ?? '';
-    return value.isEmpty ? 'Product' : value;
+    return value.isEmpty ? Mk.productDefaultTitle.tr : value.tr;
   }
 
   String get description {
     final value = product?.description.trim() ?? '';
     return value.isEmpty
-        ? 'A stylish and modern product designed for everyday comfort and clean presentation.'
-        : value;
+        ? Mk.productDefaultDescription.tr
+        : value.tr;
   }
 
   String get imageUrl => product?.imageUrl ?? '';
@@ -74,7 +82,7 @@ class ProductDetailsController extends GetxController {
 
   String get brand {
     final value = product?.brand.trim() ?? '';
-    return value.isEmpty ? 'Rwnaq' : value;
+    return value.isEmpty ? Mk.productBrand.tr : value.tr;
   }
 
   String get sku {
@@ -84,12 +92,12 @@ class ProductDetailsController extends GetxController {
 
   String get stockText {
     final value = product?.stockText.trim() ?? '';
-    return value.isEmpty ? 'In Stock' : value;
+    return value.isEmpty ? Mk.productInStock.tr : value.tr;
   }
 
   String get soldText {
     final value = product?.soldText.trim() ?? '';
-    return value.isEmpty ? '120 sold' : value;
+    return value.isEmpty ? AppMockContentUtils.soldCountText(120) : value.tr;
   }
 
   // =========================================================
@@ -151,7 +159,7 @@ class ProductDetailsController extends GetxController {
 
     final colorName = selectedColorOption?.name.trim() ?? '';
     if (colorName.isNotEmpty) {
-      chips.add(colorName);
+      chips.add(colorName.tr);
     }
 
     if (selectedSize.value.trim().isNotEmpty) {
@@ -217,6 +225,12 @@ class ProductDetailsController extends GetxController {
       thumbIndex: selectedThumb.value,
       variationImagesLength: variationImages.length,
     );
+
+    final current = item.value;
+    if (current != null && Get.isRegistered<WishlistController>()) {
+      ui.isFavorite.value =
+          Get.find<WishlistController>().isInWishlist(current.id);
+    }
   }
 
   // =========================================================
@@ -230,6 +244,16 @@ class ProductDetailsController extends GetxController {
   }
 
   void toggleFavorite() {
+    final current = item.value;
+    if (current == null) return;
+
+    if (Get.isRegistered<WishlistController>()) {
+      final wishlist = Get.find<WishlistController>();
+      wishlist.toggleWishlist(current);
+      ui.isFavorite.value = wishlist.isInWishlist(current.id);
+      return;
+    }
+
     ui.toggleFavorite();
   }
 
@@ -246,10 +270,57 @@ class ProductDetailsController extends GetxController {
   }
 
   void addToCart() {
-    Get.snackbar('Cart', 'Added to cart');
+    final current = item.value;
+    if (current == null) return;
+
+    if (Get.isRegistered<CartController>()) {
+      Get.find<CartController>().addToCart(current);
+    }
+
+    Get.snackbar(Tk.cartTitle.tr, Tk.productDetailsAddedToCart.tr);
   }
 
   void buyNow() {
-    Get.snackbar('Buy', 'Proceed to checkout');
+    final current = item.value;
+    if (current == null) return;
+
+    if (!Get.isRegistered<CartController>()) {
+      Get.snackbar(
+        Tk.productDetailsBuyNow.tr,
+        Tk.productDetailsProceedToCheckout.tr,
+      );
+      return;
+    }
+
+    final cart = Get.find<CartController>();
+    cart.addToCart(current);
+    cart.openPayment();
+    Get.toNamed(AppRoutes.payment);
+  }
+
+  Future<void> shareProduct() async {
+    final current = item.value;
+    if (current == null) return;
+
+    final shareText = [
+      title,
+      if (description.trim().isNotEmpty) description,
+      '',
+      Tk.productDetailsShareHint.tr,
+      title,
+    ].join('\n');
+
+    try {
+      await SharePlus.instance.share(
+        ShareParams(text: shareText),
+      );
+    } on MissingPluginException {
+      await Clipboard.setData(ClipboardData(text: shareText));
+      Get.snackbar(
+        Tk.commonDone.tr,
+        Tk.commonCopied.tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
-import 'package:rwnaqk/widgets/orders/order_status_pill.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_date_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
+import 'package:rwnaqk/widgets/orders/order_status_pill.dart';
 
 class OrderTrackingSummaryCard extends StatelessWidget {
   final String id;
@@ -64,7 +65,9 @@ class OrderTrackingSummaryCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 _MiniInfo(
                   icon: Icons.shopping_bag_outlined,
-                  text: '$itemsCount ${'عنصر'.tr}',
+                  text: Tk.ordersItemsCount.trParams({
+                    'count': '$itemsCount',
+                  }),
                 ),
                 const Spacer(),
                 Text(
@@ -122,20 +125,28 @@ class OrderTrackingSummaryCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        [
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           if ((deliveryName ?? '').trim().isNotEmpty)
-                            deliveryName!.trim(),
+                            Text(
+                              deliveryName!,
+                              style: TextStyle(
+                                color: context.foreground,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 12.8,
+                              ),
+                            ),
                           if ((deliveryPhone ?? '').trim().isNotEmpty)
-                            deliveryPhone!.trim(),
-                        ].join(' • '),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: context.foreground,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 12.5,
-                        ),
+                            Text(
+                              deliveryPhone!,
+                              style: TextStyle(
+                                color: context.muted,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12,
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ],
@@ -153,24 +164,35 @@ class _MiniInfo extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _MiniInfo({required this.icon, required this.text});
+  const _MiniInfo({
+    required this.icon,
+    required this.text,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 18, color: context.muted),
-        const SizedBox(width: 6),
-        Text(
-          text,
-          style: TextStyle(
-            color: context.muted,
-            fontWeight: FontWeight.w800,
-            fontSize: 12.3,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: context.input,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.border.withOpacity(.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: context.muted),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(
+              color: context.foreground,
+              fontWeight: FontWeight.w800,
+              fontSize: 12,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -1,3 +1,7 @@
+import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
+import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 
 /// هذا الملف مسؤول عن منطق البيانات الخاص بشاشة العناوين.
@@ -10,33 +14,17 @@ import 'package:rwnaqk/models/shipping_address.dart';
 /// لاحقًا عند ربط API الحقيقي، سيكون هذا الملف هو المكان المناسب
 /// لجلب العناوين وحفظها وحذفها من السيرفر.
 class AddressesService {
+  AddressesService(this._store);
+
+  final ProfileStoreService _store;
+
   /// الدول المتاحة داخل نموذج العنوان.
-  List<String> get countries => const [
-        'Yemen',
-        'Saudi Arabia',
-        'UAE',
-        'Egypt',
-      ];
+  List<String> get countries => AppMockContentUtils.localizedCountries();
 
   /// هذه الدالة تعيد عناوين تجريبية جاهزة.
   List<ShippingAddress> seedMockAddresses() {
-    return const [
-      ShippingAddress(
-        id: '1',
-        country: 'Yemen',
-        address: 'Street 10, near the mall',
-        city: 'Taiz',
-        postcode: '12345',
-        isDefault: true,
-      ),
-      ShippingAddress(
-        id: '2',
-        country: 'Saudi Arabia',
-        address: 'King Road 22',
-        city: 'Riyadh',
-        postcode: '65432',
-      ),
-    ];
+    _store.seedAddressesIfNeeded();
+    return _store.addresses.toList(growable: false);
   }
 
   /// هذه الدالة تعيد قائمة جديدة مع جعل عنوان واحد فقط هو الافتراضي.
@@ -66,5 +54,9 @@ class AddressesService {
     final list = addresses.toList();
     list[0] = list[0].copyWith(isDefault: true);
     return list;
+  }
+
+  void saveAddresses(List<ShippingAddress> items) {
+    _store.addresses.assignAll(items);
   }
 }

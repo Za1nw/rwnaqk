@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk/models/contact_info_model.dart';
-import 'package:rwnaqk/models/shipping_address_model.dart';
+import 'package:rwnaqk/models/shipping_address.dart';
 
 /// هذا الملف مسؤول عن حالات الواجهة الخاصة بمنظومة السلة والدفع.
 ///
@@ -54,6 +55,7 @@ class CartUiController extends GetxController {
   bool get isWalletPayment => paymentMethodId.value == 'wallet';
 
   @override
+
   /// هذه الدالة تُستدعى عند إنشاء الكنترولر.
   /// نستخدمها لتهيئة متحكمات الحقول.
   void onInit() {
@@ -116,24 +118,28 @@ class CartUiController extends GetxController {
 
   /// هذه الدالة تحدّث دولة عنوان الشحن داخل الـ model.
   void setShippingCountry({
-    required ShippingAddressModel current,
+    required ShippingAddress current,
     required String value,
-    required void Function(ShippingAddressModel next) updateAddress,
+    required void Function(ShippingAddress next) updateAddress,
   }) {
-    updateAddress(current.copyWith(country: value));
+    updateAddress(
+      current.copyWith(
+        country: AppMockContentUtils.resolveCountryKey(value),
+      ),
+    );
   }
 
   /// هذه الدالة تعبئ الحقول النصية من قيمة عنوان الشحن الحالية.
-  void fillShippingFormFromState(ShippingAddressModel address) {
-    shippingAddressCtrl.text = address.addressLine;
+  void fillShippingFormFromState(ShippingAddress address) {
+    shippingAddressCtrl.text = address.address;
     shippingCityCtrl.text = address.city;
     shippingPostcodeCtrl.text = address.postcode;
   }
 
   /// هذه الدالة تنظف نموذج الشحن وتبقي الدولة الافتراضية إن وُجدت.
   void clearShippingForm({
-    required ShippingAddressModel current,
-    required void Function(ShippingAddressModel next) updateAddress,
+    required ShippingAddress current,
+    required void Function(ShippingAddress next) updateAddress,
   }) {
     shippingAddressCtrl.clear();
     shippingCityCtrl.clear();
@@ -141,37 +147,41 @@ class CartUiController extends GetxController {
 
     updateAddress(
       current.copyWith(
-        country: current.country.isEmpty ? 'Yemen' : current.country,
+        country: current.country.isEmpty
+            ? AppMockContentUtils.resolveCountryKey(null)
+            : AppMockContentUtils.resolveCountryKey(current.country),
       ),
     );
   }
 
   /// هذه الدالة تجهز النموذج لإضافة عنوان جديد.
   void prepareAddShipping({
-    required void Function(ShippingAddressModel next) updateAddress,
+    required void Function(ShippingAddress next) updateAddress,
   }) {
-    updateAddress(ShippingAddressModel.empty());
+    updateAddress(ShippingAddress.empty());
 
     clearShippingForm(
-      current: ShippingAddressModel.empty(),
+      current: ShippingAddress.empty(),
       updateAddress: updateAddress,
     );
   }
 
   /// هذه الدالة تجهز النموذج لتعديل عنوان موجود.
-  void prepareEditShipping(ShippingAddressModel address) {
+  void prepareEditShipping(ShippingAddress address) {
     fillShippingFormFromState(address);
   }
 
   /// هذه الدالة تحفظ بيانات النموذج وتعيد عنوان شحن جاهز.
-  ShippingAddressModel buildShippingFromForm({
-    required ShippingAddressModel current,
+  ShippingAddress buildShippingFromForm({
+    required ShippingAddress current,
   }) {
-    return ShippingAddressModel(
+    return ShippingAddress(
+      id: current.id,
       country: current.country,
-      addressLine: shippingAddressCtrl.text.trim(),
+      address: shippingAddressCtrl.text.trim(),
       city: shippingCityCtrl.text.trim(),
       postcode: shippingPostcodeCtrl.text.trim(),
+      isDefault: current.isDefault,
     );
   }
 
@@ -214,6 +224,7 @@ class CartUiController extends GetxController {
   }
 
   @override
+
   /// هذه الدالة تُستدعى عند التخلص من الكنترولر.
   /// نستخدمها لتحرير TextEditingController.
   void onClose() {

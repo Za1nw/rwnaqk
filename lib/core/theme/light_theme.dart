@@ -16,4 +16,3 @@ final lightTheme = ThemeData(
     displayColor: AppColorSchemes.light.onBackground,
   ),
 );
-

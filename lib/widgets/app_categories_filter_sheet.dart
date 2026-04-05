@@ -1,32 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
 
 class AppCategoriesFilterSheet extends StatefulWidget {
   const AppCategoriesFilterSheet({super.key});
 
   @override
-  State<AppCategoriesFilterSheet> createState() => _AppCategoriesFilterSheetState();
+  State<AppCategoriesFilterSheet> createState() =>
+      _AppCategoriesFilterSheetState();
 }
 
 class _AppCategoriesFilterSheetState extends State<AppCategoriesFilterSheet> {
-  // ===== State (UI only) =====
-  int selectedGender = 1; // 0: All, 1: Female, 2: Male
-  final expandedIndices = <int>{0}; // Clothing expanded by default
+  int selectedGender = 1;
+  final expandedIndices = <int>{0};
   final selectedSubs = <String>{};
-
-  final categories = [
-    _CatData(
-      name: 'Clothing',
-      image: 'https://picsum.photos/120?1',
-      subs: ['Dresses', 'Pants', 'Skirts', 'Shorts', 'Jackets', 'Hoodies', 'Shirts', 'Polo', 'T-Shirts', 'Tunics'],
-    ),
-    _CatData(name: 'Shoes', image: 'https://picsum.photos/120?2', subs: ['Sneakers', 'Boots']),
-    _CatData(name: 'Bags', image: 'https://picsum.photos/120?3', subs: ['Handbags', 'Backpacks']),
-    _CatData(name: 'Lingerie', image: 'https://picsum.photos/120?4', subs: ['Bras', 'Panties']),
-    _CatData(name: 'Accessories', image: 'https://picsum.photos/120?5', subs: ['Jewelry', 'Hats']),
-    _CatData(name: 'Just for You', image: 'https://picsum.photos/120?6', isSpecial: true),
-  ];
+  final categories = AppMockContentUtils.categorySections;
 
   @override
   Widget build(BuildContext context) {
@@ -40,13 +30,12 @@ class _AppCategoriesFilterSheetState extends State<AppCategoriesFilterSheet> {
       ),
       child: Column(
         children: [
-          // ===== Header =====
           Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 12, 10),
             child: Row(
               children: [
                 Text(
-                  'All Categories',
+                  Tk.categoriesFilterAllCategories.tr,
                   style: TextStyle(
                     color: context.foreground,
                     fontSize: 24,
@@ -56,12 +45,15 @@ class _AppCategoriesFilterSheetState extends State<AppCategoriesFilterSheet> {
                 const Spacer(),
                 IconButton(
                   onPressed: () => Get.back(),
-                  icon: Icon(Icons.close_rounded, color: context.foreground, size: 28),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: context.foreground,
+                    size: 28,
+                  ),
                 ),
               ],
             ),
           ),
-
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -69,27 +61,22 @@ class _AppCategoriesFilterSheetState extends State<AppCategoriesFilterSheet> {
               child: Column(
                 children: [
                   const SizedBox(height: 10),
-
-                  // ===== Gender Tabs =====
                   _GenderTabs(
                     index: selectedGender,
                     onChanged: (v) => setState(() => selectedGender = v),
                   ),
-
                   const SizedBox(height: 24),
-
-                  // ===== Categories List =====
                   ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: categories.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (_, i) {
-                      final cat = categories[i];
+                      final category = categories[i];
                       final isExpanded = expandedIndices.contains(i);
 
                       return _CategoryTile(
-                        data: cat,
+                        data: category,
                         isExpanded: isExpanded,
                         selectedSubs: selectedSubs,
                         onToggle: () {
@@ -113,7 +100,6 @@ class _AppCategoriesFilterSheetState extends State<AppCategoriesFilterSheet> {
                       );
                     },
                   ),
-                  
                   const SizedBox(height: 30),
                 ],
               ),
@@ -125,11 +111,10 @@ class _AppCategoriesFilterSheetState extends State<AppCategoriesFilterSheet> {
   }
 }
 
-// ===================== UI parts =====================
-
 class _GenderTabs extends StatelessWidget {
   final int index;
   final ValueChanged<int> onChanged;
+
   const _GenderTabs({required this.index, required this.onChanged});
 
   @override
@@ -142,9 +127,21 @@ class _GenderTabs extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _Tab(text: 'All', on: index == 0, onTap: () => onChanged(0)),
-          _Tab(text: 'Female', on: index == 1, onTap: () => onChanged(1)),
-          _Tab(text: 'Male', on: index == 2, onTap: () => onChanged(2)),
+          _Tab(
+            text: Tk.categoriesFilterAll.tr,
+            on: index == 0,
+            onTap: () => onChanged(0),
+          ),
+          _Tab(
+            text: Tk.categoriesFilterFemale.tr,
+            on: index == 1,
+            onTap: () => onChanged(1),
+          ),
+          _Tab(
+            text: Tk.categoriesFilterMale.tr,
+            on: index == 2,
+            onTap: () => onChanged(2),
+          ),
         ],
       ),
     );
@@ -155,6 +152,7 @@ class _Tab extends StatelessWidget {
   final String text;
   final bool on;
   final VoidCallback onTap;
+
   const _Tab({required this.text, required this.on, required this.onTap});
 
   @override
@@ -167,10 +165,18 @@ class _Tab extends StatelessWidget {
           decoration: BoxDecoration(
             color: on ? context.background : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
-            border: on ? Border.all(color: context.primary.withOpacity(0.2), width: 1) : null,
-            boxShadow: on ? [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))
-            ] : null,
+            border: on
+                ? Border.all(color: context.primary.withOpacity(0.2), width: 1)
+                : null,
+            boxShadow: on
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           child: Center(
             child: Text(
@@ -189,7 +195,7 @@ class _Tab extends StatelessWidget {
 }
 
 class _CategoryTile extends StatelessWidget {
-  final _CatData data;
+  final MockCategorySection data;
   final bool isExpanded;
   final Set<String> selectedSubs;
   final VoidCallback onToggle;
@@ -221,11 +227,16 @@ class _CategoryTile extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.network(data.image, width: 48, height: 48, fit: BoxFit.cover),
+                  child: Image.network(
+                    data.imageUrl,
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Text(
-                  data.name,
+                  data.nameKey.tr,
                   style: TextStyle(
                     color: context.foreground,
                     fontSize: 16,
@@ -240,24 +251,33 @@ class _CategoryTile extends StatelessWidget {
                 if (data.isSpecial)
                   Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(color: Color(0xFF2563EB), shape: BoxShape.circle),
-                    child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 18),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF2563EB),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
                   )
                 else
                   Icon(
-                    isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                    isExpanded
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
                     color: context.mutedForeground,
                   ),
               ],
             ),
           ),
         ),
-        if (isExpanded && data.subs.isNotEmpty) ...[
+        if (isExpanded && data.subKeys.isNotEmpty) ...[
           const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: data.subs.length,
+            itemCount: data.subKeys.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               mainAxisSpacing: 10,
@@ -265,10 +285,10 @@ class _CategoryTile extends StatelessWidget {
               childAspectRatio: 3.2,
             ),
             itemBuilder: (_, i) {
-              final sub = data.subs[i];
+              final sub = data.subKeys[i];
               final isSelected = selectedSubs.contains(sub);
               return _SubItem(
-                text: sub,
+                text: sub.tr,
                 on: isSelected,
                 onTap: () => onSubTap(sub),
               );
@@ -284,6 +304,7 @@ class _SubItem extends StatelessWidget {
   final String text;
   final bool on;
   final VoidCallback onTap;
+
   const _SubItem({required this.text, required this.on, required this.onTap});
 
   @override
@@ -295,7 +316,9 @@ class _SubItem extends StatelessWidget {
           color: context.background,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: on ? context.primary.withOpacity(0.5) : context.border.withOpacity(0.4),
+            color: on
+                ? context.primary.withOpacity(0.5)
+                : context.border.withOpacity(0.4),
             width: on ? 1.5 : 1,
           ),
         ),
@@ -312,12 +335,4 @@ class _SubItem extends StatelessWidget {
       ),
     );
   }
-}
-
-class _CatData {
-  final String name;
-  final String image;
-  final List<String> subs;
-  final bool isSpecial;
-  _CatData({required this.name, required this.image, this.subs = const [], this.isSpecial = false});
 }

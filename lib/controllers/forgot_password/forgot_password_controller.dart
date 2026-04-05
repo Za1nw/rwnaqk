@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/forgot_password/forgot_password_service.dart';
 import 'package:rwnaqk/controllers/forgot_password/forgot_password_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة استعادة كلمة المرور.
 ///
@@ -85,7 +86,7 @@ class ForgotPasswordController extends GetxController {
     ui.startResendTimer();
 
     Get.toNamed(AppRoutes.otp);
-    Get.snackbar('OK', 'fp.verify.sent'.tr);
+    Get.snackbar(Tk.commonOk.tr, Tk.fpVerifySent.tr);
   }
 
   /// هذه الدالة تحدّث رمز التحقق الحالي.
@@ -98,7 +99,7 @@ class ForgotPasswordController extends GetxController {
   /// إذا كان صحيحًا ننتقل إلى شاشة إعادة تعيين كلمة المرور.
   void verifyOtp() {
     if (!_service.isValidOtp(otp.value)) {
-      Get.snackbar('Error', 'fp.verify.invalid'.tr);
+      Get.snackbar(Tk.commonError.tr, Tk.fpVerifyInvalid.tr);
       return;
     }
 
@@ -110,7 +111,7 @@ class ForgotPasswordController extends GetxController {
     if (!canResend.value) return;
 
     ui.startResendTimer();
-    Get.snackbar('OK', 'fp.verify.sent'.tr);
+    Get.snackbar(Tk.commonOk.tr, Tk.fpVerifySent.tr);
   }
 
   /// هذه الدالة تحفظ كلمة المرور الجديدة بعد التحقق من صحة البيانات.
@@ -133,7 +134,7 @@ class ForgotPasswordController extends GetxController {
       confirmPassword: p2,
     )) {
       if (isValid && p1 != p2) {
-        Get.snackbar('Error', 'fp.new.mismatch'.tr);
+        Get.snackbar(Tk.commonError.tr, Tk.fpNewMismatch.tr);
       }
       return;
     }
@@ -143,7 +144,7 @@ class ForgotPasswordController extends GetxController {
     try {
       await Future.delayed(const Duration(milliseconds: 600));
 
-      Get.snackbar('OK', 'fp.done'.tr);
+      Get.snackbar(Tk.commonOk.tr, Tk.fpDone.tr);
       Get.offAllNamed(AppRoutes.login);
     } finally {
       ui.setLoading(false);

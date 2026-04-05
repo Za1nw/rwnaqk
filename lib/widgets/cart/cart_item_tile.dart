@@ -76,7 +76,6 @@ class CartItemTile extends StatelessWidget {
                 onRemove: onRemove,
               ),
               const SizedBox(width: 12),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +83,7 @@ class CartItemTile extends StatelessWidget {
                   children: [
                     // TITLE
                     Text(
-                      item.title,
+                      item.title.tr,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

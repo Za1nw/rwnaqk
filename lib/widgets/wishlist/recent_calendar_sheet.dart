@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_date_utils.dart';
 
 class RecentCalendarSheet extends StatefulWidget {
@@ -122,7 +124,7 @@ class _RecentCalendarSheetState extends State<RecentCalendarSheet> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: const Text('Choose date'),
+                  child: Text(Tk.wishlistFilterChooseDate.tr),
                 ),
               ),
             ],
