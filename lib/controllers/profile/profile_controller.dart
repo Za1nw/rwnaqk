@@ -11,6 +11,8 @@ class ProfileController extends GetxController {
   String get phone => _service.profilePhone();
   String get email => _service.profileEmail();
   String get location => _service.profileLocation();
+  String get avatarPath => _service.profileAvatarPath();
+  String get avatarUrl => _service.profileAvatarUrl();
 
   List<ProfileStatsItem> get stats => _service.stats();
   List<ProfileInfoItem> get infoItems => _service.infoItems();

@@ -2,16 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/widgets/profile/profile_avatar.dart';
 
 class SettingsProfileCard extends StatelessWidget {
   final String name;
   final String phone;
+  final String? avatarPath;
+  final String? avatarUrl;
   final VoidCallback onEdit;
 
   const SettingsProfileCard({
     super.key,
     required this.name,
     required this.phone,
+    this.avatarPath,
+    this.avatarUrl,
     required this.onEdit,
   });
 
@@ -27,18 +32,12 @@ class SettingsProfileCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: context.input,
-                shape: BoxShape.circle,
-                border: Border.all(color: context.border.withOpacity(.35)),
-              ),
-              child: Icon(
-                Icons.person_rounded,
-                color: context.foreground,
-              ),
+            ProfileAvatar(
+              name: name,
+              imagePath: avatarPath,
+              imageUrl: avatarUrl,
+              size: 52,
+              fontSize: 20,
             ),
             const SizedBox(width: 12),
             Expanded(

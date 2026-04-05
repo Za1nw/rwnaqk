@@ -19,9 +19,8 @@ class SettingsScreen extends GetView<AppSettingsController> {
   Widget build(BuildContext context) {
     final app = Get.find<AppSettingsController>();
     final profileStore = Get.find<ProfileStoreService>();
-    final main = Get.isRegistered<MainController>()
-        ? Get.find<MainController>()
-        : null;
+    final main =
+        Get.isRegistered<MainController>() ? Get.find<MainController>() : null;
 
     return Scaffold(
       backgroundColor: context.background,
@@ -44,6 +43,8 @@ class SettingsScreen extends GetView<AppSettingsController> {
               () => SettingsProfileCard(
                 name: profileStore.name.value,
                 phone: profileStore.phone.value,
+                avatarPath: profileStore.avatarPath.value,
+                avatarUrl: profileStore.avatarUrl.value,
                 onEdit: () => Get.toNamed(AppRoutes.editProfile),
               ),
             ),

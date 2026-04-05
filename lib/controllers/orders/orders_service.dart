@@ -25,6 +25,35 @@ class OrdersService {
         addressLine: 'Taiz - Jamal St.',
         deliveryName: 'Zain',
         deliveryPhone: '+9677xxxxxxx',
+        details: const OrderDetailsModel(
+          items: [
+            OrderDetailsItem(
+              title: 'Classic Hoodie',
+              subtitle: 'Black, XL',
+              quantity: 1,
+              unitPrice: 10000,
+            ),
+            OrderDetailsItem(
+              title: 'Urban Sneakers',
+              subtitle: 'White, 42',
+              quantity: 1,
+              unitPrice: 8000,
+            ),
+            OrderDetailsItem(
+              title: 'Daily Cap',
+              subtitle: 'Gray',
+              quantity: 1,
+              unitPrice: 4500,
+            ),
+          ],
+          subtotal: 22500,
+          shippingFee: 2000,
+          shippingMethodKey: Tk.cartShippingExpressTitle,
+          paymentMethodKey: Tk.cartPaymentCodTitle,
+          deliveryName: 'Zain Al-Hakimi',
+          deliveryPhone: '+967 770 245 819',
+          addressLine: 'Jamal Street, Taiz, Yemen',
+        ),
       ),
       OrderModel(
         id: 'ORD-10212',
@@ -33,6 +62,23 @@ class OrdersService {
         itemsCount: 1,
         status: 'delivered',
         addressLine: 'Taiz - Al Rawdha',
+        details: const OrderDetailsModel(
+          items: [
+            OrderDetailsItem(
+              title: 'Minimal Leather Bag',
+              subtitle: 'Brown',
+              quantity: 1,
+              unitPrice: 9800,
+            ),
+          ],
+          subtotal: 9800,
+          shippingFee: 0,
+          shippingMethodKey: Tk.cartShippingStandardTitle,
+          paymentMethodKey: Tk.cartPaymentWalletTitle,
+          deliveryName: 'Zain Al-Hakimi',
+          deliveryPhone: '+967 770 245 819',
+          addressLine: 'Al Rawdha District, Taiz, Yemen',
+        ),
       ),
       OrderModel(
         id: 'ORD-10188',
@@ -40,11 +86,30 @@ class OrdersService {
         total: 15500,
         itemsCount: 2,
         status: 'canceled',
+        details: const OrderDetailsModel(
+          items: [
+            OrderDetailsItem(
+              title: 'Sport T-Shirt',
+              subtitle: 'Blue, L',
+              quantity: 2,
+              unitPrice: 7000,
+            ),
+          ],
+          subtotal: 14000,
+          shippingFee: 1500,
+          shippingMethodKey: Tk.cartShippingStandardTitle,
+          paymentMethodKey: Tk.cartPaymentCodTitle,
+          deliveryName: 'Zain Al-Hakimi',
+          deliveryPhone: '+967 770 245 819',
+          addressLine: 'Taiz, Yemen',
+        ),
       ),
     ];
   }
 
   OrderDetailsModel buildOrderDetails(OrderModel order) {
+    if (order.details != null) return order.details!;
+
     switch (order.id) {
       case 'ORD-10241':
         return const OrderDetailsModel(

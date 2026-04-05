@@ -3,10 +3,12 @@ import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 
 class ProfileStoreService extends GetxService {
-  final name = 'Zain Al-Hakimi'.obs;
-  final phone = '+967 770 245 819'.obs;
+  final name = 'Zain Al-Zubair'.obs;
+  final phone = '+967 772923592'.obs;
   final email = 'zain@rwnaq.app'.obs;
   final passwordPreview = '************'.obs;
+  final avatarPath = ''.obs;
+  final avatarUrl = ''.obs;
   final addresses = <ShippingAddress>[].obs;
 
   ShippingAddress? get defaultAddress {
@@ -52,6 +54,10 @@ class ProfileStoreService extends GetxService {
     email.value = nextEmail;
   }
 
+  void updateAvatarPath(String? path) {
+    avatarPath.value = (path ?? '').trim();
+  }
+
   ShippingAddress currentShippingAddress() {
     final current = defaultAddress;
     if (current == null) {
@@ -62,7 +68,8 @@ class ProfileStoreService extends GetxService {
 
   void saveDefaultShippingAddress(ShippingAddress model) {
     final next = ShippingAddress(
-      id: defaultAddress?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id: defaultAddress?.id ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       country: model.country,
       address: model.address,
       city: model.city,

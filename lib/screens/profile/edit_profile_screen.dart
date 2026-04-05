@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:rwnaqk/controllers/profile/edit_profile_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
-import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
-
-import '../../widgets/app_button.dart';
-import '../../widgets/app_input_field.dart';
-import '../../controllers/profile/edit_profile_controller.dart';
+import 'package:rwnaqk/widgets/app_button.dart';
+import 'package:rwnaqk/widgets/app_input_field.dart';
+import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
+import 'package:rwnaqk/widgets/profile/profile_avatar.dart';
 
 class EditProfileScreen extends GetView<EditProfileController> {
   const EditProfileScreen({super.key});
@@ -15,8 +16,6 @@ class EditProfileScreen extends GetView<EditProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.background,
-
-      // ✅ زر ثابت تحت مثل الصورة
       bottomNavigationBar: SafeArea(
         top: false,
         child: Padding(
@@ -27,7 +26,6 @@ class EditProfileScreen extends GetView<EditProfileController> {
           ),
         ),
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsetsDirectional.fromSTEB(18, 14, 18, 90),
@@ -52,17 +50,10 @@ class EditProfileScreen extends GetView<EditProfileController> {
                 ),
               ),
               const SizedBox(height: 18),
-
-              // ===== Avatar + edit button overlay
               Center(
-                child: _EditableAvatar(
-                  onEdit: controller.pickAvatar,
-                ),
+                child: _EditableAvatar(controller: controller),
               ),
-
               const SizedBox(height: 26),
-
-              // ===== Fields (نفس شكل البطائق الرمادية بالصورة)
               _SoftField(
                 child: AppInputField(
                   controller: controller.nameCtrl,
@@ -72,7 +63,6 @@ class EditProfileScreen extends GetView<EditProfileController> {
                 ),
               ),
               const SizedBox(height: 14),
-
               _SoftField(
                 child: AppInputField(
                   controller: controller.emailCtrl,
@@ -83,20 +73,16 @@ class EditProfileScreen extends GetView<EditProfileController> {
                 ),
               ),
               const SizedBox(height: 14),
-
               _SoftField(
                 child: AppInputField(
                   controller: controller.passwordPreviewCtrl,
                   label: Tk.profileEditPassword.tr,
                   hint: '************',
-                  enabled: false, // ✅ مثل الصورة مجرد عرض
+                  enabled: false,
                   textInputAction: TextInputAction.done,
                 ),
               ),
-
               const SizedBox(height: 6),
-
-              // ✅ رابط يفتح شاشة تغيير كلمة السر
               Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: TextButton(
@@ -106,7 +92,7 @@ class EditProfileScreen extends GetView<EditProfileController> {
                     splashFactory: NoSplash.splashFactory,
                   ),
                   child: Text(
-                    Tk.loginForgot.tr, // أو غيّرها لـ "Change Password".tr
+                    Tk.loginForgot.tr,
                     style: TextStyle(
                       color: context.primary,
                       fontWeight: FontWeight.w700,
@@ -124,64 +110,152 @@ class EditProfileScreen extends GetView<EditProfileController> {
 }
 
 class _EditableAvatar extends StatelessWidget {
-  final VoidCallback onEdit;
-  const _EditableAvatar({required this.onEdit});
+  final EditProfileController controller;
+
+  const _EditableAvatar({required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 140,
-      height: 140,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
+    return ListenableBuilder(
+      listenable: controller.nameCtrl,
+      builder: (_, __) {
+        return Obx(
+          () => SizedBox(
             width: 140,
             height: 140,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: context.card,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(.08),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
-                )
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: context.card,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(.08),
+                        blurRadius: 18,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(8),
+                  child: ProfileAvatar(
+                    name: controller.nameCtrl.text.trim().isEmpty
+                        ? 'User'
+                        : controller.nameCtrl.text,
+                    imagePath: controller.avatarPath,
+                    imageUrl: controller.avatarUrl,
+                    size: 124,
+                    fontSize: 42,
+                  ),
+                ),
+                PositionedDirectional(
+                  end: 8,
+                  top: 18,
+                  child: AppActionIconButton(
+                    icon: Icons.edit_rounded,
+                    onTap: () => _showPhotoActions(context),
+                    size: 44,
+                    radius: 22,
+                    backgroundColor: context.primary,
+                    iconColor: Colors.white,
+                  ),
+                ),
               ],
             ),
-            padding: const EdgeInsets.all(8),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: context.input,
-                border: Border.all(color: context.border.withOpacity(.25)),
-              ),
-              child: const Icon(Icons.person_rounded, size: 58),
-              // لاحقاً: AppNetworkImage داخل ClipOval
-            ),
           ),
+        );
+      },
+    );
+  }
 
-          PositionedDirectional(
-            end: 8,
-            top: 18,
-            child: AppActionIconButton(
-              icon: Icons.edit_rounded,
-              onTap: onEdit,
-              size: 44,
-              radius: 22,
-              backgroundColor: context.primary,
-              iconColor: Colors.white,
+  void _showPhotoActions(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: context.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _BottomSheetTile(
+                  icon: Icons.photo_library_outlined,
+                  title: Tk.commonGallery.tr,
+                  onTap: () {
+                    Get.back();
+                    controller.pickAvatar(ImageSource.gallery);
+                  },
+                ),
+                const SizedBox(height: 10),
+                _BottomSheetTile(
+                  icon: Icons.photo_camera_outlined,
+                  title: Tk.commonCamera.tr,
+                  onTap: () {
+                    Get.back();
+                    controller.pickAvatar(ImageSource.camera);
+                  },
+                ),
+              ],
             ),
           ),
-        ],
+        );
+      },
+    );
+  }
+}
+
+class _BottomSheetTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const _BottomSheetTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Ink(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: context.input,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.border.withOpacity(.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: context.foreground),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: TextStyle(
+                color: context.foreground,
+                fontWeight: FontWeight.w800,
+                fontSize: 13.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// ✅ حاوية “soft” مثل البلوك الرمادي بالصورة
 class _SoftField extends StatelessWidget {
   final Widget child;
+
   const _SoftField({required this.child});
 
   @override

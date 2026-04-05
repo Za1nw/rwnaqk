@@ -19,6 +19,7 @@ abstract final class Tk {
   static const commonCopy = 'common.copy';
   static const commonCopied = 'common.copied';
   static const commonCamera = 'common.camera';
+  static const commonGallery = 'common.gallery';
   static const commonMockAction = 'common.mock_action';
   static const commonSomethingWentWrong = 'common.something_went_wrong';
   static const commonPleaseTryAgain = 'common.please_try_again';
@@ -227,6 +228,8 @@ abstract final class Tk {
   static const profileEditFillAll = 'profile.edit.fill_all';
   static const profileEditUpdated = 'profile.edit.updated';
   static const profileEditChangePassword = 'profile.edit.change_password';
+  static const profileEditPhotoUpdated = 'profile.edit.photo_updated';
+  static const profileEditPhotoPickFailed = 'profile.edit.photo_pick_failed';
   static const addressesTitle = 'addresses.title';
   static const addressesChooseShipping = 'addresses.choose_shipping';
   static const addressesShippingAddress = 'addresses.shipping_address';
@@ -384,8 +387,7 @@ abstract final class Tk {
   static const cartValidationShippingMissing =
       'cart.validation.shipping_missing';
   static const cartValidationContactTitle = 'cart.validation.contact_title';
-  static const cartValidationContactMissing =
-      'cart.validation.contact_missing';
+  static const cartValidationContactMissing = 'cart.validation.contact_missing';
   static const cartValidationWalletTitle = 'cart.validation.wallet_title';
   static const cartValidationWalletMissing = 'cart.validation.wallet_missing';
   static const cartOrderCreatedTitle = 'cart.order_created_title';
@@ -408,8 +410,7 @@ abstract final class Tk {
   static const listingSortDiscountHigh = 'listing.sort.discount_high';
   static const productDiscountOff = 'product.discount_off';
   static const productDetailsVariations = 'product_details.variations';
-  static const productDetailsSpecifications =
-      'product_details.specifications';
+  static const productDetailsSpecifications = 'product_details.specifications';
   static const productDetailsMaterial = 'product_details.material';
   static const productDetailsOrigin = 'product_details.origin';
   static const productDetailsSizeGuide = 'product_details.size_guide';
@@ -439,8 +440,7 @@ abstract final class Tk {
   static const productDetailsCopyProductName =
       'product_details.copy_product_name';
   static const productDetailsShareNow = 'product_details.share_now';
-  static const productDetailsShareAnywhere =
-      'product_details.share_anywhere';
+  static const productDetailsShareAnywhere = 'product_details.share_anywhere';
   static const productDetailsAvailableColors =
       'product_details.available_colors';
   static const productDetailsAvailableSizes = 'product_details.available_sizes';

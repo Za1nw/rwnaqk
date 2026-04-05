@@ -1,33 +1,21 @@
+import 'dart:io';
+
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 
-/// هذا الملف مسؤول عن منطق البيانات الخاص بشاشة تعديل الملف الشخصي.
-///
-/// نستخدمه لفصل:
-/// - القيم الابتدائية
-/// - تجهيز بيانات الحفظ
-///
-/// لاحقًا عند ربط API الحقيقي، سيكون هذا الملف هو المكان المناسب
-/// لجلب بيانات المستخدم وتحديثها ورفع الصورة.
 class EditProfileService {
   EditProfileService(this._store);
 
   final ProfileStoreService _store;
+  final ImagePicker _picker = ImagePicker();
 
-  /// هذه الدالة تعيد الاسم الابتدائي الحالي.
   String initialName() => _store.name.value;
-
-  /// هذه الدالة تعيد البريد الإلكتروني الابتدائي الحالي.
   String initialEmail() => _store.email.value;
-
-  /// هذه الدالة تعيد نص معاينة كلمة المرور الحالي.
   String passwordPreview() => _store.passwordPreview.value;
+  String avatarPath() => _store.avatarPath.value;
+  String avatarUrl() => _store.avatarUrl.value;
 
-  /// هذه الدالة تتحقق من صحة بيانات الحفظ بشكل مبدئي.
-  ///
-  /// حاليًا نتحقق فقط من:
-  /// - عدم فراغ الاسم
-  /// - عدم فراغ البريد
-  /// ويمكن توسيعها لاحقًا بسهولة.
   bool canSave({
     required String name,
     required String email,
@@ -45,5 +33,37 @@ class EditProfileService {
       nextName: name.trim(),
       nextEmail: email.trim(),
     );
+  }
+
+  Future<String?> pickAvatar(ImageSource source) async {
+    final file = await _picker.pickImage(
+      source: source,
+      maxWidth: 1400,
+      imageQuality: 88,
+    );
+    if (file == null) return null;
+
+    final directory = await getApplicationDocumentsDirectory();
+    final extension = _extensionFor(file.path);
+    final targetPath =
+        '${directory.path}${Platform.pathSeparator}profile_avatar$extension';
+    final targetFile = File(targetPath);
+
+    if (targetFile.existsSync()) {
+      targetFile.deleteSync();
+    }
+
+    final copied = await File(file.path).copy(targetPath);
+    _store.updateAvatarPath(copied.path);
+    return copied.path;
+  }
+
+  String _extensionFor(String path) {
+    final dotIndex = path.lastIndexOf('.');
+    if (dotIndex == -1) return '.jpg';
+
+    final ext = path.substring(dotIndex).trim().toLowerCase();
+    if (ext.isEmpty || ext.length > 5) return '.jpg';
+    return ext;
   }
 }

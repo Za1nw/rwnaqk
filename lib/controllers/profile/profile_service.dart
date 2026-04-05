@@ -33,6 +33,8 @@ class ProfileService {
   String profilePhone() => _store.phone.value;
   String profileEmail() => _store.email.value;
   String profileLocation() => _store.location;
+  String profileAvatarPath() => _store.avatarPath.value;
+  String profileAvatarUrl() => _store.avatarUrl.value;
 
   String ordersCount() {
     if (!Get.isRegistered<OrdersController>()) return '0';
@@ -48,7 +50,8 @@ class ProfileService {
 
   List<ProfileStatsItem> stats() {
     return [
-      ProfileStatsItem(value: ordersCount(), labelKey: Tk.profileViewOrdersCount),
+      ProfileStatsItem(
+          value: ordersCount(), labelKey: Tk.profileViewOrdersCount),
       ProfileStatsItem(
         value: addressesCount(),
         labelKey: Tk.profileViewAddressesCount,

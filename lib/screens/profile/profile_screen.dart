@@ -34,6 +34,8 @@ class ProfileScreen extends GetView<ProfileController> {
               SettingsProfileCard(
                 name: controller.name,
                 phone: controller.phone,
+                avatarPath: controller.avatarPath,
+                avatarUrl: controller.avatarUrl,
                 onEdit: controller.openEditProfile,
               ),
               const SizedBox(height: 14),

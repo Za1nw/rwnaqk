@@ -5,6 +5,7 @@ import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk/models/contact_info_model.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
+import 'package:rwnaqk/models/order_details_model.dart';
 import 'package:rwnaqk/models/order_model.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 import 'package:rwnaqk/models/shipping_option_model.dart';
@@ -97,15 +98,43 @@ class CartService {
 
   /// هذه الدالة تبني طلبًا جاهزًا بعد إتمام الدفع.
   OrderModel buildCheckoutOrder({
+    required List<HomeProductItem> items,
+    required Map<String, int> quantities,
     required int itemsCount,
+    required double shippingFee,
     required double total,
     required ShippingAddress address,
     required ContactInfoModel contact,
+    required String shippingMethodKey,
+    required String paymentMethodKey,
     String status = 'pending',
   }) {
     final now = DateTime.now();
     final millis = now.millisecondsSinceEpoch.toString();
     final suffix = millis.substring(millis.length - 6);
+    final subtotal = computeItemsTotal(items, quantities);
+    final deliveryName = _profileStore.name.value.trim();
+    final deliveryPhone = contact.phone.trim();
+
+    final details = OrderDetailsModel(
+      items: items
+          .map(
+            (item) => OrderDetailsItem(
+              title: item.title,
+              subtitle: _buildItemSubtitle(item),
+              quantity: quantities[item.id] ?? 1,
+              unitPrice: _unitPrice(item),
+            ),
+          )
+          .toList(growable: false),
+      subtotal: subtotal,
+      shippingFee: shippingFee,
+      shippingMethodKey: shippingMethodKey,
+      paymentMethodKey: paymentMethodKey,
+      deliveryName: deliveryName.isEmpty ? contact.email.trim() : deliveryName,
+      deliveryPhone: deliveryPhone,
+      addressLine: address.formatted,
+    );
 
     return OrderModel(
       id: 'ORD-$suffix',
@@ -114,13 +143,30 @@ class CartService {
       itemsCount: itemsCount,
       status: status,
       addressLine: address.formatted,
-      deliveryPhone: contact.phone.trim().isEmpty ? null : contact.phone.trim(),
-      deliveryName: null,
+      deliveryPhone: deliveryPhone.isEmpty ? null : deliveryPhone,
+      deliveryName:
+          details.deliveryName.trim().isEmpty ? null : details.deliveryName,
+      details: details,
     );
   }
 
   double _unitPrice(HomeProductItem item) {
     return item.hasDiscount ? item.salePrice : item.price;
+  }
+
+  String _buildItemSubtitle(HomeProductItem item) {
+    final parts = <String>[
+      if (item.brand.trim().isNotEmpty) item.brand.trim(),
+      if (item.sku.trim().isNotEmpty) 'SKU: ${item.sku.trim()}',
+    ];
+
+    if (parts.isEmpty) {
+      return item.hasDiscount
+          ? '${item.discountPercent}% OFF'
+          : 'Standard item';
+    }
+
+    return parts.join(' - ');
   }
 
   /// هذه الدالة تعيد عناصر السلة التجريبية.
@@ -154,5 +200,6 @@ class CartService {
   }
 
   /// هذه الدالة تعيد عنوان الشحن الابتدائي التجريبي.
-  ShippingAddress seedShippingAddress() => _profileStore.currentShippingAddress();
+  ShippingAddress seedShippingAddress() =>
+      _profileStore.currentShippingAddress();
 }

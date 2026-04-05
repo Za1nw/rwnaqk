@@ -1,5 +1,6 @@
 const Map<String, String> enExtraUiTranslations = {
   'common.camera': 'Camera',
+  'common.gallery': 'Gallery',
   'common.not_implemented_yet': 'Not implemented yet',
   'orders.items_count': '@count items',
   'orders.details.title': 'Order Details',
@@ -39,6 +40,7 @@ const Map<String, String> enExtraUiTranslations = {
 
 const Map<String, String> arExtraUiTranslations = {
   'common.camera': 'الكاميرا',
+  'common.gallery': 'المعرض',
   'common.not_implemented_yet': 'غير متاح بعد',
   'orders.items_count': '@count منتجات',
   'orders.details.title': 'تفاصيل الطلب',

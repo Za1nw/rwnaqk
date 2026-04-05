@@ -370,10 +370,15 @@ class CartController extends GetxController {
     }
 
     final order = _service.buildCheckoutOrder(
+      items: cartItems.toList(growable: false),
+      quantities: Map<String, int>.from(itemQuantities),
       itemsCount: itemsCount,
+      shippingFee: shippingFee,
       total: total,
       address: shippingAddress.value,
       contact: contactInfo.value,
+      shippingMethodKey: selectedShippingTitle,
+      paymentMethodKey: paymentMethodLabel,
       status: 'pending',
     );
 

@@ -1,3 +1,5 @@
+import 'package:rwnaqk/models/order_details_model.dart';
+
 class OrderModel {
   final String id;
   final DateTime createdAt;
@@ -11,6 +13,7 @@ class OrderModel {
   final String? addressLine;
   final String? deliveryName;
   final String? deliveryPhone;
+  final OrderDetailsModel? details;
 
   const OrderModel({
     required this.id,
@@ -21,6 +24,7 @@ class OrderModel {
     this.addressLine,
     this.deliveryName,
     this.deliveryPhone,
+    this.details,
   });
 }
 

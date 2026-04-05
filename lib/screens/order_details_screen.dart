@@ -18,7 +18,13 @@ class OrderDetailsScreen extends GetView<OrdersController> {
 
   OrderModel? _getOrderFromArgs() {
     final args = Get.arguments;
-    if (args is OrderModel) return args;
+    if (args is OrderModel) {
+      return controller.orders.firstWhereOrNull((item) => item.id == args.id) ??
+          args;
+    }
+    if (args is String) {
+      return controller.orders.firstWhereOrNull((item) => item.id == args);
+    }
     return null;
   }
 
