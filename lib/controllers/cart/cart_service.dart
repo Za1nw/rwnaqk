@@ -45,9 +45,9 @@ class CartService {
       ];
 
   /// بيانات التواصل الحالية.
-  ContactInfoModel get contactInfo => const ContactInfoModel(
-        phone: '+91987654321',
-        email: 'gmail@example.com',
+  ContactInfoModel get contactInfo => ContactInfoModel(
+        phone: _profileStore.phone.value.trim(),
+        email: _profileStore.email.value.trim(),
       );
 
   /// هذه الدالة تحسب إجمالي أسعار العناصر داخل السلة.

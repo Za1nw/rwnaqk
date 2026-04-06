@@ -177,6 +177,7 @@ class CartController extends GetxController {
   /// هذه الدالة تفتح صفحة الدفع إذا كانت السلة غير فارغة.
   void openPayment() {
     if (cartItems.isEmpty) return;
+    _syncCheckoutDefaultsFromProfile();
     ui.openPayment();
   }
 
@@ -418,6 +419,7 @@ class CartController extends GetxController {
     wishlistItems.assignAll(_service.seedWishlistItems());
     shippingAddress.value = _service.seedShippingAddress();
     contactInfo.value = _service.contactInfo;
+    _syncCheckoutDefaultsFromProfile(forceContact: true);
 
     itemQuantities
       ..clear()
@@ -426,5 +428,23 @@ class CartController extends GetxController {
     fillShippingFormFromState();
     ui.fillContactFormFromState(contactInfo.value);
     ui.fillWalletFormFromState();
+  }
+
+  void _syncCheckoutDefaultsFromProfile({bool forceContact = false}) {
+    final profileName = _profileStore.name.value.trim();
+    final profilePhone = _profileStore.phone.value.trim();
+    final profileEmail = _profileStore.email.value.trim();
+
+    if (forceContact || contactInfo.value.isEmpty) {
+      contactInfo.value = contactInfo.value.copyWith(
+        phone: profilePhone,
+        email: profileEmail,
+      );
+      ui.fillContactFormFromState(contactInfo.value);
+    }
+
+    if (receiverName.value.trim().isEmpty || forceContact) {
+      ui.setReceiverName(profileName);
+    }
   }
 }
