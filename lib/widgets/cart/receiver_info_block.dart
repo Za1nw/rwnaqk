@@ -9,7 +9,6 @@ class ReceiverInfoBlock extends StatelessWidget {
   final String receiverNameValue;
   final String walletNumberValue;
   final List<WalletCompany> companies;
-  final VoidCallback? onEdit;
 
   const ReceiverInfoBlock({
     super.key,
@@ -18,7 +17,6 @@ class ReceiverInfoBlock extends StatelessWidget {
     required this.receiverNameValue,
     required this.walletNumberValue,
     required this.companies,
-    this.onEdit,
   });
 
   @override
@@ -46,42 +44,6 @@ class ReceiverInfoBlock extends StatelessWidget {
                   ),
                 ),
               ),
-              if (onEdit != null)
-                InkWell(
-                  onTap: onEdit,
-                  borderRadius: BorderRadius.circular(999),
-                  child: Ink(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.card,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: context.border.withOpacity(.35)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.edit_outlined,
-                          size: 15,
-                          color: context.primary,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Edit',
-                          style: TextStyle(
-                            color: context.primary,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 11.5,
-                            height: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
             ],
           ),
           if (companies.isNotEmpty) ...[

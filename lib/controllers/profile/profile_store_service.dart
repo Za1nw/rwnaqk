@@ -1,8 +1,39 @@
+import 'package:rwnaqk/models/wallet_transfer_account.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 
 class ProfileStoreService extends GetxService {
+  /// قائمة حسابات المحافظ للتحويل (يتم التحكم فيها من الأدمن)
+  final walletAccounts = <WalletTransferAccount>[
+    WalletTransferAccount(
+      id: 'jib',
+      companyName: 'Jib',
+      receiverName: 'Rwnaqk Store',
+      walletNumber: '777123456',
+      icon: Icons.account_balance_wallet_outlined,
+    ),
+    WalletTransferAccount(
+      id: 'onecash',
+      companyName: 'OneCash',
+      receiverName: 'Rwnaqk Store',
+      walletNumber: '775987654',
+      icon: Icons.payments_outlined,
+    ),
+    WalletTransferAccount(
+      id: 'kuraimi',
+      companyName: 'Kuraimi',
+      receiverName: 'Rwnaqk Store',
+      walletNumber: '782456123',
+      icon: Icons.account_balance,
+    ),
+  ].obs;
+
+  WalletTransferAccount? get defaultWalletAccount {
+    if (walletAccounts.isEmpty) return null;
+    return walletAccounts.first;
+  }
   final name = 'Zain Al-Zubair'.obs;
   final phone = '+967 772923592'.obs;
   final email = 'zain@rwnaq.app'.obs;

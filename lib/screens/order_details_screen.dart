@@ -12,6 +12,8 @@ import 'package:rwnaqk/widgets/orders/order_details_info_card.dart';
 import 'package:rwnaqk/widgets/orders/order_details_items_card.dart';
 import 'package:rwnaqk/widgets/orders/order_details_summary_card.dart';
 import 'package:rwnaqk/widgets/orders/order_tracking_summary_card.dart';
+import 'package:rwnaqk/widgets/dialogs/review_dialog.dart';
+
 
 class OrderDetailsScreen extends GetView<OrdersController> {
   const OrderDetailsScreen({super.key});
@@ -153,15 +155,39 @@ class OrderDetailsScreen extends GetView<OrdersController> {
               shippingFee: details.shippingFee,
               total: details.total,
             ),
-            const SizedBox(height: 16),
-            AppButton(
-              text: Tk.ordersDetailsTrackOrder.tr,
-              icon: Icons.local_shipping_outlined,
-              onPressed: () => Get.toNamed(
-                AppRoutes.orderTracking,
-                arguments: order,
+            if (order.status == "delivered") ...[
+              const SizedBox(height: 16),
+              AppButton(
+                text: "تقييم المنتجات",
+                icon: Icons.star_rate_rounded,
+                onPressed: () async {
+                  for (final item in details.items) {
+                    await showDialog(
+                      context: context,
+                      builder: (_) => ReviewDialog(
+                        title: "تقييم ${item.title}",
+                        onSubmit: (rating, comment) {
+                          // نفذ حفظ التقييم هنا
+                          print("تم تقييم ${item.title}: $rating, $comment");
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    );
+                  }
+                },
               ),
-            ),
+              const SizedBox(height: 16),
+            ] else ...[
+              const SizedBox(height: 16),
+              AppButton(
+                text: Tk.ordersDetailsTrackOrder.tr,
+                icon: Icons.local_shipping_outlined,
+                onPressed: () => Get.toNamed(
+                  AppRoutes.orderTracking,
+                  arguments: order,
+                ),
+              ),
+            ],
           ],
         ),
       ),

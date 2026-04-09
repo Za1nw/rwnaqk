@@ -111,7 +111,7 @@ class AppPages {
       page: () => const CartScreen(),
       // binding: CartBinding(),
     ),
-    GetPage(name: AppRoutes.payment, page: () => const PaymentScreen()),
+    GetPage(name: AppRoutes.payment, page: () => PaymentScreen()),
     GetPage(
       name: AppRoutes.settings,
       page: () => const SettingsScreen(),

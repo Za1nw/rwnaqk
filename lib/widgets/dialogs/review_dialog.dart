@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
@@ -136,7 +137,16 @@ class _ReviewTargetInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasName = (userName ?? '').trim().isNotEmpty;
+    // جلب اسم المستخدم من الكنترولر الخاص بالبروفايل إذا لم يتم تمريره
+    String? displayName = userName;
+    if (displayName == null) {
+      try {
+        // جلب الاسم من ProfileStoreService
+        final profileStore = Get.find<ProfileStoreService>();
+        displayName = profileStore.name.value;
+      } catch (_) {}
+    }
+    final hasName = (displayName ?? '').trim().isNotEmpty;
     final hasOrder = (orderId ?? '').trim().isNotEmpty;
 
     return Row(
@@ -149,12 +159,12 @@ class _ReviewTargetInfo extends StatelessWidget {
             children: [
               if (hasName)
                 Text(
-                  userName!,
+                  displayName!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: context.foreground,
-                    fontWeight: FontWeight.w800,
+                    color: context.muted,
+                    fontWeight: FontWeight.w900,
                     fontSize: 13.5,
                   ),
                 ),
@@ -166,7 +176,7 @@ class _ReviewTargetInfo extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: context.destructive,
+                      color: context.muted,
                       fontWeight: FontWeight.w700,
                       fontSize: 12,
                     ),
@@ -204,7 +214,7 @@ class _AvatarCircle extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: context.input,
-        border: Border.all(color: context.border.withOpacity(.25)),
+        border: Border.all(color: context.primary.withOpacity(.25)),
       ),
       clipBehavior: Clip.antiAlias,
       child: hasAvatar

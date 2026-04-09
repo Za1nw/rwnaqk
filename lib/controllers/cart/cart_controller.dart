@@ -12,9 +12,9 @@ import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
 import 'package:rwnaqk/models/contact_info_model.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
-import 'package:rwnaqk/models/order_model.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 import 'package:rwnaqk/models/shipping_option_model.dart';
+import 'package:rwnaqk/widgets/cart/payment_method_section.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة السلة.
 ///
@@ -29,6 +29,14 @@ import 'package:rwnaqk/models/shipping_option_model.dart';
 /// - CartUiController الخاص بحالات الواجهة
 /// - CartService الخاص بالبيانات والتجهيزات
 class CartController extends GetxController {
+  /// تحويل حسابات المحافظ الإدارية إلى WalletCompany لعرضها في الواجهة
+  List<WalletCompany> get walletCompanies => _profileStore.walletAccounts
+      .map((acc) => WalletCompany(
+            name: acc.companyName,
+            icon: acc.icon,
+            assetPath: null,
+          ))
+      .toList(growable: false);
   CartController(this._service);
 
   final CartService _service;

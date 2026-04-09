@@ -16,6 +16,7 @@ class WalletCompany {
   });
 }
 
+
 class PaymentMethodSection extends StatelessWidget {
   final String titleText;
 
@@ -35,7 +36,6 @@ class PaymentMethodSection extends StatelessWidget {
 
   final String selectedId;
   final ValueChanged<String> onChanged;
-  final VoidCallback? onEditWalletInfo;
 
   final String? infoMessage;
   final IconData infoIcon;
@@ -54,7 +54,6 @@ class PaymentMethodSection extends StatelessWidget {
     required this.walletCompanies,
     required this.selectedId,
     required this.onChanged,
-    this.onEditWalletInfo,
     this.infoMessage,
     this.infoIcon = Icons.info_outline_rounded,
   });
@@ -122,7 +121,6 @@ class PaymentMethodSection extends StatelessWidget {
                       receiverNameValue: receiverNameValue,
                       walletNumberValue: walletNumberValue,
                       companies: walletCompanies,
-                      onEdit: onEditWalletInfo,
                     ),
                   ),
                 ),
