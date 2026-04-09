@@ -9,6 +9,8 @@ class AppButton extends StatelessWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
   final bool outlined;
+  final bool enabled;
+  final bool isLoading;
   final double height;
 
   const AppButton({
@@ -19,13 +21,15 @@ class AppButton extends StatelessWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.outlined = false,
+    this.enabled = true,
+    this.isLoading = false,
     this.height = 52,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ??
-        (outlined ? Colors.transparent : context.primary);
+    final bg =
+        backgroundColor ?? (outlined ? Colors.transparent : context.primary);
 
     final fg = foregroundColor ??
         (outlined ? context.primary : context.primaryForeground);
@@ -34,21 +38,32 @@ class AppButton extends StatelessWidget {
       height: height,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: enabled && !isLoading ? onPressed : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: bg,
+          disabledBackgroundColor:
+              outlined ? Colors.transparent : bg.withOpacity(.55),
+          disabledForegroundColor: fg.withOpacity(.80),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
-            side: outlined
-                ? BorderSide(color: fg)
-                : BorderSide.none,
+            side: outlined ? BorderSide(color: fg) : BorderSide.none,
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (icon != null) ...[
+            if (isLoading) ...[
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  valueColor: AlwaysStoppedAnimation<Color>(fg),
+                ),
+              ),
+              const SizedBox(width: 10),
+            ] else if (icon != null) ...[
               Icon(icon, size: 18, color: fg),
               const SizedBox(width: 8),
             ],

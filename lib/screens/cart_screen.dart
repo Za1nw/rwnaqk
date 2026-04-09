@@ -7,11 +7,11 @@ import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
 
 import '../controllers/cart/cart_controller.dart';
 import '../../widgets/cart/address_section.dart';
-import '../../widgets/cart/cart_header.dart';
 import '../../widgets/cart/cart_items_list.dart';
 import '../../widgets/cart/cart_total_bar.dart';
 import '../../widgets/cart/cart_wishlist_section.dart';
 import '../../widgets/common/app_empty_state.dart';
+import '../../widgets/common/app_page_header.dart';
 
 class CartScreen extends GetView<CartController> {
   const CartScreen({super.key});
@@ -57,9 +57,9 @@ class CartScreen extends GetView<CartController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Obx(
-                    () => CartHeader(
+                    () => AppPageHeader(
                       title: Tk.cartTitle.tr,
-                      count: controller.itemsCount,
+                      info: '${controller.itemsCount}',
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -84,7 +84,8 @@ class CartScreen extends GetView<CartController> {
               child: Obx(() {
                 final isEmpty = controller.cartItems.isEmpty;
                 final hasWishlist = wishlistController.wishlist.isNotEmpty;
-                final quantities = Map<String, int>.from(controller.itemQuantities);
+                final quantities =
+                    Map<String, int>.from(controller.itemQuantities);
 
                 return SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),

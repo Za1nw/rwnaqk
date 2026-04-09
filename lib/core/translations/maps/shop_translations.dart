@@ -95,9 +95,16 @@ const Map<String, String> enShopTranslations = {
         'Update the receiver name and wallet number used for transfer.',
     'cart.payment.save_details': 'Save Details',
     'cart.payment.wallet_info_message':
-        'Receiver name and wallet number can be updated before confirming the order.',
+        'Transfer the amount to one of the wallets below, then upload the transfer receipt to complete review.',
     'cart.payment.cod_info_message':
         'Pay with cash after the courier hands over your order.',
+    'cart.payment.receipt_title': 'Transfer Receipt',
+    'cart.payment.receipt_subtitle':
+        'Upload the transfer receipt or payment confirmation after sending the amount.',
+    'cart.payment.receipt_pick': 'Upload Image',
+    'cart.payment.receipt_change': 'Change Image',
+    'cart.payment.receipt_hint': 'No receipt uploaded yet',
+    'cart.payment.receipt_selected': 'Receipt image attached',
     'cart.shipping.standard_title': 'Standard',
     'cart.shipping.standard_eta': '5-7 days',
     'cart.shipping.standard_note': 'Reliable delivery with no extra fees.',
@@ -112,7 +119,9 @@ const Map<String, String> enShopTranslations = {
     'cart.validation.contact_missing': 'Please add your contact information',
     'cart.validation.wallet_title': 'Wallet',
     'cart.validation.wallet_missing':
-        'Please enter receiver name and wallet number',
+        'Wallet transfer details are not available right now',
+    'cart.validation.wallet_receipt_missing':
+        'Please upload the transfer receipt first',
     'cart.order_created_title': 'Success',
     'cart.order_created_message': 'Your order has been created successfully',
     'filter.title': 'Filter',
@@ -252,11 +261,19 @@ const Map<String, String> arShopTranslations = {
     'cart.payment.wallet_number': 'رقم المحفظة',
     'cart.payment.wallet_info_title': 'بيانات المحفظة',
     'cart.payment.wallet_info_subtitle':
-        'حدّث اسم المستلم ورقم المحفظة المستخدمين في التحويل.',
+        'استخدم بيانات المحفظة الظاهرة لإتمام التحويل.',
     'cart.payment.save_details': 'حفظ البيانات',
     'cart.payment.wallet_info_message':
-        'يمكن تحديث اسم المستلم ورقم المحفظة قبل تأكيد الطلب.',
-    'cart.payment.cod_info_message': 'ادفع نقدًا بعد أن يسلّمك المندوب الطلب.',
+        'حوّل المبلغ إلى إحدى المحافظات الظاهرة ثم ارفع صورة سند الحوالة لإكمال مراجعة الطلب.',
+    'cart.payment.cod_info_message':
+        'ادفع نقدًا بعد أن يسلّمك المندوب الطلب.',
+    'cart.payment.receipt_title': 'سند التحويل',
+    'cart.payment.receipt_subtitle':
+        'ارفع صورة سند الحوالة أو إشعار الدفع بعد تحويل المبلغ.',
+    'cart.payment.receipt_pick': 'رفع صورة',
+    'cart.payment.receipt_change': 'تغيير الصورة',
+    'cart.payment.receipt_hint': 'لم يتم رفع السند بعد',
+    'cart.payment.receipt_selected': 'تم إرفاق صورة السند',
     'cart.shipping.standard_title': 'عادي',
     'cart.shipping.standard_eta': '5-7 أيام',
     'cart.shipping.standard_note': 'توصيل موثوق بدون رسوم إضافية.',
@@ -270,7 +287,10 @@ const Map<String, String> arShopTranslations = {
     'cart.validation.contact_title': 'التواصل',
     'cart.validation.contact_missing': 'يرجى إضافة معلومات التواصل',
     'cart.validation.wallet_title': 'المحفظة',
-    'cart.validation.wallet_missing': 'يرجى إدخال اسم المستلم ورقم المحفظة',
+    'cart.validation.wallet_missing':
+        'بيانات التحويل عبر المحفظة غير متاحة حاليًا',
+    'cart.validation.wallet_receipt_missing':
+        'يرجى رفع صورة سند الحوالة أولًا',
     'cart.order_created_title': 'نجاح',
     'cart.order_created_message': 'تم إنشاء طلبك بنجاح',
     'filter.title': 'فلترة',
@@ -302,7 +322,8 @@ const Map<String, String> arShopTranslations = {
     'product_details.delivery.standard_note': 'يصل خلال 5 إلى 7 أيام عمل.',
     'product_details.delivery.express_title': 'سريع',
     'product_details.delivery.express_eta': '1-2 يوم',
-    'product_details.delivery.express_note': 'توصيل سريع خلال 1 إلى 2 يوم عمل.',
+    'product_details.delivery.express_note':
+        'توصيل سريع خلال 1 إلى 2 يوم عمل.',
     'product_details.add_to_cart': 'أضف إلى السلة',
     'product_details.buy_now': 'اشترِ الآن',
     'product_details.added_to_cart': 'تمت الإضافة إلى السلة',
@@ -314,4 +335,3 @@ const Map<String, String> arShopTranslations = {
     'categories_filter.female': 'نساء',
     'categories_filter.male': 'رجال',
 };
-

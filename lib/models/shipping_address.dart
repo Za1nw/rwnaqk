@@ -59,6 +59,14 @@ class ShippingAddress {
 
   String get fullText => formatted;
 
+  String get compactText {
+    return [
+      if (address.trim().isNotEmpty) address.trim(),
+      if (city.trim().isNotEmpty) city.trim(),
+      if (country.trim().isNotEmpty) localizedCountry.trim(),
+    ].join(', ');
+  }
+
   factory ShippingAddress.empty() {
     return const ShippingAddress(
       id: '',

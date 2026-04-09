@@ -5,11 +5,13 @@ import 'package:rwnaqk/widgets/cart/receiver_info_block.dart';
 import 'package:rwnaqk/widgets/cart/wallet_info_message.dart';
 
 class WalletCompany {
+  final String id;
   final String name;
   final IconData? icon;
   final String? assetPath;
 
   const WalletCompany({
+    required this.id,
     required this.name,
     this.icon,
     this.assetPath,
@@ -18,25 +20,19 @@ class WalletCompany {
 
 class PaymentMethodSection extends StatelessWidget {
   final String titleText;
-
   final String cashTitle;
   final String cashSubtitle;
-
   final String walletTitle;
   final String walletSubtitle;
-
   final String receiverNameLabel;
   final String walletNumberLabel;
-
   final String receiverNameValue;
   final String walletNumberValue;
-
   final List<WalletCompany> walletCompanies;
-
+  final String selectedWalletCompanyId;
   final String selectedId;
   final ValueChanged<String> onChanged;
-  final VoidCallback? onEditWalletInfo;
-
+  final ValueChanged<String>? onWalletCompanyChanged;
   final String? infoMessage;
   final IconData infoIcon;
 
@@ -52,9 +48,10 @@ class PaymentMethodSection extends StatelessWidget {
     required this.receiverNameValue,
     required this.walletNumberValue,
     required this.walletCompanies,
+    required this.selectedWalletCompanyId,
     required this.selectedId,
     required this.onChanged,
-    this.onEditWalletInfo,
+    this.onWalletCompanyChanged,
     this.infoMessage,
     this.infoIcon = Icons.info_outline_rounded,
   });
@@ -122,7 +119,8 @@ class PaymentMethodSection extends StatelessWidget {
                       receiverNameValue: receiverNameValue,
                       walletNumberValue: walletNumberValue,
                       companies: walletCompanies,
-                      onEdit: onEditWalletInfo,
+                      selectedCompanyId: selectedWalletCompanyId,
+                      onCompanyChanged: onWalletCompanyChanged,
                     ),
                   ),
                 ),

@@ -28,11 +28,13 @@ class EditProfileService {
   void saveProfile({
     required String name,
     required String email,
+    required String avatarPath,
   }) {
     _store.updateProfile(
       nextName: name.trim(),
       nextEmail: email.trim(),
     );
+    _store.updateAvatarPath(avatarPath);
   }
 
   Future<String?> pickAvatar(ImageSource source) async {
@@ -46,15 +48,9 @@ class EditProfileService {
     final directory = await getApplicationDocumentsDirectory();
     final extension = _extensionFor(file.path);
     final targetPath =
-        '${directory.path}${Platform.pathSeparator}profile_avatar$extension';
-    final targetFile = File(targetPath);
-
-    if (targetFile.existsSync()) {
-      targetFile.deleteSync();
-    }
+        '${directory.path}${Platform.pathSeparator}profile_avatar_${DateTime.now().millisecondsSinceEpoch}$extension';
 
     final copied = await File(file.path).copy(targetPath);
-    _store.updateAvatarPath(copied.path);
     return copied.path;
   }
 

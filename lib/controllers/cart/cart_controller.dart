@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:rwnaqk/controllers/cart/cart_service.dart';
 import 'package:rwnaqk/controllers/cart/cart_ui_controller.dart';
@@ -15,6 +16,7 @@ import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/models/order_model.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 import 'package:rwnaqk/models/shipping_option_model.dart';
+import 'package:rwnaqk/models/wallet_transfer_account.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة السلة.
 ///
@@ -33,6 +35,7 @@ class CartController extends GetxController {
 
   final CartService _service;
   final _profileStore = Get.find<ProfileStoreService>();
+  final ImagePicker _picker = ImagePicker();
 
   late final CartUiController ui;
 
@@ -134,11 +137,15 @@ class CartController extends GetxController {
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
   RxString get paymentMethodId => ui.paymentMethodId;
 
+  RxString get selectedWalletAccountId => ui.selectedWalletAccountId;
+
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
   RxString get receiverName => ui.receiverName;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
   RxString get walletNumber => ui.walletNumber;
+
+  RxString get paymentReceiptPath => ui.paymentReceiptPath;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
   bool get isWalletPayment => ui.isWalletPayment;
@@ -164,6 +171,13 @@ class CartController extends GetxController {
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
   TextEditingController get walletNumberCtrl => ui.walletNumberCtrl;
 
+  List<WalletTransferAccount> get walletAccounts => _service.walletAccounts;
+
+  WalletTransferAccount? get selectedWalletAccount =>
+      _service.walletAccountById(selectedWalletAccountId.value);
+
+  bool get hasPaymentReceipt => paymentReceiptPath.value.trim().isNotEmpty;
+
   // =========================
   // STATIC DATA
   /// الدول المتاحة في نموذج عنوان الشحن.
@@ -178,6 +192,7 @@ class CartController extends GetxController {
   void openPayment() {
     if (cartItems.isEmpty) return;
     _syncCheckoutDefaultsFromProfile();
+    _syncWalletAccountFromStore();
     ui.openPayment();
   }
 
@@ -256,6 +271,16 @@ class CartController extends GetxController {
     ui.setPaymentMethodId(id);
   }
 
+  void setSelectedWalletAccount(String id) {
+    final account = _service.walletAccountById(id);
+    if (account == null) return;
+
+    ui.setSelectedWalletAccountId(account.id);
+    ui.setReceiverName(account.receiverName);
+    ui.setWalletNumber(account.walletNumber);
+    ui.fillWalletFormFromState();
+  }
+
   /// هذه الدالة تغيّر اسم المستلم.
   void setReceiverName(String value) {
     ui.setReceiverName(value);
@@ -274,6 +299,23 @@ class CartController extends GetxController {
   /// هذه الدالة تحفظ بيانات المحفظة من الحقول الحالية.
   void saveWalletFromForm() {
     ui.saveWalletFromForm();
+  }
+
+  Future<void> pickPaymentReceipt() async {
+    try {
+      final file = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (file == null) return;
+      ui.setPaymentReceiptPath(file.path);
+    } catch (_) {
+      Get.snackbar(Tk.commonError.tr, Tk.profileEditPhotoPickFailed.tr);
+    }
+  }
+
+  void clearPaymentReceipt() {
+    ui.clearPaymentReceipt();
   }
 
   // =========================
@@ -358,13 +400,20 @@ class CartController extends GetxController {
     }
 
     if (isWalletPayment) {
-      saveWalletFromForm();
-
-      if (receiverName.value.trim().isEmpty ||
+      if (selectedWalletAccount == null ||
+          receiverName.value.trim().isEmpty ||
           walletNumber.value.trim().isEmpty) {
         Get.snackbar(
           Tk.cartValidationWalletTitle.tr,
           Tk.cartValidationWalletMissing.tr,
+        );
+        return;
+      }
+
+      if (!hasPaymentReceipt) {
+        Get.snackbar(
+          Tk.cartValidationWalletTitle.tr,
+          Tk.cartValidationWalletReceiptMissing.tr,
         );
         return;
       }
@@ -409,6 +458,9 @@ class CartController extends GetxController {
       shippingAddress.value = _service.seedShippingAddress();
       fillShippingFormFromState();
     });
+    ever<List<WalletTransferAccount>>(_profileStore.walletAccounts, (_) {
+      _syncWalletAccountFromStore(force: true);
+    });
 
     seedMockData();
   }
@@ -420,6 +472,7 @@ class CartController extends GetxController {
     shippingAddress.value = _service.seedShippingAddress();
     contactInfo.value = _service.contactInfo;
     _syncCheckoutDefaultsFromProfile(forceContact: true);
+    _syncWalletAccountFromStore(force: true);
 
     itemQuantities
       ..clear()
@@ -445,6 +498,20 @@ class CartController extends GetxController {
 
     if (receiverName.value.trim().isEmpty || forceContact) {
       ui.setReceiverName(profileName);
+    }
+  }
+
+  void _syncWalletAccountFromStore({bool force = false}) {
+    final selected = force
+        ? _profileStore.defaultWalletAccount
+        : _service.walletAccountById(selectedWalletAccountId.value);
+    if (selected == null) return;
+
+    if (force || selectedWalletAccountId.value.trim().isEmpty) {
+      ui.setSelectedWalletAccountId(selected.id);
+      ui.setReceiverName(selected.receiverName);
+      ui.setWalletNumber(selected.walletNumber);
+      ui.fillWalletFormFromState();
     }
   }
 }

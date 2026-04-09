@@ -9,7 +9,8 @@ class ReceiverInfoBlock extends StatelessWidget {
   final String receiverNameValue;
   final String walletNumberValue;
   final List<WalletCompany> companies;
-  final VoidCallback? onEdit;
+  final String selectedCompanyId;
+  final ValueChanged<String>? onCompanyChanged;
 
   const ReceiverInfoBlock({
     super.key,
@@ -18,7 +19,8 @@ class ReceiverInfoBlock extends StatelessWidget {
     required this.receiverNameValue,
     required this.walletNumberValue,
     required this.companies,
-    this.onEdit,
+    required this.selectedCompanyId,
+    this.onCompanyChanged,
   });
 
   @override
@@ -34,59 +36,21 @@ class ReceiverInfoBlock extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Transfer details',
-                  style: TextStyle(
-                    color: context.foreground,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-              if (onEdit != null)
-                InkWell(
-                  onTap: onEdit,
-                  borderRadius: BorderRadius.circular(999),
-                  child: Ink(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: context.card,
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: context.border.withOpacity(.35)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.edit_outlined,
-                          size: 15,
-                          color: context.primary,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Edit',
-                          style: TextStyle(
-                            color: context.primary,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 11.5,
-                            height: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
+          Text(
+            'Transfer details',
+            style: TextStyle(
+              color: context.foreground,
+              fontWeight: FontWeight.w900,
+              fontSize: 13,
+            ),
           ),
           if (companies.isNotEmpty) ...[
             const SizedBox(height: 12),
-            WalletCompaniesRow(companies: companies),
+            WalletCompaniesRow(
+              companies: companies,
+              selectedId: selectedCompanyId,
+              onChanged: onCompanyChanged,
+            ),
             const SizedBox(height: 12),
             Divider(
               height: 1,
@@ -110,27 +74,6 @@ class ReceiverInfoBlock extends StatelessWidget {
             label: walletNumberLabel,
             value: walletNumberValue,
           ),
-          if (companies.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: context.border.withOpacity(.25),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Available companies',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: context.mutedForeground,
-                fontWeight: FontWeight.w800,
-                fontSize: 12,
-                height: 1.0,
-              ),
-            ),
-            const SizedBox(height: 10),
-          ],
         ],
       ),
     );
@@ -150,7 +93,7 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final v = value.trim().isEmpty ? '—' : value.trim();
+    final v = value.trim().isEmpty ? '-' : value.trim();
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,

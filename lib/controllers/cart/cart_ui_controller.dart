@@ -25,11 +25,17 @@ class CartUiController extends GetxController {
   /// معرّف طريقة الدفع الحالية.
   final paymentMethodId = 'cod'.obs;
 
+  /// معرّف المحفظة المختارة حالياً.
+  final selectedWalletAccountId = ''.obs;
+
   /// اسم المستلم المستخدم عند الدفع بالمحفظة.
-  final receiverName = 'Zain'.obs;
+  final receiverName = ''.obs;
 
   /// رقم المحفظة المستخدم عند الدفع بالمحفظة.
-  final walletNumber = '777123456'.obs;
+  final walletNumber = ''.obs;
+
+  /// مسار صورة سند التحويل.
+  final paymentReceiptPath = ''.obs;
 
   /// متحكم حقل عنوان الشحن.
   late final TextEditingController shippingAddressCtrl;
@@ -102,6 +108,10 @@ class CartUiController extends GetxController {
   /// هذه الدالة تغيّر طريقة الدفع الحالية.
   void setPaymentMethodId(String id) {
     paymentMethodId.value = id;
+  }
+
+  void setSelectedWalletAccountId(String id) {
+    selectedWalletAccountId.value = id;
   }
 
   /// هذه الدالة تحدّث اسم المستلم.
@@ -221,6 +231,14 @@ class CartUiController extends GetxController {
   void saveWalletFromForm() {
     receiverName.value = receiverNameCtrl.text.trim();
     walletNumber.value = walletNumberCtrl.text.trim();
+  }
+
+  void setPaymentReceiptPath(String path) {
+    paymentReceiptPath.value = path.trim();
+  }
+
+  void clearPaymentReceipt() {
+    paymentReceiptPath.value = '';
   }
 
   @override

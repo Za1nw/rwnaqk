@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
+import 'package:rwnaqk/models/wallet_transfer_account.dart';
 
 class ProfileStoreService extends GetxService {
   final name = 'Zain Al-Zubair'.obs;
@@ -10,6 +12,29 @@ class ProfileStoreService extends GetxService {
   final avatarPath = ''.obs;
   final avatarUrl = ''.obs;
   final addresses = <ShippingAddress>[].obs;
+  final walletAccounts = <WalletTransferAccount>[
+    const WalletTransferAccount(
+      id: 'jib',
+      companyName: 'Jib',
+      receiverName: 'Rwnaqk Store',
+      walletNumber: '777123456',
+      icon: Icons.account_balance_wallet_outlined,
+    ),
+    const WalletTransferAccount(
+      id: 'onecash',
+      companyName: 'OneCash',
+      receiverName: 'Rwnaqk Store',
+      walletNumber: '775987654',
+      icon: Icons.payments_outlined,
+    ),
+    const WalletTransferAccount(
+      id: 'kuraimi',
+      companyName: 'Kuraimi',
+      receiverName: 'Rwnaqk Store',
+      walletNumber: '782456123',
+      icon: Icons.account_balance,
+    ),
+  ].obs;
 
   ShippingAddress? get defaultAddress {
     for (final address in addresses) {
@@ -20,8 +45,13 @@ class ProfileStoreService extends GetxService {
 
   String get location {
     final current = defaultAddress;
-    if (current == null) return 'Taiz';
-    return '${current.city}, ${current.localizedCountry}';
+    if (current == null) return '';
+    return current.compactText;
+  }
+
+  WalletTransferAccount? get defaultWalletAccount {
+    if (walletAccounts.isEmpty) return null;
+    return walletAccounts.first;
   }
 
   void seedAddressesIfNeeded() {

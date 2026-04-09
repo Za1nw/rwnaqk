@@ -29,7 +29,7 @@ class AddressesController extends GetxController {
   // =========================
   // UI BRIDGES
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  List<String> get countries => _service.countries;
+  List<String> get countries => _service.countries.toSet().toList(); // إزالة التكرار تلقائيًا
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
   get addressCtrl => ui.addressCtrl;
@@ -41,7 +41,13 @@ class AddressesController extends GetxController {
   get postcodeCtrl => ui.postcodeCtrl;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  RxnString get country => ui.country;
+  RxnString get country {
+    // إذا لم تكن الدولة المختارة موجودة في القائمة، أعدها null
+    if (ui.country.value != null && !countries.contains(ui.country.value)) {
+      ui.country.value = null;
+    }
+    return ui.country;
+  }
 
   @override
   /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.

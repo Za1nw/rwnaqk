@@ -6,7 +6,6 @@ import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
-import 'package:rwnaqk/widgets/app_input_field.dart';
 import 'package:rwnaqk/widgets/cart/address_section.dart';
 import 'package:rwnaqk/widgets/cart/cart_header.dart';
 import 'package:rwnaqk/widgets/cart/cart_total_bar.dart';
@@ -14,6 +13,7 @@ import 'package:rwnaqk/widgets/cart/miniItem_price_tile.dart';
 import 'package:rwnaqk/widgets/cart/payment_contact_section.dart';
 import 'package:rwnaqk/widgets/cart/payment_items_header.dart';
 import 'package:rwnaqk/widgets/cart/payment_method_section.dart';
+import 'package:rwnaqk/widgets/cart/payment_receipt_upload_card.dart';
 import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
 import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
 import 'package:rwnaqk/widgets/common/app_empty_state.dart';
@@ -56,24 +56,6 @@ class PaymentScreen extends GetView<CartController> {
         controller.saveContactFromForm();
         Navigator.pop(context);
       },
-    );
-  }
-
-  void _openWalletSheet(BuildContext context) {
-    controller.prepareEditWalletInfo();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _WalletInfoSheet(
-        nameController: controller.receiverNameCtrl,
-        numberController: controller.walletNumberCtrl,
-        onSave: () {
-          controller.saveWalletFromForm();
-          Navigator.pop(context);
-        },
-      ),
     );
   }
 
@@ -198,18 +180,14 @@ class PaymentScreen extends GetView<CartController> {
                     padding: const EdgeInsets.all(8),
                     child: Column(
                       children: [
-                        for (var i = 0;
-                            i < controller.cartItems.length;
-                            i++) ...[
+                        for (var i = 0; i < controller.cartItems.length; i++) ...[
                           MiniItemPriceTile(
                             imageUrl: controller.cartItems[i].imageUrl,
-                            badgeCount: controller
-                                .quantityOf(controller.cartItems[i].id),
+                            badgeCount: controller.quantityOf(controller.cartItems[i].id),
                             title: controller.cartItems[i].title.tr,
                             subtitle: AppCheckoutUtils.paymentItemSubtitle(
                               controller.cartItems[i],
-                              quantity: controller
-                                  .quantityOf(controller.cartItems[i].id),
+                              quantity: controller.quantityOf(controller.cartItems[i].id),
                             ),
                             priceText: AppMoneyUtils.currency(
                               controller.lineTotalOf(controller.cartItems[i]),
@@ -236,9 +214,21 @@ class PaymentScreen extends GetView<CartController> {
                       .toList(growable: false),
                 ),
                 const SizedBox(height: 20),
-                _PaymentMethodBlock(
-                  onEditWalletInfo: () => _openWalletSheet(context),
-                ),
+                const _PaymentMethodBlock(),
+                Obx(() {
+                  if (!controller.isWalletPayment) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: PaymentReceiptUploadCard(
+                      imagePath: controller.paymentReceiptPath.value,
+                      onPick: controller.pickPaymentReceipt,
+                      onClear: controller.clearPaymentReceipt,
+                    ),
+                  );
+                }),
                 const SizedBox(height: 20),
                 _PaymentSummaryCard(
                   subtotal: controller.itemsSubtotal,
@@ -257,9 +247,7 @@ class PaymentScreen extends GetView<CartController> {
 }
 
 class _PaymentMethodBlock extends StatelessWidget {
-  final VoidCallback onEditWalletInfo;
-
-  const _PaymentMethodBlock({required this.onEditWalletInfo});
+  const _PaymentMethodBlock();
 
   @override
   Widget build(BuildContext context) {
@@ -276,18 +264,19 @@ class _PaymentMethodBlock extends StatelessWidget {
         walletNumberLabel: Tk.cartPaymentWalletNumber.tr,
         receiverNameValue: controller.receiverName.value,
         walletNumberValue: controller.walletNumber.value,
-        walletCompanies: const [
-          WalletCompany(
-            name: 'Jib',
-            icon: Icons.account_balance_wallet_outlined,
-          ),
-          WalletCompany(name: 'OneCash', icon: Icons.payments_outlined),
-          WalletCompany(name: 'Kuraimi', icon: Icons.account_balance),
-          WalletCompany(name: 'M-Floos', icon: Icons.currency_exchange),
-        ],
+        walletCompanies: controller.walletAccounts
+            .map(
+              (account) => WalletCompany(
+                id: account.id,
+                name: account.companyName,
+                icon: account.icon,
+              ),
+            )
+            .toList(growable: false),
+        selectedWalletCompanyId: controller.selectedWalletAccountId.value,
         selectedId: controller.paymentMethodId.value,
         onChanged: controller.setPaymentMethodId,
-        onEditWalletInfo: onEditWalletInfo,
+        onWalletCompanyChanged: controller.setSelectedWalletAccount,
         infoMessage: controller.isWalletPayment
             ? Tk.cartPaymentWalletInfoMessage.tr
             : Tk.cartPaymentCodInfoMessage.tr,
@@ -445,92 +434,6 @@ class _PaymentEmptyState extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _WalletInfoSheet extends StatelessWidget {
-  final TextEditingController nameController;
-  final TextEditingController numberController;
-  final VoidCallback onSave;
-
-  const _WalletInfoSheet({
-    required this.nameController,
-    required this.numberController,
-    required this.onSave,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final bottom = MediaQuery.of(context).viewInsets.bottom;
-
-    return AnimatedPadding(
-      duration: const Duration(milliseconds: 180),
-      padding: EdgeInsets.only(bottom: bottom),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.card,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 14),
-                    decoration: BoxDecoration(
-                      color: context.border,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                ),
-                Text(
-                  Tk.cartPaymentWalletInfoTitle.tr,
-                  style: TextStyle(
-                    color: context.foreground,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  Tk.cartPaymentWalletInfoSubtitle.tr,
-                  style: TextStyle(
-                    color: context.mutedForeground,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12.5,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                AppInputField(
-                  controller: nameController,
-                  label: Tk.cartPaymentReceiverName.tr,
-                  prefixIcon: Icons.person_outline_rounded,
-                ),
-                const SizedBox(height: 12),
-                AppInputField(
-                  controller: numberController,
-                  label: Tk.cartPaymentWalletNumber.tr,
-                  keyboardType: TextInputType.phone,
-                  prefixIcon: Icons.phone_outlined,
-                ),
-                const SizedBox(height: 18),
-                AppButton(
-                  text: Tk.cartPaymentSaveDetails.tr,
-                  onPressed: onSave,
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );

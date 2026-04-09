@@ -9,6 +9,7 @@ import 'package:rwnaqk/models/order_details_model.dart';
 import 'package:rwnaqk/models/order_model.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 import 'package:rwnaqk/models/shipping_option_model.dart';
+import 'package:rwnaqk/models/wallet_transfer_account.dart';
 
 /// هذا الملف مسؤول عن منطق البيانات الخاص بمنظومة السلة.
 ///
@@ -49,6 +50,17 @@ class CartService {
         phone: _profileStore.phone.value.trim(),
         email: _profileStore.email.value.trim(),
       );
+
+  List<WalletTransferAccount> get walletAccounts =>
+      _profileStore.walletAccounts.toList(growable: false);
+
+  WalletTransferAccount? walletAccountById(String id) {
+    for (final account in _profileStore.walletAccounts) {
+      if (account.id == id) return account;
+    }
+
+    return _profileStore.defaultWalletAccount;
+  }
 
   /// هذه الدالة تحسب إجمالي أسعار العناصر داخل السلة.
   double computeTotal(List<HomeProductItem> items) {

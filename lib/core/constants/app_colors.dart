@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 
 class LightColors {
-  static const background = Color(0xFFFFFFFF);
+  static const background = Color(0xFFF3F6FA);
   static const foreground = Color(0xFF1F2937);
-  static const card = Color(0xFFF8FAFC);
+  static const card = Color(0xFFF7FAFD);
   static const cardForeground = Color(0xFF1F2937);
-  static const popover = Color(0xFFF1F5F9);
+  static const popover = Color(0xFFEEF3F8);
   static const popoverForeground = Color(0xFF1F2937);
   static const primary = Color(0xFF2563EB);
   static const primaryForeground = Color(0xFFFFFFFF);
   static const secondary = Color(0xFFE2E8F0);
   static const secondaryForeground = Color(0xFF334155);
-  static const muted = Color(0xFFE5E7EB);
+  static const muted = Color(0xFF64748B);
   static const mutedForeground = Color(0xFF64748B);
   static const accent = Color(0xFFDCE7FF);
   static const accentForeground = Color(0xFF1E40AF);
   static const destructive = Color(0xFFDC2626);
   static const border = Color(0xFFE2E8F0);
-  static const input = Color(0xFFF1F5F9);
+  static const input = Color(0xFFEDF3F8);
   static const ring = Color(0xFF2563EB);
 
   static const chart1 = Color(0xFF2563EB);
@@ -25,7 +25,7 @@ class LightColors {
   static const chart3 = Color(0xFF6366F1);
   static const chart4 = Color(0xFF22C55E);
   static const chart5 = Color(0xFF0EA5E9);
-  static const sidebar = Color(0xFFFFFFFF);
+  static const sidebar = Color(0xFFF3F6FA);
   static const sidebarForeground = Color(0xFF1F2937);
   static const success = Color(0xFF22C55E);
   static const info = Color(0xFF0EA5E9);

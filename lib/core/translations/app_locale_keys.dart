@@ -375,6 +375,12 @@ abstract final class Tk {
   static const cartPaymentWalletInfoMessage =
       'cart.payment.wallet_info_message';
   static const cartPaymentCodInfoMessage = 'cart.payment.cod_info_message';
+  static const cartPaymentReceiptTitle = 'cart.payment.receipt_title';
+  static const cartPaymentReceiptSubtitle = 'cart.payment.receipt_subtitle';
+  static const cartPaymentReceiptPick = 'cart.payment.receipt_pick';
+  static const cartPaymentReceiptChange = 'cart.payment.receipt_change';
+  static const cartPaymentReceiptHint = 'cart.payment.receipt_hint';
+  static const cartPaymentReceiptSelected = 'cart.payment.receipt_selected';
   static const cartShippingStandardTitle = 'cart.shipping.standard_title';
   static const cartShippingStandardEta = 'cart.shipping.standard_eta';
   static const cartShippingStandardNote = 'cart.shipping.standard_note';
@@ -390,6 +396,8 @@ abstract final class Tk {
   static const cartValidationContactMissing = 'cart.validation.contact_missing';
   static const cartValidationWalletTitle = 'cart.validation.wallet_title';
   static const cartValidationWalletMissing = 'cart.validation.wallet_missing';
+  static const cartValidationWalletReceiptMissing =
+      'cart.validation.wallet_receipt_missing';
   static const cartOrderCreatedTitle = 'cart.order_created_title';
   static const cartOrderCreatedMessage = 'cart.order_created_message';
   static const filterTitle = 'filter.title';
