@@ -3,13 +3,14 @@ import '../core/constants/app_colors.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   final IconData? icon;
   final Color? backgroundColor;
   final Color? foregroundColor;
   final bool outlined;
   final double height;
+  final bool isLoading;
 
   const AppButton({
     super.key,
@@ -20,6 +21,7 @@ class AppButton extends StatelessWidget {
     this.foregroundColor,
     this.outlined = false,
     this.height = 52,
+    this.isLoading = false,
   });
 
   @override
@@ -34,7 +36,7 @@ class AppButton extends StatelessWidget {
       height: height,
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: bg,
           elevation: 0,
@@ -45,23 +47,33 @@ class AppButton extends StatelessWidget {
                 : BorderSide.none,
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 18, color: fg),
-              const SizedBox(width: 8),
-            ],
-            Text(
-              text,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                color: fg,
+        child: isLoading
+            ? SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  valueColor: AlwaysStoppedAnimation<Color>(fg),
+                  backgroundColor: bg.withOpacity(.18),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 18, color: fg),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    text,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: fg,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

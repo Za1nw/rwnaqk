@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
-import 'package:rwnaqk/widgets/cart/payment_method_section.dart';
+import 'package:rwnaqk/models/wallet_company.dart';
 import 'package:rwnaqk/widgets/cart/wallet_companies_row.dart';
 
 class ReceiverInfoBlock extends StatelessWidget {

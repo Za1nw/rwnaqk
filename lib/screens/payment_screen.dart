@@ -4,12 +4,12 @@ import 'package:rwnaqk/widgets/cart/payment_receipt_upload_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/cart/cart_controller.dart';
+import 'package:rwnaqk/controllers/payment/payment_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
-import 'package:rwnaqk/widgets/app_input_field.dart';
 import 'package:rwnaqk/widgets/cart/address_section.dart';
 import 'package:rwnaqk/widgets/cart/cart_header.dart';
 import 'package:rwnaqk/widgets/cart/cart_total_bar.dart';
@@ -83,7 +83,8 @@ class PaymentScreen extends GetView<CartController> {
     return Scaffold(
       backgroundColor: context.background,
       bottomNavigationBar: Obx(() {
-        final isWallet = controller.isWalletPayment;
+        final payment = Get.find<PaymentController>();
+        final isWallet = payment.isWalletPayment;
         final hasReceipt = _receiptImage.value != null;
         final canCheckout = controller.canCheckout && (!isWallet || hasReceipt);
         return CartTotalBar(
@@ -92,7 +93,7 @@ class PaymentScreen extends GetView<CartController> {
           totalLabel: Tk.cartTotal.tr,
           helperText: AppCheckoutUtils.inlineSummary([
             controller.selectedShippingTitle,
-            controller.paymentMethodLabel,
+            payment.paymentMethodLabel,
           ]),
           checkoutText: Tk.cartPaymentConfirmOrder.tr,
           checkoutIcon: Icons.check_circle_outline_rounded,
@@ -111,6 +112,7 @@ class PaymentScreen extends GetView<CartController> {
       }),
       body: SafeArea(
         child: Obx(() {
+          final payment = Get.find<PaymentController>();
           if (controller.cartItems.isEmpty) {
             return _PaymentEmptyState(onBack: controller.backToCart);
           }
@@ -252,7 +254,7 @@ class PaymentScreen extends GetView<CartController> {
                 _PaymentMethodBlock(),
                 // واجهة رفع صورة السند
                 Obx(() {
-                  if (!controller.isWalletPayment) return const SizedBox.shrink();
+                  if (!payment.isWalletPayment) return const SizedBox.shrink();
                   return Padding(
                     padding: const EdgeInsets.only(top: 18.0, bottom: 0),
                     child: PaymentReceiptUploadCard(
@@ -268,7 +270,7 @@ class PaymentScreen extends GetView<CartController> {
                   shippingFeeText: controller.shippingFeeText,
                   total: controller.total,
                   shippingTitle: controller.selectedShippingTitle,
-                  paymentMethod: controller.paymentMethodLabel,
+                  paymentMethod: payment.paymentMethodLabel,
                 ),
               ],
             ),
@@ -286,6 +288,7 @@ class _PaymentMethodBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<CartController>();
+    final payment = Get.find<PaymentController>();
 
     return Obx(() {
       return PaymentMethodSection(
@@ -296,14 +299,14 @@ class _PaymentMethodBlock extends StatelessWidget {
         walletSubtitle: Tk.cartPaymentWalletSubtitle.tr,
         receiverNameLabel: Tk.cartPaymentReceiverName.tr,
         walletNumberLabel: Tk.cartPaymentWalletNumber.tr,
-        receiverNameValue: controller.receiverName.value,
-        walletNumberValue: controller.walletNumber.value,
-        walletCompanies: controller.walletCompanies,
-        selectedId: controller.paymentMethodId.value,
-        onChanged: controller.setPaymentMethodId,
-        infoMessage: controller.isWalletPayment
-        ? Tk.cartPaymentWalletInfoMessage.tr
-        : Tk.cartPaymentCodInfoMessage.tr,
+        walletAccounts: payment.walletAccounts,
+        selectedId: payment.paymentMethodId.value,
+        onChanged: payment.setPaymentMethodId,
+        selectedWalletAccountIndex: payment.selectedWalletAccountIndex.value,
+        onWalletAccountChanged: payment.setSelectedWalletAccountIndex,
+        infoMessage: payment.isWalletPayment
+            ? Tk.cartPaymentWalletInfoMessage.tr
+            : Tk.cartPaymentCodInfoMessage.tr,
       );
     });
   }
@@ -463,5 +466,3 @@ class _PaymentEmptyState extends StatelessWidget {
     );
   }
 }
-
-

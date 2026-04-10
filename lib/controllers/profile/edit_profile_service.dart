@@ -28,11 +28,15 @@ class EditProfileService {
   void saveProfile({
     required String name,
     required String email,
+    String? avatarPath,
   }) {
     _store.updateProfile(
       nextName: name.trim(),
       nextEmail: email.trim(),
     );
+    if (avatarPath != null && avatarPath.isNotEmpty) {
+      _store.updateAvatarPath(avatarPath);
+    }
   }
 
   Future<String?> pickAvatar(ImageSource source) async {

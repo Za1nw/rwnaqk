@@ -16,13 +16,16 @@ class EditProfileScreen extends GetView<EditProfileController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.background,
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(18, 10, 18, 14),
-          child: AppButton(
-            text: Tk.profileEditSaveChanges.tr,
-            onPressed: controller.save,
+      bottomNavigationBar: Obx(
+        () => SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(18, 10, 18, 14),
+            child: AppButton(
+              text: Tk.profileEditSaveChanges.tr,
+              onPressed: controller.isUploadingAvatar ? null : controller.save,
+              // تم إلغاء دائرة التحميل من الزر
+            ),
           ),
         ),
       ),
@@ -120,51 +123,91 @@ class _EditableAvatar extends StatelessWidget {
       listenable: controller.nameCtrl,
       builder: (_, __) {
         return Obx(
-          () => SizedBox(
-            width: 140,
-            height: 140,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: context.card,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(.08),
-                        blurRadius: 18,
-                        offset: const Offset(0, 10),
+          () => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 140,
+                height: 140,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: context.card,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(.08),
+                            blurRadius: 18,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(8),
-                  child: ProfileAvatar(
-                    name: controller.nameCtrl.text.trim().isEmpty
-                        ? 'User'
-                        : controller.nameCtrl.text,
-                    imagePath: controller.avatarPath,
-                    imageUrl: controller.avatarUrl,
-                    size: 124,
-                    fontSize: 42,
-                  ),
+                      padding: const EdgeInsets.all(8),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ProfileAvatar(
+                            name: controller.nameCtrl.text.trim().isEmpty
+                                ? 'User'
+                                : controller.nameCtrl.text,
+                            imagePath: controller.avatarPath,
+                            imageUrl: controller.avatarUrl,
+                            size: 124,
+                            fontSize: 42,
+                          ),
+                          if (controller.isUploadingAvatar)
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(.20),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    PositionedDirectional(
+                      end: 8,
+                      top: 18,
+                      child: AppActionIconButton(
+                        icon: Icons.edit_rounded,
+                        onTap: controller.isUploadingAvatar
+                            ? null
+                            : () => _showPhotoActions(context),
+                        size: 44,
+                        radius: 22,
+                        backgroundColor: context.primary,
+                        iconColor: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
-                PositionedDirectional(
-                  end: 8,
-                  top: 18,
-                  child: AppActionIconButton(
-                    icon: Icons.edit_rounded,
-                    onTap: () => _showPhotoActions(context),
-                    size: 44,
-                    radius: 22,
-                    backgroundColor: context.primary,
-                    iconColor: Colors.white,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                child: controller.isUploadingAvatar
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 14),
+                        child: SizedBox(
+                          width: 160,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(999),
+                            child: LinearProgressIndicator(
+                              minHeight: 6,
+                              backgroundColor: context.border.withOpacity(.18),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                context.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ],
           ),
         );
       },

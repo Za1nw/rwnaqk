@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/cart/cart_service.dart';
 import 'package:rwnaqk/controllers/cart/cart_ui_controller.dart';
 import 'package:rwnaqk/controllers/orders/orders_controller.dart';
+import 'package:rwnaqk/controllers/payment/payment_controller.dart';
 import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
@@ -14,7 +15,6 @@ import 'package:rwnaqk/models/contact_info_model.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 import 'package:rwnaqk/models/shipping_option_model.dart';
-import 'package:rwnaqk/widgets/cart/payment_method_section.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة السلة.
 ///
@@ -29,14 +29,8 @@ import 'package:rwnaqk/widgets/cart/payment_method_section.dart';
 /// - CartUiController الخاص بحالات الواجهة
 /// - CartService الخاص بالبيانات والتجهيزات
 class CartController extends GetxController {
+    /// مؤشر المحفظة المختارة (من ui)
   /// تحويل حسابات المحافظ الإدارية إلى WalletCompany لعرضها في الواجهة
-  List<WalletCompany> get walletCompanies => _profileStore.walletAccounts
-      .map((acc) => WalletCompany(
-            name: acc.companyName,
-            icon: acc.icon,
-            assetPath: null,
-          ))
-      .toList(growable: false);
   CartController(this._service);
 
   final CartService _service;
@@ -122,12 +116,6 @@ class CartController extends GetxController {
   }
 
   /// اسم طريقة الدفع الحالية.
-  String get paymentMethodLabel {
-    return AppCheckoutUtils.paymentMethodLabel(
-      isWalletPayment: isWalletPayment,
-    );
-  }
-
   // =========================
   // UI BRIDGES
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
@@ -140,16 +128,12 @@ class CartController extends GetxController {
   RxString get selectedShippingId => ui.selectedShippingId;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
-  RxString get paymentMethodId => ui.paymentMethodId;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
-  RxString get receiverName => ui.receiverName;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
-  RxString get walletNumber => ui.walletNumber;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
-  bool get isWalletPayment => ui.isWalletPayment;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
   TextEditingController get shippingAddressCtrl => ui.shippingAddressCtrl;
@@ -167,10 +151,8 @@ class CartController extends GetxController {
   TextEditingController get contactEmailCtrl => ui.contactEmailCtrl;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
-  TextEditingController get receiverNameCtrl => ui.receiverNameCtrl;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
-  TextEditingController get walletNumberCtrl => ui.walletNumberCtrl;
 
   // =========================
   // STATIC DATA
@@ -258,31 +240,15 @@ class CartController extends GetxController {
   }
 
   // =========================
-  // PAYMENT
   /// هذه الدالة تغيّر طريقة الدفع الحالية.
-  void setPaymentMethodId(String id) {
-    ui.setPaymentMethodId(id);
-  }
 
   /// هذه الدالة تغيّر اسم المستلم.
-  void setReceiverName(String value) {
-    ui.setReceiverName(value);
-  }
 
   /// هذه الدالة تغيّر رقم المحفظة.
-  void setWalletNumber(String value) {
-    ui.setWalletNumber(value);
-  }
 
   /// هذه الدالة تجهز نموذج بيانات المحفظة.
-  void prepareEditWalletInfo() {
-    ui.prepareEditWalletInfo();
-  }
 
   /// هذه الدالة تحفظ بيانات المحفظة من الحقول الحالية.
-  void saveWalletFromForm() {
-    ui.saveWalletFromForm();
-  }
 
   // =========================
   // QUANTITY HELPERS
@@ -365,11 +331,13 @@ class CartController extends GetxController {
       return;
     }
 
-    if (isWalletPayment) {
-      saveWalletFromForm();
+    final payment = Get.find<PaymentController>();
 
-      if (receiverName.value.trim().isEmpty ||
-          walletNumber.value.trim().isEmpty) {
+    if (payment.isWalletPayment) {
+      final acc = payment.selectedWalletAccount;
+      if (acc == null ||
+          acc.receiverName.trim().isEmpty ||
+          acc.walletNumber.trim().isEmpty) {
         Get.snackbar(
           Tk.cartValidationWalletTitle.tr,
           Tk.cartValidationWalletMissing.tr,
@@ -387,7 +355,7 @@ class CartController extends GetxController {
       address: shippingAddress.value,
       contact: contactInfo.value,
       shippingMethodKey: selectedShippingTitle,
-      paymentMethodKey: paymentMethodLabel,
+      paymentMethodKey: payment.paymentMethodLabel,
       status: 'pending',
     );
 
@@ -435,11 +403,9 @@ class CartController extends GetxController {
 
     fillShippingFormFromState();
     ui.fillContactFormFromState(contactInfo.value);
-    ui.fillWalletFormFromState();
   }
 
   void _syncCheckoutDefaultsFromProfile({bool forceContact = false}) {
-    final profileName = _profileStore.name.value.trim();
     final profilePhone = _profileStore.phone.value.trim();
     final profileEmail = _profileStore.email.value.trim();
 
@@ -451,8 +417,5 @@ class CartController extends GetxController {
       ui.fillContactFormFromState(contactInfo.value);
     }
 
-    if (receiverName.value.trim().isEmpty || forceContact) {
-      ui.setReceiverName(profileName);
-    }
   }
 }

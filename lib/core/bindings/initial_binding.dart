@@ -5,6 +5,8 @@ import 'package:rwnaqk/controllers/app_settings/app_settings_ui_controller.dart'
 import 'package:rwnaqk/controllers/cart/cart_controller.dart';
 import 'package:rwnaqk/controllers/cart/cart_service.dart';
 import 'package:rwnaqk/controllers/cart/cart_ui_controller.dart';
+import 'package:rwnaqk/controllers/payment/payment_controller.dart';
+import 'package:rwnaqk/controllers/payment/payment_ui_controller.dart';
 import 'package:rwnaqk/controllers/home/home_service.dart';
 import 'package:rwnaqk/controllers/home/home_ui_controller.dart';
 
@@ -61,6 +63,8 @@ class InitialBinding extends Bindings {
       permanent: true,
     );
     Get.put<ProfileStoreService>(ProfileStoreService(), permanent: true);
+    Get.put<PaymentUiController>(PaymentUiController(), permanent: true);
+    Get.put<PaymentController>(PaymentController(), permanent: true);
     Get.put<CartUiController>(CartUiController(), permanent: true);
     Get.put<CartService>(
       CartService(Get.find<ProfileStoreService>()),
