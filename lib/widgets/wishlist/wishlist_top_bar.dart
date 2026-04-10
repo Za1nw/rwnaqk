@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
+import 'package:rwnaqk/widgets/common/app_page_header.dart';
 
 class WishlistTopBar extends StatelessWidget {
   final String title;
@@ -15,37 +16,17 @@ class WishlistTopBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            IconButton(
-              onPressed: () => Get.back(),
-              icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.foreground),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              title,
-              style: TextStyle(
-                color: context.foreground,
-                fontSize: 24,
-                fontWeight: FontWeight.w900,
-                height: 1.0,
-              ),
-            ),
-            const Spacer(),
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: context.primary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(Icons.add, color: context.primaryForeground, size: 18),
-            ),
-          ],
-        ),
+        Obx(() {
+          final idx = c.tabIndex.value;
+          final count = idx == 0 ? c.wishlist.length : c.recentlyViewed.length;
 
+          return AppPageHeader(
+            title: title,
+            count: count,
+            onNotificationsTap: () {},
+          );
+        }),
         const SizedBox(height: 10),
-
         Obx(() {
           final idx = c.tabIndex.value;
           return Container(
@@ -75,6 +56,7 @@ class WishlistTopBar extends StatelessWidget {
     );
   }
 }
+
 class _TabPill extends StatelessWidget {
   final String text;
   final bool selected;
@@ -108,7 +90,9 @@ class _TabPill extends StatelessWidget {
             child: Text(
               text,
               style: TextStyle(
-                color: selected ? context.primaryForeground : context.mutedForeground,
+                color: selected
+                    ? context.primaryForeground
+                    : context.mutedForeground,
                 fontWeight: FontWeight.w900,
                 fontSize: 12.8,
               ),

@@ -5,6 +5,7 @@ import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/common/app_empty_state.dart';
+import 'package:rwnaqk/widgets/common/app_page_header.dart';
 import 'package:rwnaqk/widgets/orders/order_card.dart';
 import 'package:rwnaqk/widgets/orders/orders_filter_tabs.dart';
 
@@ -21,14 +22,13 @@ class OrdersScreen extends GetView<OrdersController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                Tk.ordersTitle.tr,
-                style: TextStyle(
-                  color: context.foreground,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                ),
-              ),
+              Obx(() {
+                return AppPageHeader(
+                  title: Tk.ordersTitle.tr,
+                  count: controller.filteredOrders.length,
+                  onNotificationsTap: () {},
+                );
+              }),
               const SizedBox(height: 12),
               Obx(() {
                 return OrdersFilterTabs(
