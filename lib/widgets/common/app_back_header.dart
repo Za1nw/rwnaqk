@@ -7,6 +7,8 @@ class AppBackHeader extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback? onTrailingTap;
   final IconData trailingIcon;
+  final bool showTrailing;
+  final Widget? trailing;
 
   const AppBackHeader({
     super.key,
@@ -14,6 +16,8 @@ class AppBackHeader extends StatelessWidget {
     required this.onBack,
     this.onTrailingTap,
     this.trailingIcon = Icons.notifications_none_rounded,
+    this.showTrailing = true,
+    this.trailing,
   });
 
   @override
@@ -40,15 +44,17 @@ class AppBackHeader extends StatelessWidget {
             ),
           ),
         ),
-        AppActionIconButton(
-          icon: trailingIcon,
-          onTap: onTrailingTap ?? () {},
-          backgroundColor: context.card,
-          iconColor: context.foreground,
-          borderColor: context.border.withOpacity(.35),
-          size: 40,
-          radius: 14,
-        ),
+        if (showTrailing)
+          trailing ??
+              AppActionIconButton(
+                icon: trailingIcon,
+                onTap: onTrailingTap ?? () {},
+                backgroundColor: context.card,
+                iconColor: context.foreground,
+                borderColor: context.border.withOpacity(.35),
+                size: 40,
+                radius: 14,
+              ),
       ],
     );
   }

@@ -46,6 +46,11 @@ class CartController extends GetxController {
   /// كميات عناصر السلة الحالية، بدون تعديل الـ model.
   final itemQuantities = <String, int>{}.obs;
 
+  /// ميتاداتا لكل عنصر في السلة (الاختيارات/التقييم) بدون تعديل الـ model.
+  final itemVariantTexts = <String, String>{}.obs;
+  final itemRatings = <String, double>{}.obs;
+  final itemReviewsCounts = <String, int>{}.obs;
+
   /// عناصر المفضلة المقترحة عند فراغ السلة.
   final wishlistItems = <HomeProductItem>[].obs;
 
@@ -266,6 +271,9 @@ class CartController extends GetxController {
   void removeFromCart(String id) {
     cartItems.removeWhere((e) => e.id == id);
     itemQuantities.remove(id);
+    itemVariantTexts.remove(id);
+    itemRatings.remove(id);
+    itemReviewsCounts.remove(id);
 
     if (cartItems.isEmpty && isPayment) {
       backToCart();
@@ -292,7 +300,12 @@ class CartController extends GetxController {
 
   /// هذه الدالة تضيف عنصرًا إلى السلة.
   /// إذا كان موجودًا مسبقًا، نزيد الكمية بدل تكرار السطر.
-  void addToCart(HomeProductItem item) {
+  void addToCart(
+    HomeProductItem item, {
+    String? variantText,
+    double? rating,
+    int? reviewsCount,
+  }) {
     final existingIndex = cartItems.indexWhere((e) => e.id == item.id);
 
     if (existingIndex == -1) {
@@ -300,6 +313,19 @@ class CartController extends GetxController {
       itemQuantities[item.id] = 1;
     } else {
       incrementQuantity(item.id);
+    }
+
+    final v = (variantText ?? '').trim();
+    if (v.isNotEmpty) {
+      itemVariantTexts[item.id] = v;
+    }
+
+    if (rating != null && rating > 0) {
+      itemRatings[item.id] = rating;
+    }
+
+    if (reviewsCount != null && reviewsCount > 0) {
+      itemReviewsCounts[item.id] = reviewsCount;
     }
 
     if (Get.isRegistered<WishlistController>()) {
@@ -400,6 +426,10 @@ class CartController extends GetxController {
     itemQuantities
       ..clear()
       ..addEntries(cartItems.map((item) => MapEntry(item.id, 1)));
+
+    itemVariantTexts.clear();
+    itemRatings.clear();
+    itemReviewsCounts.clear();
 
     fillShippingFormFromState();
     ui.fillContactFormFromState(contactInfo.value);

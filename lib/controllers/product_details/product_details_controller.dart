@@ -6,6 +6,7 @@ import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
+import 'package:rwnaqk/core/utils/app_product_utils.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/models/product_color_option.dart';
 import 'package:rwnaqk/models/product_review.dart';
@@ -274,7 +275,13 @@ class ProductDetailsController extends GetxController {
     if (current == null) return;
 
     if (Get.isRegistered<CartController>()) {
-      Get.find<CartController>().addToCart(current);
+      final variant = AppProductUtils.joinInline(selectedOptionChips);
+      Get.find<CartController>().addToCart(
+        current,
+        variantText: variant.trim().isEmpty ? null : variant,
+        rating: hasReviews ? averageRating : null,
+        reviewsCount: hasReviews ? reviewsCount : null,
+      );
     }
 
     Get.snackbar(Tk.cartTitle.tr, Tk.productDetailsAddedToCart.tr);
@@ -293,7 +300,13 @@ class ProductDetailsController extends GetxController {
     }
 
     final cart = Get.find<CartController>();
-    cart.addToCart(current);
+    final variant = AppProductUtils.joinInline(selectedOptionChips);
+    cart.addToCart(
+      current,
+      variantText: variant.trim().isEmpty ? null : variant,
+      rating: hasReviews ? averageRating : null,
+      reviewsCount: hasReviews ? reviewsCount : null,
+    );
     cart.openPayment();
     Get.toNamed(AppRoutes.payment);
   }

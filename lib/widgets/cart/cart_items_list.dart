@@ -6,6 +6,9 @@ import 'package:rwnaqk/widgets/cart/cart_item_tile.dart';
 class CartItemsList extends StatelessWidget {
   final List<HomeProductItem> items;
   final Map<String, int> quantities;
+  final Map<String, String> variantTexts;
+  final Map<String, double> ratings;
+  final Map<String, int> reviewsCounts;
   final Function(String id) onRemove;
   final Function(String id) onIncrement;
   final Function(String id) onDecrement;
@@ -14,6 +17,9 @@ class CartItemsList extends StatelessWidget {
     super.key,
     required this.items,
     required this.quantities,
+    this.variantTexts = const {},
+    this.ratings = const {},
+    this.reviewsCounts = const {},
     required this.onRemove,
     required this.onIncrement,
     required this.onDecrement,
@@ -28,11 +34,15 @@ class CartItemsList extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (_, i) {
         final item = items[i];
+        final variant =
+            variantTexts[item.id] ?? AppProductUtils.variantText(item);
 
         return CartItemTile(
           item: item,
           quantity: quantities[item.id] ?? 1,
-          variantText: AppProductUtils.variantText(item),
+          variantText: variant,
+          rating: ratings[item.id],
+          reviewsCount: reviewsCounts[item.id],
           onIncrement: () => onIncrement(item.id),
           onDecrement: () => onDecrement(item.id),
           onRemove: () => onRemove(item.id),

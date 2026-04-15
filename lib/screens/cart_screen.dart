@@ -87,6 +87,11 @@ class CartScreen extends GetView<CartController> {
                 final hasWishlist = wishlistController.wishlist.isNotEmpty;
                 final quantities =
                     Map<String, int>.from(controller.itemQuantities);
+                final variantTexts =
+                    Map<String, String>.from(controller.itemVariantTexts);
+                final ratings = Map<String, double>.from(controller.itemRatings);
+                final reviewsCounts =
+                    Map<String, int>.from(controller.itemReviewsCounts);
 
                 return SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -108,6 +113,9 @@ class CartScreen extends GetView<CartController> {
                         CartItemsList(
                           items: controller.cartItems,
                           quantities: quantities,
+                          variantTexts: variantTexts,
+                          ratings: ratings,
+                          reviewsCounts: reviewsCounts,
                           onRemove: controller.removeFromCart,
                           onIncrement: controller.incrementQuantity,
                           onDecrement: controller.decrementQuantity,

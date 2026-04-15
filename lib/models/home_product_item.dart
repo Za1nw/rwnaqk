@@ -11,6 +11,7 @@ class HomeProductItem {
 
   // ===== تفاصيل المنتج =====
   final String description;
+  final String? material;
   final String brand;
   final String sku;
   final String stockText;
@@ -29,6 +30,7 @@ class HomeProductItem {
     this.isNew = false,
     this.tagKey = '',
     this.description = '',
+    this.material,
     this.brand = '',
     this.sku = '',
     this.stockText = '',
@@ -55,6 +57,7 @@ class HomeProductItem {
     bool? isNew,
     String? tagKey,
     String? description,
+    String? material,
     String? brand,
     String? sku,
     String? stockText,
@@ -72,6 +75,7 @@ class HomeProductItem {
       isNew: isNew ?? this.isNew,
       tagKey: tagKey ?? this.tagKey,
       description: description ?? this.description,
+      material: material ?? this.material,
       brand: brand ?? this.brand,
       sku: sku ?? this.sku,
       stockText: stockText ?? this.stockText,
@@ -92,6 +96,7 @@ class HomeProductItem {
       'isNew': isNew,
       'tagKey': tagKey,
       'description': description,
+      'material': material,
       'brand': brand,
       'sku': sku,
       'stockText': stockText,
@@ -114,6 +119,7 @@ class HomeProductItem {
       isNew: map['isNew'] == true,
       tagKey: (map['tagKey'] ?? '').toString(),
       description: (map['description'] ?? '').toString(),
+      material: map['material'] == null ? null : map['material'].toString(),
       brand: (map['brand'] ?? '').toString(),
       sku: (map['sku'] ?? '').toString(),
       stockText: (map['stockText'] ?? '').toString(),
