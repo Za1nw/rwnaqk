@@ -53,9 +53,7 @@ class EditProfileScreen extends GetView<EditProfileController> {
                 ),
               ),
               const SizedBox(height: 18),
-              Center(
-                child: _EditableAvatar(controller: controller),
-              ),
+              Center(child: _EditableAvatar(controller: controller)),
               const SizedBox(height: 26),
               _SoftField(
                 child: AppInputField(
@@ -72,6 +70,16 @@ class EditProfileScreen extends GetView<EditProfileController> {
                   label: Tk.profileEditEmail.tr,
                   hint: Tk.profileEditEmailHint.tr,
                   keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                ),
+              ),
+              const SizedBox(height: 14),
+              _SoftField(
+                child: AppInputField(
+                  controller: controller.mobileCtrl,
+                  label: Tk.profileEditMobile.tr,
+                  hint: Tk.registerPhoneHint.tr,
+                  keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                 ),
               ),

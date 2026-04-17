@@ -10,29 +10,34 @@ class EditProfileService {
   final ProfileStoreService _store;
   final ImagePicker _picker = ImagePicker();
 
-  String initialName() => _store.name.value;
-  String initialEmail() => _store.email.value;
-  String passwordPreview() => _store.passwordPreview.value;
+  String initialName() => _store.displayName;
+  String initialEmail() => _store.email;
+  String initialMobile() => _store.phone;
+  String passwordPreview() => '************';
   String avatarPath() => _store.avatarPath.value;
-  String avatarUrl() => _store.avatarUrl.value;
+  String avatarUrl() => _store.avatarUrl;
 
   bool canSave({
     required String name,
     required String email,
+    required String mobile,
   }) {
     if (name.trim().isEmpty) return false;
     if (email.trim().isEmpty) return false;
+    if (mobile.trim().isEmpty) return false;
     return true;
   }
 
-  void saveProfile({
+  void saveProfileData({
     required String name,
     required String email,
+    required String mobile,
     String? avatarPath,
   }) {
     _store.updateProfile(
       nextName: name.trim(),
       nextEmail: email.trim(),
+      nextPhone: mobile.trim(),
     );
     if (avatarPath != null && avatarPath.isNotEmpty) {
       _store.updateAvatarPath(avatarPath);

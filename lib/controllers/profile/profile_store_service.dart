@@ -1,11 +1,20 @@
-import 'package:rwnaqk/models/wallet_transfer_account.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
+import 'package:rwnaqk/models/customer_model.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
+import 'package:rwnaqk/models/wallet_transfer_account.dart';
 
 class ProfileStoreService extends GetxService {
-  /// قائمة حسابات المحافظ للتحويل (يتم التحكم فيها من الأدمن)
+  ProfileStoreService(this._authSession);
+
+  final AuthSessionService _authSession;
+  late final Worker _customerWorker;
+
+  final customer = Rxn<CustomerModel>();
+  final avatarPath = ''.obs;
+
   final walletAccounts = <WalletTransferAccount>[
     WalletTransferAccount(
       id: 'jib',
@@ -30,17 +39,51 @@ class ProfileStoreService extends GetxService {
     ),
   ].obs;
 
+  final addresses = <ShippingAddress>[].obs;
+
+  String get displayName {
+    final current = customer.value;
+    if (current == null) {
+      return '';
+    }
+
+    return current.displayName;
+  }
+
+  String get phone {
+    final current = customer.value;
+    return (current?.mobile ?? '').trim();
+  }
+
+  String get email {
+    final current = customer.value;
+    return (current?.email ?? '').trim();
+  }
+
+  String get gender {
+    return (customer.value?.gender ?? '').trim();
+  }
+
+  String get avatarUrl {
+    return (customer.value?.avatarUrl ?? '').trim();
+  }
+
+  double get walletBalance {
+    return customer.value?.walletBalance ?? 0;
+  }
+
+  bool get isEmailVerified {
+    return customer.value?.hasVerifiedEmail ?? false;
+  }
+
+  bool get isBanned {
+    return customer.value?.isBanned ?? false;
+  }
+
   WalletTransferAccount? get defaultWalletAccount {
     if (walletAccounts.isEmpty) return null;
     return walletAccounts.first;
   }
-  final name = 'Zain Al-Zubair'.obs;
-  final phone = '+967 772923592'.obs;
-  final email = 'zain@rwnaq.app'.obs;
-  final passwordPreview = '************'.obs;
-  final avatarPath = ''.obs;
-  final avatarUrl = ''.obs;
-  final addresses = <ShippingAddress>[].obs;
 
   ShippingAddress? get defaultAddress {
     for (final address in addresses) {
@@ -53,6 +96,26 @@ class ProfileStoreService extends GetxService {
     final current = defaultAddress;
     if (current == null) return 'Taiz';
     return '${current.city}, ${current.localizedCountry}';
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    _syncFromSession(_authSession.customer.value);
+    _customerWorker = ever<CustomerModel?>(
+      _authSession.customer,
+      _syncFromSession,
+    );
+  }
+
+  @override
+  void onClose() {
+    _customerWorker.dispose();
+    super.onClose();
+  }
+
+  void _syncFromSession(CustomerModel? nextCustomer) {
+    customer.value = nextCustomer;
   }
 
   void seedAddressesIfNeeded() {
@@ -80,9 +143,17 @@ class ProfileStoreService extends GetxService {
   void updateProfile({
     required String nextName,
     required String nextEmail,
+    String? nextPhone,
   }) {
-    name.value = nextName;
-    email.value = nextEmail;
+    _authSession.updateCustomer((current) {
+      final updated = (current ?? const CustomerModel()).copyWith(
+        fullName: nextName,
+        email: nextEmail,
+        mobile: nextPhone,
+      );
+
+      return updated;
+    });
   }
 
   void updateAvatarPath(String? path) {
@@ -99,7 +170,8 @@ class ProfileStoreService extends GetxService {
 
   void saveDefaultShippingAddress(ShippingAddress model) {
     final next = ShippingAddress(
-      id: defaultAddress?.id ??
+      id:
+          defaultAddress?.id ??
           DateTime.now().millisecondsSinceEpoch.toString(),
       country: model.country,
       address: model.address,

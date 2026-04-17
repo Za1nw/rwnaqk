@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/onboarding/onboarding_service.dart';
 import 'package:rwnaqk/controllers/onboarding/onboarding_ui_controller.dart';
+import 'package:rwnaqk/core/constants/local_storage_keys.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/services/auth/auth_session_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة الـ Onboarding.
 ///
@@ -79,11 +84,24 @@ class OnboardingController extends GetxController {
 
   /// هذه الدالة تنقل المستخدم إلى الشاشة الرئيسية بعد انتهاء الـ Onboarding.
   void onGetStarted() {
-    Get.offAllNamed(AppRoutes.main);
+    unawaited(_markOnboardingAsSeen());
+
+    final authSession = Get.find<AuthSessionService>();
+    final destination = authSession.isAuthenticated
+        ? AppRoutes.main
+        : AppRoutes.login;
+
+    Get.offAllNamed(destination);
   }
 
   /// هذه الدالة تنقل المستخدم إلى شاشة تسجيل الدخول.
   void onHaveAccount() {
+    unawaited(_markOnboardingAsSeen());
     Get.toNamed(AppRoutes.login);
+  }
+
+  Future<void> _markOnboardingAsSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(LocalStorageKeys.onboardingSeen, true);
   }
 }

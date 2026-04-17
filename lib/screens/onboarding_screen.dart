@@ -14,11 +14,6 @@ class OnboardingScreen extends GetView<OnboardingController> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
-    // ✅ panel width responsive (no fixed 375x812)
-    final panelMaxW = size.width < 420 ? size.width : 420.0;
-
     return Scaffold(
       backgroundColor: context.background,
       body: SafeArea(

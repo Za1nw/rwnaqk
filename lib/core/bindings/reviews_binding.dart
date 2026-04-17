@@ -10,10 +10,11 @@ class ReviewsBinding extends Bindings {
   @override
   /// هذه الدالة تقوم بتسجيل جميع التبعيات المطلوبة للشاشة.
   void dependencies() {
-    Get.lazyPut<ReviewsUiController>(() => ReviewsUiController());
-    Get.lazyPut<ReviewsService>(() => ReviewsService());
+    Get.lazyPut<ReviewsUiController>(() => ReviewsUiController(), fenix: true);
+    Get.lazyPut<ReviewsService>(() => ReviewsService(), fenix: true);
     Get.lazyPut<ReviewsController>(
       () => ReviewsController(Get.find<ReviewsService>()),
+      fenix: true,
     );
   }
 }

@@ -14,14 +14,17 @@ class ProductsListingBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<ProductsListingUiController>(
       () => ProductsListingUiController(),
+      fenix: true,
     );
 
     Get.lazyPut<ProductsListingService>(
       () => ProductsListingService(),
+      fenix: true,
     );
 
     Get.lazyPut<ProductsListingController>(
       () => ProductsListingController(Get.find<ProductsListingService>()),
+      fenix: true,
     );
   }
 }

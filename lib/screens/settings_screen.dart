@@ -18,8 +18,9 @@ class SettingsScreen extends GetView<AppSettingsController> {
   Widget build(BuildContext context) {
     final app = Get.find<AppSettingsController>();
     final profileStore = Get.find<ProfileStoreService>();
-    final main =
-        Get.isRegistered<MainController>() ? Get.find<MainController>() : null;
+    final main = Get.isRegistered<MainController>()
+        ? Get.find<MainController>()
+        : null;
 
     return AppSectionedPage(
       title: Tk.settingsTitle.tr,
@@ -33,10 +34,10 @@ class SettingsScreen extends GetView<AppSettingsController> {
       children: [
         Obx(
           () => SettingsProfileCard(
-            name: profileStore.name.value,
-            phone: profileStore.phone.value,
+            name: profileStore.displayName,
+            phone: profileStore.phone,
             avatarPath: profileStore.avatarPath.value,
-            avatarUrl: profileStore.avatarUrl.value,
+            avatarUrl: profileStore.avatarUrl,
             onTap: () => Get.toNamed(AppRoutes.profile),
             onEdit: () => Get.toNamed(AppRoutes.editProfile),
           ),
@@ -141,8 +142,7 @@ class SettingsScreen extends GetView<AppSettingsController> {
                   ),
                   trailingMaxWidth: 60,
                   showChevron: false,
-                  onTap: () =>
-                      Get.snackbar(Tk.settingsLogout.tr, Tk.commonMockAction.tr),
+                  onTap: controller.confirmLogout,
                 ),
               ],
             ),

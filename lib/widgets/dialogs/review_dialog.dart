@@ -114,10 +114,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
 
           const SizedBox(height: 16),
 
-          AppButton(
-            text: Tk.reviewsSubmit.tr,
-            onPressed: _submit,
-          ),
+          AppButton(text: Tk.reviewsSubmit.tr, onPressed: _submit),
         ],
       ),
     );
@@ -129,11 +126,7 @@ class _ReviewTargetInfo extends StatelessWidget {
   final String? orderId;
   final String? avatarUrl;
 
-  const _ReviewTargetInfo({
-    this.userName,
-    this.orderId,
-    this.avatarUrl,
-  });
+  const _ReviewTargetInfo({this.userName, this.orderId, this.avatarUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +136,7 @@ class _ReviewTargetInfo extends StatelessWidget {
       try {
         // جلب الاسم من ProfileStoreService
         final profileStore = Get.find<ProfileStoreService>();
-        displayName = profileStore.name.value;
+        displayName = profileStore.displayName;
       } catch (_) {}
     }
     final hasName = (displayName ?? '').trim().isNotEmpty;
@@ -221,17 +214,10 @@ class _AvatarCircle extends StatelessWidget {
           ? Image.network(
               avatarUrl!,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Icon(
-                Icons.person_rounded,
-                color: context.muted,
-                size: 20,
-              ),
+              errorBuilder: (_, __, ___) =>
+                  Icon(Icons.person_rounded, color: context.muted, size: 20),
             )
-          : Icon(
-              Icons.person_rounded,
-              color: context.muted,
-              size: 20,
-            ),
+          : Icon(Icons.person_rounded, color: context.muted, size: 20),
     );
   }
 }

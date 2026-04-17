@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/login/login_service.dart';
 import 'package:rwnaqk/controllers/login/login_ui_controller.dart';
+import 'package:rwnaqk/core/routes/app_route_args.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_notifier.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة تسجيل الدخول.
 ///
@@ -19,6 +21,7 @@ class LoginController extends GetxController {
   LoginController(this._service);
 
   final LoginService _service;
+  final isLoading = false.obs;
 
   late final LoginUiController ui;
 
@@ -46,12 +49,49 @@ class LoginController extends GetxController {
   /// - ثم تنقل المستخدم مباشرة إلى الصفحة الرئيسية
   ///
   /// لاحقًا يتم استبدال هذا السلوك باستدعاء API حقيقي.
-  void login() {
+  Future<void> login() async {
     final isValid = formKey.currentState?.validate() ?? false;
+    if (!isValid || isLoading.value) {
+      return;
+    }
 
-    if (!_service.canLogin(isValid)) return;
+    isLoading.value = true;
 
-    Get.offAllNamed(AppRoutes.home);
+    try {
+      final email = emailController.text.trim();
+      final password = passwordController.text;
+
+      final result = await _service.login(email: email, password: password);
+
+      if (result.requiresTwoFactor) {
+        Get.toNamed(
+          AppRoutes.twoFactorChallenge,
+          arguments: <String, dynamic>{
+            AppRouteArgs.loginEmail: email,
+            AppRouteArgs.loginPassword: password,
+            AppRouteArgs.target: email,
+          },
+        );
+        return;
+      }
+
+      if (result.requiresEmailVerification) {
+        AppNotifier.success(Tk.loginVerifyEmailHint);
+        Get.offAllNamed(
+          AppRoutes.emailVerify,
+          arguments: <String, dynamic>{'email': email},
+        );
+        return;
+      } else {
+        AppNotifier.success(Tk.loginSuccess);
+      }
+
+      Get.offAllNamed(AppRoutes.main);
+    } catch (error) {
+      AppNotifier.errorFrom(error);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   /// هذه الدالة تمثل تسجيل الدخول عبر Google.
@@ -77,7 +117,12 @@ class LoginController extends GetxController {
 
   /// هذه الدالة تنقل المستخدم إلى شاشة استعادة كلمة المرور.
   void goToForgotPassword() {
-    Get.toNamed(AppRoutes.forgot);
+    Get.toNamed(
+      AppRoutes.forgot,
+      arguments: <String, dynamic>{
+        AppRouteArgs.target: emailController.text.trim(),
+      },
+    );
   }
 
   /// هذه الدالة تنقل المستخدم إلى شاشة إنشاء حساب جديد.

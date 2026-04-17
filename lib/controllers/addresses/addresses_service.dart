@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
-import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 

@@ -14,10 +14,11 @@ class SearchBinding extends Bindings {
   @override
   /// هذه الدالة تسجل جميع التبعيات المطلوبة للبحث.
   void dependencies() {
-    Get.lazyPut<SearchUiController>(() => SearchUiController());
-    Get.lazyPut<SearchService>(() => SearchService());
+    Get.lazyPut<SearchUiController>(() => SearchUiController(), fenix: true);
+    Get.lazyPut<SearchService>(() => SearchService(), fenix: true);
     Get.lazyPut<AppSearchController>(
       () => AppSearchController(Get.find<SearchService>()),
+      fenix: true,
     );
   }
 }

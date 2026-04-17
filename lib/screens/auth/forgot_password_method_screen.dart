@@ -7,6 +7,7 @@ import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import '../../controllers/forgot_password/forgot_password_controller.dart';
 import '../../widgets/auth_blob_background.dart';
 import '../../widgets/app_button.dart';
+import '../../widgets/app_input_field.dart';
 import '../../widgets/auth/auth_centered_container.dart';
 
 class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
@@ -32,15 +33,19 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                     border: Border.all(color: context.border.withOpacity(0.5)),
                     boxShadow: [
                       BoxShadow(
-                        color: context.shadow
-                            .withOpacity(context.isDark ? 0.35 : 0.16),
+                        color: context.shadow.withOpacity(
+                          context.isDark ? 0.35 : 0.16,
+                        ),
                         blurRadius: 18,
                         offset: const Offset(0, 10),
                       ),
                     ],
                   ),
-                  child: Icon(Icons.lock_reset_rounded,
-                      color: context.primary, size: 40),
+                  child: Icon(
+                    Icons.lock_reset_rounded,
+                    color: context.primary,
+                    size: 40,
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -68,14 +73,39 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                   );
                 }),
 
+                const SizedBox(height: 12),
+                AppInputField(
+                  controller: controller.targetController,
+                  label: Tk.loginEmailLabel.tr,
+                  hint: Tk.loginEmailHint.tr,
+                  prefixIcon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    final email = (value ?? '').trim();
+                    if (email.isEmpty) {
+                      return Tk.loginEmailRequired.tr;
+                    }
+
+                    if (!GetUtils.isEmail(email)) {
+                      return Tk.loginEmailInvalid.tr;
+                    }
+
+                    return null;
+                  },
+                ),
+
                 const SizedBox(height: 20),
 
-                AppButton(
-                  text: Tk.fpNext.tr,
-                  icon: Icons.arrow_forward_rounded,
-                  onPressed: controller.goNextFromMethod,
-                  height: 54,
-                ),
+                Obx(() {
+                  return AppButton(
+                    text: controller.isLoading.value ? '...' : Tk.fpNext.tr,
+                    icon: Icons.arrow_forward_rounded,
+                    onPressed: controller.isLoading.value
+                        ? () {}
+                        : controller.goNextFromMethod,
+                    height: 54,
+                  );
+                }),
                 const SizedBox(height: 10),
 
                 TextButton(
@@ -134,8 +164,10 @@ class _ChoiceCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon,
-                color: selected ? context.primary : context.mutedForeground),
+            Icon(
+              icon,
+              color: selected ? context.primary : context.mutedForeground,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -155,10 +187,13 @@ class _ChoiceCard extends StatelessWidget {
                 color: selected ? context.primary : Colors.transparent,
               ),
               child: selected
-                  ? Icon(Icons.check,
-                      size: 14, color: context.primaryForeground)
+                  ? Icon(
+                      Icons.check,
+                      size: 14,
+                      color: context.primaryForeground,
+                    )
                   : null,
-            )
+            ),
           ],
         ),
       ),

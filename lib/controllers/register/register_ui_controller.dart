@@ -30,6 +30,9 @@ class RegisterUiController extends GetxController {
   /// متحكم حقل كلمة المرور.
   final passwordController = TextEditingController();
 
+  /// متحكم حقل تأكيد كلمة المرور.
+  final confirmPasswordController = TextEditingController();
+
   /// المحافظة المختارة حاليًا.
   final governorate = RxnString();
 
@@ -50,6 +53,7 @@ class RegisterUiController extends GetxController {
     phoneController.dispose();
     emailController.dispose();
     passwordController.dispose();
+    confirmPasswordController.dispose();
     super.onClose();
   }
 }

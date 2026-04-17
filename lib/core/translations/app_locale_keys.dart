@@ -18,12 +18,23 @@ abstract final class Tk {
   static const commonSocial = 'common.social';
   static const commonCopy = 'common.copy';
   static const commonCopied = 'common.copied';
+  static const commonYes = 'common.yes';
+  static const commonNo = 'common.no';
   static const commonCamera = 'common.camera';
   static const commonGallery = 'common.gallery';
   static const commonMockAction = 'common.mock_action';
   static const commonSomethingWentWrong = 'common.something_went_wrong';
   static const commonPleaseTryAgain = 'common.please_try_again';
   static const commonUnexpectedError = 'common.unexpected_error';
+  static const commonNetworkError = 'common.network_error';
+  static const commonTimeoutError = 'common.timeout_error';
+  static const commonUnauthorized = 'common.unauthorized';
+  static const commonForbidden = 'common.forbidden';
+  static const commonNotFound = 'common.not_found';
+  static const commonValidationError = 'common.validation_error';
+  static const commonServerError = 'common.server_error';
+  static const commonServiceUnavailable = 'common.service_unavailable';
+  static const commonUnknownApiError = 'common.unknown_api_error';
   static const commonNotImplementedYet = 'common.not_implemented_yet';
   static const navHome = 'nav.home';
   static const navWishlist = 'nav.wishlist';
@@ -63,6 +74,19 @@ abstract final class Tk {
   static const loginGoogle = 'login.google';
   static const loginApple = 'login.apple';
   static const loginFacebook = 'login.facebook';
+  static const loginSuccess = 'login.success';
+  static const loginVerifyEmailHint = 'login.verify_email_hint';
+  static const loginInvalidCredentials = 'login.invalid_credentials';
+  static const loginTwoFactorRequired = 'login.two_factor_required';
+  static const loginTwoFactorTitle = 'login.two_factor.title';
+  static const loginTwoFactorRecoveryTitle = 'login.two_factor.recovery_title';
+  static const loginTwoFactorRecoveryHint = 'login.two_factor.recovery_hint';
+  static const loginTwoFactorRecoveryPlaceholder =
+      'login.two_factor.recovery_placeholder';
+  static const loginTwoFactorUseAuthCode = 'login.two_factor.use_auth_code';
+  static const loginTwoFactorUseRecoveryCode =
+      'login.two_factor.use_recovery_code';
+  static const loginTwoFactorContinue = 'login.two_factor.continue';
   static const registerTitle = 'register.title';
   static const registerSubtitle = 'register.subtitle';
   static const registerFirstNameLabel = 'register.first_name.label';
@@ -86,11 +110,20 @@ abstract final class Tk {
   static const registerPasswordHint = 'register.password.hint';
   static const registerPasswordRequired = 'register.password.required';
   static const registerPasswordShort = 'register.password.short';
+  static const registerConfirmPasswordLabel = 'register.confirm_password.label';
+  static const registerConfirmPasswordHint = 'register.confirm_password.hint';
+  static const registerConfirmPasswordRequired =
+      'register.confirm_password.required';
+  static const registerPasswordMismatch = 'register.password.mismatch';
   static const registerTermsText = 'register.terms.text';
+  static const registerTermsLink = 'register.terms.link';
+  static const registerPrivacyLink = 'register.privacy.link';
   static const registerTermsRequired = 'register.terms.required';
   static const registerSubmit = 'register.submit';
   static const registerHaveAccount = 'register.have_account';
   static const registerSignIn = 'register.sign_in';
+  static const registerSuccess = 'register.success';
+  static const registerVerifyEmailHint = 'register.verify_email_hint';
   static const fpTitle = 'fp.title';
   static const fpSubtitle = 'fp.subtitle';
   static const fpSms = 'fp.sms';
@@ -105,6 +138,10 @@ abstract final class Tk {
   static const fpVerifyResendIn = 'fp.verify.resend_in';
   static const fpVerifyInvalid = 'fp.verify.invalid';
   static const fpVerifySent = 'fp.verify.sent';
+  static const fpTwoFactorTitle = 'fp.two_factor_title';
+  static const fpAuthenticatorCodeHint = 'fp.authenticator_code_hint';
+  static const fpSmsNotAvailable = 'fp.sms_not_available';
+  static const fpUseAuthenticator = 'fp.use_authenticator';
   static const fpNewTitle = 'fp.new.title';
   static const fpNewSubtitle = 'fp.new.subtitle';
   static const fpNewPassword = 'fp.new.password';
@@ -112,6 +149,7 @@ abstract final class Tk {
   static const fpNewSave = 'fp.new.save';
   static const fpNewMismatch = 'fp.new.mismatch';
   static const fpNewShort = 'fp.new.short';
+  static const fpResetTokenRequired = 'fp.new.reset_token_required';
   static const fpDone = 'fp.done';
   static const homeTitle = 'home.title';
   static const homeSearchHint = 'home.search_hint';
@@ -213,10 +251,39 @@ abstract final class Tk {
   static const profileViewEditProfile = 'profile.view.edit_profile';
   static const profileViewEmail = 'profile.view.email';
   static const profileViewPhone = 'profile.view.phone';
+  static const profileViewMobile = 'profile.view.mobile';
   static const profileViewLocation = 'profile.view.location';
+  static const profileViewWalletBalance = 'profile.view.wallet_balance';
+  static const profileViewEmailVerified = 'profile.view.email_verified';
   static const profileViewOrdersCount = 'profile.view.orders_count';
   static const profileViewAddressesCount = 'profile.view.addresses_count';
   static const profileViewWishlistCount = 'profile.view.wishlist_count';
+  static const profileTwoFactorTitle = 'profile.two_factor.title';
+  static const profileTwoFactorSubtitle = 'profile.two_factor.subtitle';
+  static const profileTwoFactorEnabled = 'profile.two_factor.enabled';
+  static const profileTwoFactorDisabled = 'profile.two_factor.disabled';
+  static const profileTwoFactorEnable = 'profile.two_factor.enable';
+  static const profileTwoFactorDisable = 'profile.two_factor.disable';
+  static const profileTwoFactorContinueSetup =
+      'profile.two_factor.continue_setup';
+  static const profileTwoFactorManualKey = 'profile.two_factor.manual_key';
+  static const profileTwoFactorCodeLabel = 'profile.two_factor.code_label';
+  static const profileTwoFactorCodeHint = 'profile.two_factor.code_hint';
+  static const profileTwoFactorConfirm = 'profile.two_factor.confirm';
+  static const profileTwoFactorRecoveryCodes =
+      'profile.two_factor.recovery_codes';
+  static const profileTwoFactorRegenerateCodes =
+      'profile.two_factor.regenerate_codes';
+  static const profileTwoFactorRefreshCodes =
+      'profile.two_factor.refresh_codes';
+  static const profileTwoFactorNoRecoveryCodes =
+      'profile.two_factor.no_recovery_codes';
+  static const profileTwoFactorSetupPending =
+      'profile.two_factor.setup_pending';
+  static const profileTwoFactorDisableConfirmTitle =
+      'profile.two_factor.disable_confirm_title';
+  static const profileTwoFactorDisableConfirmMessage =
+      'profile.two_factor.disable_confirm_message';
   static const profileEditSaveChanges = 'profile.edit.save_changes';
   static const profileEditTitle = 'profile.edit.title';
   static const profileEditSubtitle = 'profile.edit.subtitle';
@@ -224,6 +291,7 @@ abstract final class Tk {
   static const profileEditNameHint = 'profile.edit.name_hint';
   static const profileEditEmail = 'profile.edit.email';
   static const profileEditEmailHint = 'profile.edit.email_hint';
+  static const profileEditMobile = 'profile.edit.mobile';
   static const profileEditPassword = 'profile.edit.password';
   static const profileEditFillAll = 'profile.edit.fill_all';
   static const profileEditUpdated = 'profile.edit.updated';

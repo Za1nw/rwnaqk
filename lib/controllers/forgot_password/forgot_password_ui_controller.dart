@@ -16,8 +16,11 @@ import 'package:rwnaqk/controllers/forgot_password/forgot_password_service.dart'
 /// الهدف أن يبقى الكنترولر الرئيسي مسؤولًا عن التنقل والمنطق العام،
 /// بينما تبقى تفاصيل الواجهة والتفاعل المحلي هنا.
 class ForgotPasswordUiController extends GetxController {
+  /// متحكم حقل الهدف (البريد الإلكتروني أو الهاتف).
+  final targetController = TextEditingController();
+
   /// طريقة الاستعادة المختارة حاليًا.
-  final method = RecoveryMethod.sms.obs;
+  final method = RecoveryMethod.email.obs;
 
   /// رمز التحقق الحالي.
   final otp = ''.obs;
@@ -36,6 +39,9 @@ class ForgotPasswordUiController extends GetxController {
 
   /// متحكم حقل تأكيد كلمة المرور.
   final confirmController = TextEditingController();
+
+  /// متحكم حقل reset token.
+  final resetTokenController = TextEditingController();
 
   /// حالة التحميل الحالية.
   final isLoading = false.obs;
@@ -83,8 +89,10 @@ class ForgotPasswordUiController extends GetxController {
   /// نستخدمها لتحرير المؤقت ومتحكمات الحقول.
   void onClose() {
     _timer?.cancel();
+    targetController.dispose();
     passwordController.dispose();
     confirmController.dispose();
+    resetTokenController.dispose();
     super.onClose();
   }
 }

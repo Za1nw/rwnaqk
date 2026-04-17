@@ -1,8 +1,7 @@
 import 'dart:io';
 
-import 'package:characters/characters.dart';
+
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 
 class ProfileAvatar extends StatelessWidget {

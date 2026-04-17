@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../controllers/register/register_controller.dart';
 import '../../widgets/app_button.dart';
@@ -13,6 +15,51 @@ import '../../widgets/auth_blob_background.dart';
 
 class RegisterScreen extends GetView<RegisterController> {
   const RegisterScreen({super.key});
+
+  static const _apiBaseUrlOverride = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: '',
+  );
+
+  static String get _resolvedApiBaseUrl {
+    if (_apiBaseUrlOverride.isNotEmpty) {
+      return _apiBaseUrlOverride;
+    }
+
+    if (kIsWeb) {
+      return Uri.base.origin;
+    }
+
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return 'http://10.0.2.2:8000';
+      case TargetPlatform.iOS:
+        return 'http://127.0.0.1:8000';
+      case TargetPlatform.windows:
+      case TargetPlatform.linux:
+      case TargetPlatform.macOS:
+        return 'http://127.0.0.1:8000';
+      case TargetPlatform.fuchsia:
+        return 'http://127.0.0.1:8000';
+    }
+  }
+
+  static Uri _buildLegalUri(String path) {
+    final normalizedPath = path.startsWith('/') ? path : '/$path';
+    final baseUrl = _resolvedApiBaseUrl.endsWith('/')
+        ? _resolvedApiBaseUrl.substring(0, _resolvedApiBaseUrl.length - 1)
+        : _resolvedApiBaseUrl;
+
+    return Uri.parse('$baseUrl$normalizedPath');
+  }
+
+  Future<void> _openLegalPage(String path) async {
+    final uri = _buildLegalUri(path);
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened) {
+      Get.snackbar(Tk.commonError.tr, Tk.commonUnexpectedError.tr);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,12 +115,14 @@ class RegisterScreen extends GetView<RegisterController> {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color:
-                        context.card.withOpacity(context.isDark ? 0.92 : 0.96),
+                    color: context.card.withOpacity(
+                      context.isDark ? 0.92 : 0.96,
+                    ),
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: context.border
-                          .withOpacity(context.isDark ? 0.45 : 0.70),
+                      color: context.border.withOpacity(
+                        context.isDark ? 0.45 : 0.70,
+                      ),
                       width: 1,
                     ),
                     boxShadow: cardShadows,
@@ -149,10 +198,16 @@ class RegisterScreen extends GetView<RegisterController> {
                         ),
                         const SizedBox(height: 14),
                         Obx(() {
+                          final governorates = controller.governorates;
+                          final governorateItems = governorates.toList(
+                            growable: false,
+                          );
+                          governorates.length;
+
                           return AppSelectField<String>(
                             label: Tk.registerGovernorateLabel.tr,
                             hint: Tk.registerGovernorateHint.tr,
-                            items: controller.governorates,
+                            items: governorateItems,
                             value: controller.governorate.value,
                             prefixIcon: Icons.location_on_outlined,
                             itemLabel: (e) => e,
@@ -178,6 +233,24 @@ class RegisterScreen extends GetView<RegisterController> {
                             return null;
                           },
                         ),
+                        const SizedBox(height: 14),
+                        AppPasswordField(
+                          controller: controller.confirmPasswordController,
+                          label: Tk.registerConfirmPasswordLabel.tr,
+                          hint: Tk.registerConfirmPasswordHint.tr,
+                          prefixIcon: Icons.lock_reset,
+                          textInputAction: TextInputAction.done,
+                          validator: (v) {
+                            final value = (v ?? '');
+                            if (value.isEmpty) {
+                              return Tk.registerConfirmPasswordRequired.tr;
+                            }
+                            if (value != controller.passwordController.text) {
+                              return Tk.registerPasswordMismatch.tr;
+                            }
+                            return null;
+                          },
+                        ),
                         const SizedBox(height: 12),
                         // ملاحظة: Obx هنا مخصص فقط لحالة الموافقة لتقليل إعادة البناء.
                         Obx(() {
@@ -196,31 +269,75 @@ class RegisterScreen extends GetView<RegisterController> {
                                       borderRadius: BorderRadius.circular(7),
                                       border: Border.all(
                                         color: context.border.withOpacity(
-                                            context.isDark ? 0.55 : 0.75),
+                                          context.isDark ? 0.55 : 0.75,
+                                        ),
                                       ),
                                       boxShadow: [
                                         BoxShadow(
                                           color: context.shadow.withOpacity(
-                                              context.isDark ? 0.25 : 0.12),
+                                            context.isDark ? 0.25 : 0.12,
+                                          ),
                                           blurRadius: 8,
                                           offset: const Offset(0, 4),
                                         ),
                                       ],
                                     ),
                                     child: controller.agreed.value
-                                        ? Icon(Icons.check,
-                                            size: 16, color: context.primary)
+                                        ? Icon(
+                                            Icons.check,
+                                            size: 16,
+                                            color: context.primary,
+                                          )
                                         : const SizedBox.shrink(),
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
-                                    child: Text(
-                                      Tk.registerTermsText.tr,
-                                      style: TextStyle(
-                                        color: context.mutedForeground,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12.5,
-                                      ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          Tk.registerTermsText.tr,
+                                          style: TextStyle(
+                                            color: context.mutedForeground,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12.5,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Wrap(
+                                          spacing: 10,
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () =>
+                                                  _openLegalPage('/terms'),
+                                              child: Text(
+                                                Tk.registerTermsLink.tr,
+                                                style: TextStyle(
+                                                  color: context.primary,
+                                                  fontWeight: FontWeight.w700,
+                                                  decoration:
+                                                      TextDecoration.underline,
+                                                ),
+                                              ),
+                                            ),
+                                            GestureDetector(
+                                              onTap: () => _openLegalPage(
+                                                '/privacy-policy',
+                                              ),
+                                              child: Text(
+                                                Tk.registerPrivacyLink.tr,
+                                                style: TextStyle(
+                                                  color: context.primary,
+                                                  fontWeight: FontWeight.w700,
+                                                  decoration:
+                                                      TextDecoration.underline,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -229,12 +346,18 @@ class RegisterScreen extends GetView<RegisterController> {
                           );
                         }),
                         const SizedBox(height: 14),
-                        AppButton(
-                          text: Tk.registerSubmit.tr,
-                          icon: Icons.person_add_alt_1_rounded,
-                          onPressed: controller.register,
-                          height: 54,
-                        ),
+                        Obx(() {
+                          return AppButton(
+                            text: controller.isLoading.value
+                                ? '...'
+                                : Tk.registerSubmit.tr,
+                            icon: Icons.person_add_alt_1_rounded,
+                            onPressed: controller.isLoading.value
+                                ? () {}
+                                : controller.register,
+                            height: 54,
+                          );
+                        }),
                       ],
                     ),
                   ),

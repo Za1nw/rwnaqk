@@ -2,6 +2,9 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/register/register_controller.dart';
 import 'package:rwnaqk/controllers/register/register_service.dart';
 import 'package:rwnaqk/controllers/register/register_ui_controller.dart';
+import 'package:rwnaqk/core/services/auth/auth_session_service.dart';
+import 'package:rwnaqk/core/services/auth/customer_auth_api_service.dart';
+import 'package:rwnaqk/core/services/geo/geo_lookup_api_service.dart';
 
 /// هذا الملف مسؤول عن حقن التبعيات الخاصة بشاشة إنشاء الحساب.
 ///
@@ -10,10 +13,22 @@ class RegisterBinding extends Bindings {
   @override
   /// هذه الدالة تقوم بتسجيل جميع التبعيات المطلوبة للشاشة.
   void dependencies() {
-    Get.lazyPut<RegisterUiController>(() => RegisterUiController());
-    Get.lazyPut<RegisterService>(() => RegisterService());
+    Get.lazyPut<RegisterUiController>(
+      () => RegisterUiController(),
+      fenix: true,
+    );
+    Get.lazyPut<GeoLookupApiService>(() => GeoLookupApiService(), fenix: true);
+    Get.lazyPut<RegisterService>(
+      () => RegisterService(
+        Get.find<CustomerAuthApiService>(),
+        Get.find<AuthSessionService>(),
+        Get.find<GeoLookupApiService>(),
+      ),
+      fenix: true,
+    );
     Get.lazyPut<RegisterController>(
       () => RegisterController(Get.find<RegisterService>()),
+      fenix: true,
     );
   }
 }

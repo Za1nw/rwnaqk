@@ -2,15 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/widgets/profile/profile_avatar.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onChanged;
+  final String profileName;
+  final String profileAvatarPath;
+  final String profileAvatarUrl;
 
   const AppBottomNav({
     super.key,
     required this.currentIndex,
     required this.onChanged,
+    this.profileName = '',
+    this.profileAvatarPath = '',
+    this.profileAvatarUrl = '',
   });
 
   @override
@@ -20,7 +27,11 @@ class AppBottomNav extends StatelessWidget {
       _NavSpec(icon: Icons.favorite_rounded, label: Tk.navWishlist.tr),
       _NavSpec(icon: Icons.receipt_rounded, label: Tk.navOrders.tr),
       _NavSpec(icon: Icons.shopping_bag_rounded, label: Tk.navShop.tr),
-      _NavSpec(icon: Icons.person_rounded, label: Tk.navAccount.tr),
+      _NavSpec(
+        icon: Icons.person_rounded,
+        label: Tk.navAccount.tr,
+        useAvatar: true,
+      ),
     ];
 
     return SafeArea(
@@ -106,6 +117,10 @@ class AppBottomNav extends StatelessWidget {
                                 label: items[i].label,
                                 selected: currentIndex == i,
                                 showLabel: showActiveLabel,
+                                useAvatar: items[i].useAvatar,
+                                profileName: profileName,
+                                profileAvatarPath: profileAvatarPath,
+                                profileAvatarUrl: profileAvatarUrl,
                                 onTap: () => onChanged(i),
                               ),
                             ),
@@ -145,10 +160,12 @@ class AppBottomNav extends StatelessWidget {
 class _NavSpec {
   final IconData icon;
   final String label;
+  final bool useAvatar;
 
   const _NavSpec({
     required this.icon,
     required this.label,
+    this.useAvatar = false,
   });
 }
 
@@ -157,6 +174,10 @@ class _NavSegment extends StatelessWidget {
   final String label;
   final bool selected;
   final bool showLabel;
+  final bool useAvatar;
+  final String profileName;
+  final String profileAvatarPath;
+  final String profileAvatarUrl;
   final VoidCallback onTap;
 
   const _NavSegment({
@@ -164,6 +185,10 @@ class _NavSegment extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.showLabel,
+    required this.useAvatar,
+    required this.profileName,
+    required this.profileAvatarPath,
+    required this.profileAvatarUrl,
     required this.onTap,
   });
 
@@ -197,12 +222,42 @@ class _NavSegment extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Transform.scale(
-                        scale: .94 + (.06 * t),
-                        child: Icon(
-                          icon,
-                          size: 20,
-                          color: Color.lerp(inactiveFg, activeFg, t),
-                        ),
+                        scale: .94 + (.08 * t),
+                        child: useAvatar
+                            ? Transform.scale(
+                                scale: 1.5,
+                                child: Container(
+                                  width: 45,
+                                  height: 45,
+                                  padding: const EdgeInsets.all(1),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Color.lerp(
+                                        context.border.withOpacity(.32),
+                                        context.primary.withOpacity(.50),
+                                        t > 0.3 ? t : 0.3,
+                                      )!,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: ProfileAvatar(
+                                    name: profileName.isEmpty
+                                        ? label
+                                        : profileName,
+                                    imagePath: profileAvatarPath,
+                                    imageUrl: profileAvatarUrl,
+                                    size: 45,
+                                    fontSize: 9,
+                                    showBorder: false,
+                                  ),
+                                ),
+                              )
+                            : Icon(
+                                icon,
+                                size: 20,
+                                color: Color.lerp(inactiveFg, activeFg, t),
+                              ),
                       ),
                       if (showLabel)
                         ClipRect(
@@ -211,8 +266,9 @@ class _NavSegment extends StatelessWidget {
                             child: Opacity(
                               opacity: t,
                               child: Padding(
-                                padding:
-                                    const EdgeInsetsDirectional.only(start: 6),
+                                padding: const EdgeInsetsDirectional.only(
+                                  start: 6,
+                                ),
                                 child: SizedBox(
                                   width: 44,
                                   child: Text(

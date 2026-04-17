@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/forgot_password/forgot_password_service.dart';
+import 'package:rwnaqk/core/routes/app_route_args.dart';
 import 'package:rwnaqk/controllers/forgot_password/forgot_password_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_notifier.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة استعادة كلمة المرور.
 ///
@@ -28,6 +30,12 @@ class ForgotPasswordController extends GetxController {
   /// الهدف الحالي بعد إخفائه للعرض في الواجهة.
   final maskedTarget = ''.obs;
 
+  final otpFlow = OtpFlow.forgotPassword.obs;
+  final loginEmail = ''.obs;
+  final loginPassword = ''.obs;
+
+  bool get isTwoFactorFlow => otpFlow.value == OtpFlow.twoFactorLogin;
+
   // =========================
   // UI BRIDGES
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
@@ -46,10 +54,16 @@ class ForgotPasswordController extends GetxController {
   get formKey => ui.formKey;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
+  get targetController => ui.targetController;
+
+  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
   get passwordController => ui.passwordController;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
   get confirmController => ui.confirmController;
+
+  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
+  get resetTokenController => ui.resetTokenController;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
   RxBool get isLoading => ui.isLoading;
@@ -60,6 +74,29 @@ class ForgotPasswordController extends GetxController {
   void onInit() {
     super.onInit();
     ui = Get.find<ForgotPasswordUiController>();
+
+    final args = Get.arguments;
+    if (args is Map) {
+      final flowName = args[AppRouteArgs.otpFlow]?.toString();
+      if (flowName == OtpFlow.twoFactorLogin.name) {
+        otpFlow.value = OtpFlow.twoFactorLogin;
+      }
+
+      final initialTarget = args[AppRouteArgs.target]?.toString() ?? '';
+      targetController.text = initialTarget;
+
+      loginEmail.value = args[AppRouteArgs.loginEmail]?.toString() ?? '';
+      loginPassword.value = args[AppRouteArgs.loginPassword]?.toString() ?? '';
+
+      if (otpFlow.value == OtpFlow.twoFactorLogin &&
+          loginEmail.value.isNotEmpty) {
+        target.value = loginEmail.value;
+        maskedTarget.value = _service.resolveMaskedTarget(
+          method: RecoveryMethod.email,
+          target: loginEmail.value,
+        );
+      }
+    }
   }
 
   /// هذه الدالة تغيّر وسيلة استعادة كلمة المرور الحالية.
@@ -74,19 +111,39 @@ class ForgotPasswordController extends GetxController {
   /// - نبني النص المخفي المناسب
   /// - نبدأ مؤقت إعادة الإرسال
   /// - ننتقل إلى شاشة OTP
-  void goNextFromMethod() {
-    final resolvedTarget = _service.resolveTarget(method.value);
+  Future<void> goNextFromMethod() async {
+    if (isLoading.value) {
+      return;
+    }
 
-    target.value = resolvedTarget;
-    maskedTarget.value = _service.resolveMaskedTarget(
-      method: method.value,
-      target: resolvedTarget,
-    );
+    if (method.value == RecoveryMethod.sms) {
+      AppNotifier.error(Tk.fpSmsNotAvailable);
+      return;
+    }
 
-    ui.startResendTimer();
+    final email = targetController.text.trim();
+    if (!GetUtils.isEmail(email)) {
+      AppNotifier.error(Tk.loginEmailInvalid);
+      return;
+    }
 
-    Get.toNamed(AppRoutes.otp);
-    Get.snackbar(Tk.commonOk.tr, Tk.fpVerifySent.tr);
+    ui.setLoading(true);
+    try {
+      await _service.sendPasswordResetLink(email: email);
+
+      target.value = email;
+      maskedTarget.value = _service.resolveMaskedTarget(
+        method: RecoveryMethod.email,
+        target: email,
+      );
+
+      AppNotifier.success(Tk.fpVerifySent);
+      Get.offAllNamed(AppRoutes.login);
+    } catch (error) {
+      AppNotifier.errorFrom(error);
+    } finally {
+      ui.setLoading(false);
+    }
   }
 
   /// هذه الدالة تحدّث رمز التحقق الحالي.
@@ -97,9 +154,37 @@ class ForgotPasswordController extends GetxController {
   /// هذه الدالة تتحقق من صحة رمز التحقق الحالي.
   ///
   /// إذا كان صحيحًا ننتقل إلى شاشة إعادة تعيين كلمة المرور.
-  void verifyOtp() {
+  Future<void> verifyOtp() async {
     if (!_service.isValidOtp(otp.value)) {
-      Get.snackbar(Tk.commonError.tr, Tk.fpVerifyInvalid.tr);
+      AppNotifier.error(Tk.fpVerifyInvalid);
+      return;
+    }
+
+    if (otpFlow.value == OtpFlow.twoFactorLogin) {
+      ui.setLoading(true);
+      try {
+        final result = await _service.verifyTwoFactorLogin(
+          email: loginEmail.value,
+          password: loginPassword.value,
+          code: otp.value,
+        );
+
+        AppNotifier.success(Tk.loginSuccess);
+
+        if (result.requiresEmailVerification) {
+          Get.offAllNamed(
+            AppRoutes.emailVerify,
+            arguments: <String, dynamic>{'email': loginEmail.value},
+          );
+        } else {
+          Get.offAllNamed(AppRoutes.main);
+        }
+      } catch (error) {
+        AppNotifier.errorFrom(error);
+      } finally {
+        ui.setLoading(false);
+      }
+
       return;
     }
 
@@ -108,10 +193,15 @@ class ForgotPasswordController extends GetxController {
 
   /// هذه الدالة تعيد إرسال رمز التحقق إذا أصبح مسموحًا بذلك.
   void resendCode() {
+    if (otpFlow.value == OtpFlow.twoFactorLogin) {
+      AppNotifier.error(Tk.fpUseAuthenticator);
+      return;
+    }
+
     if (!canResend.value) return;
 
     ui.startResendTimer();
-    Get.snackbar(Tk.commonOk.tr, Tk.fpVerifySent.tr);
+    AppNotifier.success(Tk.fpVerifySent);
   }
 
   /// هذه الدالة تحفظ كلمة المرور الجديدة بعد التحقق من صحة البيانات.
@@ -134,18 +224,33 @@ class ForgotPasswordController extends GetxController {
       confirmPassword: p2,
     )) {
       if (isValid && p1 != p2) {
-        Get.snackbar(Tk.commonError.tr, Tk.fpNewMismatch.tr);
+        AppNotifier.error(Tk.fpNewMismatch);
       }
+      return;
+    }
+
+    final email = targetController.text.trim();
+    final token = resetTokenController.text.trim();
+
+    if (!GetUtils.isEmail(email)) {
+      AppNotifier.error(Tk.loginEmailInvalid);
+      return;
+    }
+
+    if (token.isEmpty) {
+      AppNotifier.error(Tk.fpResetTokenRequired);
       return;
     }
 
     ui.setLoading(true);
 
     try {
-      await Future.delayed(const Duration(milliseconds: 600));
+      await _service.resetPassword(token: token, email: email, password: p1);
 
-      Get.snackbar(Tk.commonOk.tr, Tk.fpDone.tr);
+      AppNotifier.success(Tk.fpDone);
       Get.offAllNamed(AppRoutes.login);
+    } catch (error) {
+      AppNotifier.errorFrom(error);
     } finally {
       ui.setLoading(false);
     }

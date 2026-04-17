@@ -47,19 +47,22 @@ class LoginScreen extends GetView<LoginController> {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color:
-                        context.card.withOpacity(context.isDark ? 0.82 : 0.92),
+                    color: context.card.withOpacity(
+                      context.isDark ? 0.82 : 0.92,
+                    ),
                     borderRadius: BorderRadius.circular(22),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.white
-                            .withOpacity(context.isDark ? 0.06 : 0.55),
+                        color: Colors.white.withOpacity(
+                          context.isDark ? 0.06 : 0.55,
+                        ),
                         offset: const Offset(-8, -8),
                         blurRadius: 20,
                       ),
                       BoxShadow(
-                        color: Colors.black
-                            .withOpacity(context.isDark ? 0.35 : 0.14),
+                        color: Colors.black.withOpacity(
+                          context.isDark ? 0.35 : 0.14,
+                        ),
                         offset: const Offset(12, 12),
                         blurRadius: 26,
                       ),
@@ -69,8 +72,9 @@ class LoginScreen extends GetView<LoginController> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(22),
                       border: Border.all(
-                        color: Colors.white
-                            .withOpacity(context.isDark ? 0.05 : 0.14),
+                        color: Colors.white.withOpacity(
+                          context.isDark ? 0.05 : 0.14,
+                        ),
                         width: 1,
                       ),
                     ),
@@ -128,12 +132,18 @@ class LoginScreen extends GetView<LoginController> {
                             ),
                           ),
                           const SizedBox(height: 10),
-                          AppButton(
-                            text: Tk.loginSignIn.tr,
-                            icon: Icons.login_rounded,
-                            onPressed: controller.login,
-                            height: 54,
-                          ),
+                          Obx(() {
+                            return AppButton(
+                              text: controller.isLoading.value
+                                  ? '...'
+                                  : Tk.loginSignIn.tr,
+                              icon: Icons.login_rounded,
+                              onPressed: controller.isLoading.value
+                                  ? () {}
+                                  : controller.login,
+                              height: 54,
+                            );
+                          }),
                         ],
                       ),
                     ),

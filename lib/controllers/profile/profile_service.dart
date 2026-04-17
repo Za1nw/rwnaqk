@@ -8,20 +8,14 @@ class ProfileStatsItem {
   final String value;
   final String labelKey;
 
-  const ProfileStatsItem({
-    required this.value,
-    required this.labelKey,
-  });
+  const ProfileStatsItem({required this.value, required this.labelKey});
 }
 
 class ProfileInfoItem {
   final String titleKey;
   final String value;
 
-  const ProfileInfoItem({
-    required this.titleKey,
-    required this.value,
-  });
+  const ProfileInfoItem({required this.titleKey, required this.value});
 }
 
 class ProfileService {
@@ -29,12 +23,15 @@ class ProfileService {
 
   final ProfileStoreService _store;
 
-  String profileName() => _store.name.value;
-  String profilePhone() => _store.phone.value;
-  String profileEmail() => _store.email.value;
+  String profileName() => _store.displayName;
+  String profilePhone() => _store.phone;
+  String profileEmail() => _store.email;
   String profileLocation() => _store.location;
   String profileAvatarPath() => _store.avatarPath.value;
-  String profileAvatarUrl() => _store.avatarUrl.value;
+  String profileAvatarUrl() => _store.avatarUrl;
+  String profileWalletBalance() => _store.walletBalance.toStringAsFixed(2);
+  String profileEmailVerificationStatus() =>
+      _store.isEmailVerified ? 'yes' : 'no';
 
   String ordersCount() {
     if (!Get.isRegistered<OrdersController>()) return '0';
@@ -51,7 +48,9 @@ class ProfileService {
   List<ProfileStatsItem> stats() {
     return [
       ProfileStatsItem(
-          value: ordersCount(), labelKey: Tk.profileViewOrdersCount),
+        value: ordersCount(),
+        labelKey: Tk.profileViewOrdersCount,
+      ),
       ProfileStatsItem(
         value: addressesCount(),
         labelKey: Tk.profileViewAddressesCount,
@@ -65,17 +64,15 @@ class ProfileService {
 
   List<ProfileInfoItem> infoItems() {
     return [
+      ProfileInfoItem(titleKey: Tk.profileViewEmail, value: profileEmail()),
+      ProfileInfoItem(titleKey: Tk.profileViewMobile, value: profilePhone()),
       ProfileInfoItem(
-        titleKey: Tk.profileViewEmail,
-        value: profileEmail(),
+        titleKey: Tk.profileViewWalletBalance,
+        value: profileWalletBalance(),
       ),
       ProfileInfoItem(
-        titleKey: Tk.profileViewPhone,
-        value: profilePhone(),
-      ),
-      ProfileInfoItem(
-        titleKey: Tk.profileViewLocation,
-        value: profileLocation(),
+        titleKey: Tk.profileViewEmailVerified,
+        value: profileEmailVerificationStatus(),
       ),
     ];
   }

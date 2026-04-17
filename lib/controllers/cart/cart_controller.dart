@@ -29,7 +29,7 @@ import 'package:rwnaqk/models/shipping_option_model.dart';
 /// - CartUiController الخاص بحالات الواجهة
 /// - CartService الخاص بالبيانات والتجهيزات
 class CartController extends GetxController {
-    /// مؤشر المحفظة المختارة (من ui)
+  /// مؤشر المحفظة المختارة (من ui)
   /// تحويل حسابات المحافظ الإدارية إلى WalletCompany لعرضها في الواجهة
   CartController(this._service);
 
@@ -61,16 +61,14 @@ class CartController extends GetxController {
   late final Rx<ContactInfoModel> contactInfo;
 
   /// إجمالي العناصر فقط بدون الشحن.
-  double get itemsSubtotal => _service.computeItemsTotal(
-        cartItems,
-        itemQuantities,
-      );
+  double get itemsSubtotal =>
+      _service.computeItemsTotal(cartItems, itemQuantities);
 
   /// رسوم الشحن حسب الخيار المختار.
   double get shippingFee => _service.shippingFeeFor(
-        options: shippingOptions,
-        selectedId: selectedShippingId.value,
-      );
+    options: shippingOptions,
+    selectedId: selectedShippingId.value,
+  );
 
   /// الإجمالي النهائي.
   double get total => itemsSubtotal + shippingFee;
@@ -337,7 +335,9 @@ class CartController extends GetxController {
   void payNow() {
     if (cartItems.isEmpty) {
       Get.snackbar(
-          Tk.cartValidationCartTitle.tr, Tk.cartValidationCartEmpty.tr);
+        Tk.cartValidationCartTitle.tr,
+        Tk.cartValidationCartEmpty.tr,
+      );
       return;
     }
 
@@ -392,14 +392,10 @@ class CartController extends GetxController {
     ui.completeCheckout();
 
     Get.offNamed(AppRoutes.orderTracking, arguments: order);
-    Get.snackbar(
-      Tk.cartOrderCreatedTitle.tr,
-      Tk.cartOrderCreatedMessage.tr,
-    );
+    Get.snackbar(Tk.cartOrderCreatedTitle.tr, Tk.cartOrderCreatedMessage.tr);
   }
 
   @override
-
   /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
   /// نستخدمها لتهيئة الـ UI controller وتحميل البيانات التجريبية.
   void onInit() {
@@ -436,8 +432,8 @@ class CartController extends GetxController {
   }
 
   void _syncCheckoutDefaultsFromProfile({bool forceContact = false}) {
-    final profilePhone = _profileStore.phone.value.trim();
-    final profileEmail = _profileStore.email.value.trim();
+    final profilePhone = _profileStore.phone.trim();
+    final profileEmail = _profileStore.email.trim();
 
     if (forceContact || contactInfo.value.isEmpty) {
       contactInfo.value = contactInfo.value.copyWith(
@@ -446,6 +442,5 @@ class CartController extends GetxController {
       );
       ui.fillContactFormFromState(contactInfo.value);
     }
-
   }
 }

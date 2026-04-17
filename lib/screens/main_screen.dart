@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/main/main_controller.dart';
+import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 import 'package:rwnaqk/screens/cart_screen.dart';
 import 'package:rwnaqk/screens/orders_screen.dart';
 import 'package:rwnaqk/screens/settings_screen.dart';
@@ -15,7 +16,8 @@ class MainScreen extends GetView<MainController> {
 
   @override
   Widget build(BuildContext context) {
-    final pages =  [
+    final profileStore = Get.find<ProfileStoreService>();
+    final pages = [
       HomeScreen(),
       WishlistScreen(),
       OrdersScreen(),
@@ -27,13 +29,13 @@ class MainScreen extends GetView<MainController> {
       final i = controller.currentIndex.value;
 
       return Scaffold(
-        body: IndexedStack(
-          index: i,
-          children: pages,
-        ),
+        body: IndexedStack(index: i, children: pages),
         bottomNavigationBar: AppBottomNav(
           currentIndex: i,
           onChanged: controller.changeTab,
+          profileName: profileStore.displayName,
+          profileAvatarPath: profileStore.avatarPath.value,
+          profileAvatarUrl: profileStore.avatarUrl,
         ),
       );
     });

@@ -34,21 +34,15 @@ class CartService {
 
   /// خيارات الشحن المتاحة في صفحة الدفع.
   List<ShippingOptionModel> get shippingOptions => [
-        ShippingOptionModel(
-          id: 'standard',
-          priceText: Tk.cartFree.tr,
-        ),
-        ShippingOptionModel(
-          id: 'express',
-          priceText: '\$12.00',
-        ),
-      ];
+    ShippingOptionModel(id: 'standard', priceText: Tk.cartFree.tr),
+    ShippingOptionModel(id: 'express', priceText: '\$12.00'),
+  ];
 
   /// بيانات التواصل الحالية.
   ContactInfoModel get contactInfo => ContactInfoModel(
-        phone: _profileStore.phone.value.trim(),
-        email: _profileStore.email.value.trim(),
-      );
+    phone: _profileStore.phone.trim(),
+    email: _profileStore.email.trim(),
+  );
 
   /// هذه الدالة تحسب إجمالي أسعار العناصر داخل السلة.
   double computeTotal(List<HomeProductItem> items) {
@@ -113,7 +107,7 @@ class CartService {
     final millis = now.millisecondsSinceEpoch.toString();
     final suffix = millis.substring(millis.length - 6);
     final subtotal = computeItemsTotal(items, quantities);
-    final deliveryName = _profileStore.name.value.trim();
+    final deliveryName = _profileStore.displayName.trim();
     final deliveryPhone = contact.phone.trim();
 
     final details = OrderDetailsModel(
@@ -144,8 +138,9 @@ class CartService {
       status: status,
       addressLine: address.formatted,
       deliveryPhone: deliveryPhone.isEmpty ? null : deliveryPhone,
-      deliveryName:
-          details.deliveryName.trim().isEmpty ? null : details.deliveryName,
+      deliveryName: details.deliveryName.trim().isEmpty
+          ? null
+          : details.deliveryName,
       details: details,
     );
   }

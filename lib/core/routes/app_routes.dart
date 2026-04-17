@@ -2,6 +2,8 @@ abstract class AppRoutes {
   static const onboarding = '/onboarding';
   static const login = '/login';
   static const register = '/register';
+  static const emailVerify = '/email-verify';
+  static const twoFactorChallenge = '/two-factor-challenge';
   static const forgot = '/forgot';
   static const otp = '/otp';
   static const reset = '/reset';

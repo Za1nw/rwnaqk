@@ -16,6 +16,9 @@ class EditProfileUiController extends GetxController {
   /// متحكم حقل البريد الإلكتروني.
   late final TextEditingController emailCtrl;
 
+  /// متحكم حقل الجوال.
+  late final TextEditingController mobileCtrl;
+
   /// متحكم حقل معاينة كلمة المرور.
   ///
   /// هذا الحقل للعرض فقط في الشاشة الحالية.
@@ -29,6 +32,7 @@ class EditProfileUiController extends GetxController {
 
     nameCtrl = TextEditingController();
     emailCtrl = TextEditingController();
+    mobileCtrl = TextEditingController();
     passwordPreviewCtrl = TextEditingController();
   }
 
@@ -36,10 +40,12 @@ class EditProfileUiController extends GetxController {
   void fillInitialValues({
     required String name,
     required String email,
+    required String mobile,
     required String passwordPreview,
   }) {
     nameCtrl.text = name;
     emailCtrl.text = email;
+    mobileCtrl.text = mobile;
     passwordPreviewCtrl.text = passwordPreview;
   }
 
@@ -49,6 +55,7 @@ class EditProfileUiController extends GetxController {
   void onClose() {
     nameCtrl.dispose();
     emailCtrl.dispose();
+    mobileCtrl.dispose();
     passwordPreviewCtrl.dispose();
     super.onClose();
   }

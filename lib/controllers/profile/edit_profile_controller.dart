@@ -1,4 +1,3 @@
-
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rwnaqk/controllers/profile/edit_profile_service.dart';
@@ -6,7 +5,6 @@ import 'package:rwnaqk/controllers/profile/edit_profile_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/dialogs/app_saved_dialog.dart';
-
 
 class EditProfileController extends GetxController {
   EditProfileController(this._service);
@@ -21,6 +19,7 @@ class EditProfileController extends GetxController {
 
   get nameCtrl => ui.nameCtrl;
   get emailCtrl => ui.emailCtrl;
+  get mobileCtrl => ui.mobileCtrl;
   get passwordPreviewCtrl => ui.passwordPreviewCtrl;
 
   String get avatarPath => _avatarPath.value;
@@ -36,6 +35,7 @@ class EditProfileController extends GetxController {
     ui.fillInitialValues(
       name: _service.initialName(),
       email: _service.initialEmail(),
+      mobile: _service.initialMobile(),
       passwordPreview: _service.passwordPreview(),
     );
     _avatarPath.value = _service.avatarPath();
@@ -64,6 +64,7 @@ class EditProfileController extends GetxController {
     final canSave = _service.canSave(
       name: nameCtrl.text,
       email: emailCtrl.text,
+      mobile: mobileCtrl.text,
     );
     if (!canSave) {
       Get.snackbar(Tk.commonError.tr, Tk.profileEditFillAll.tr);
@@ -72,9 +73,10 @@ class EditProfileController extends GetxController {
 
     _isSaving.value = true;
     try {
-      _service.saveProfile(
+      _service.saveProfileData(
         name: nameCtrl.text,
         email: emailCtrl.text,
+        mobile: mobileCtrl.text,
         avatarPath: avatarPath,
       );
       await AppSavedDialog.show(messageKey: Tk.profileEditUpdated);

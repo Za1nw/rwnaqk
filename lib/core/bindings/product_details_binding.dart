@@ -6,10 +6,17 @@ import 'package:rwnaqk/controllers/product_details/product_details_ui_controller
 class ProductDetailsBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<ProductDetailsUiController>(() => ProductDetailsUiController());
-    Get.lazyPut<ProductDetailsService>(() => ProductDetailsService());
+    Get.lazyPut<ProductDetailsUiController>(
+      () => ProductDetailsUiController(),
+      fenix: true,
+    );
+    Get.lazyPut<ProductDetailsService>(
+      () => ProductDetailsService(),
+      fenix: true,
+    );
     Get.lazyPut<ProductDetailsController>(
       () => ProductDetailsController(Get.find<ProductDetailsService>()),
+      fenix: true,
     );
   }
 }

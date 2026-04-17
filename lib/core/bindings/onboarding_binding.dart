@@ -10,10 +10,14 @@ class OnboardingBinding extends Bindings {
   @override
   /// هذه الدالة تقوم بتسجيل جميع التبعيات المطلوبة للشاشة.
   void dependencies() {
-    Get.lazyPut<OnboardingUiController>(() => OnboardingUiController());
-    Get.lazyPut<OnboardingService>(() => OnboardingService());
+    Get.lazyPut<OnboardingUiController>(
+      () => OnboardingUiController(),
+      fenix: true,
+    );
+    Get.lazyPut<OnboardingService>(() => OnboardingService(), fenix: true);
     Get.lazyPut<OnboardingController>(
       () => OnboardingController(Get.find<OnboardingService>()),
+      fenix: true,
     );
   }
 }

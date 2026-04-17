@@ -7,6 +7,7 @@ import 'package:rwnaqk/widgets/common/app_section_header.dart';
 import 'package:rwnaqk/widgets/common/app_sectioned_page.dart';
 import 'package:rwnaqk/widgets/profile/profile_info_card.dart';
 import 'package:rwnaqk/widgets/profile/profile_stats_strip.dart';
+import 'package:rwnaqk/widgets/profile/profile_two_factor_section.dart';
 import 'package:rwnaqk/widgets/settings/settings_profile_card.dart';
 
 class ProfileScreen extends GetView<ProfileController> {
@@ -56,6 +57,8 @@ class ProfileScreen extends GetView<ProfileController> {
             value: info[2].value,
             icon: Icons.location_on_outlined,
           ),
+          const SizedBox(height: 18),
+          const ProfileTwoFactorSection(),
         ],
       );
     });

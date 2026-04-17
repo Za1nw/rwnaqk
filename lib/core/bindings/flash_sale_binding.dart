@@ -10,10 +10,14 @@ class FlashSaleBinding extends Bindings {
   @override
   /// هذه الدالة تقوم بتسجيل جميع التبعيات المطلوبة للشاشة.
   void dependencies() {
-    Get.lazyPut<FlashSaleUiController>(() => FlashSaleUiController());
-    Get.lazyPut<FlashSaleService>(() => FlashSaleService());
+    Get.lazyPut<FlashSaleUiController>(
+      () => FlashSaleUiController(),
+      fenix: true,
+    );
+    Get.lazyPut<FlashSaleService>(() => FlashSaleService(), fenix: true);
     Get.lazyPut<FlashSaleController>(
       () => FlashSaleController(Get.find<FlashSaleService>()),
+      fenix: true,
     );
   }
 }
