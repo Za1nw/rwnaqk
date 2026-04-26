@@ -68,6 +68,9 @@ class RegisterController extends GetxController {
   }
 
   Future<void> _loadGovernorates() async {
+
+   
+
     try {
       await _service.loadGovernorates();
 

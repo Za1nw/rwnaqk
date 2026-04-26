@@ -4,7 +4,7 @@ import 'package:rwnaqk/models/geo_lookup_item.dart';
 class GeoLookupApiService extends GetConnect {
   static const String _defaultBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000',
+    defaultValue: 'http://192.168.8.124:8000',
   );
 
   @override
@@ -29,11 +29,13 @@ class GeoLookupApiService extends GetConnect {
       '/api/v1/geo/governorates',
       query: <String, dynamic>{if (countryId != null) 'country_id': countryId},
     );
+    
     return _parseItems(response.body);
   }
 
   Future<YemenGovernoratesLookup?> yemenGovernorates() async {
     final response = await get('/api/v1/geo/yemen/governorates');
+    print(response.body);
     final body = response.body;
 
     if (body is! Map<String, dynamic>) {

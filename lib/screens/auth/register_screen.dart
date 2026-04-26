@@ -18,7 +18,7 @@ class RegisterScreen extends GetView<RegisterController> {
 
   static const _apiBaseUrlOverride = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: '',
+    defaultValue: 'http://192.168.8.124:8000',
   );
 
   static String get _resolvedApiBaseUrl {
@@ -32,7 +32,7 @@ class RegisterScreen extends GetView<RegisterController> {
 
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return 'http://10.0.2.2:8000';
+        return 'http://192.168.8.124:8000';
       case TargetPlatform.iOS:
         return 'http://127.0.0.1:8000';
       case TargetPlatform.windows:
@@ -49,7 +49,6 @@ class RegisterScreen extends GetView<RegisterController> {
     final baseUrl = _resolvedApiBaseUrl.endsWith('/')
         ? _resolvedApiBaseUrl.substring(0, _resolvedApiBaseUrl.length - 1)
         : _resolvedApiBaseUrl;
-
     return Uri.parse('$baseUrl$normalizedPath');
   }
 

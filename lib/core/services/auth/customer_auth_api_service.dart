@@ -39,7 +39,7 @@ class AuthApiException implements Exception {
 class CustomerAuthApiService extends GetConnect {
   static const String _defaultBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000',
+    defaultValue: 'http://192.168.8.124:8000',
   );
 
   static const String _apiPrefix = '/api/v1/customer/auth';
