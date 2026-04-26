@@ -156,7 +156,7 @@ class LoginService {
       );
     }
 
-    _session.clearSession();
+    await _session.completeEmailVerification();
 
     final body = response.body;
 

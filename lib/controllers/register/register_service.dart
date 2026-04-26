@@ -37,6 +37,7 @@ class RegisterService {
 
   Future<void> loadGovernorates() async {
     final yemenLookup = await _geoLookupApiService.yemenGovernorates();
+    print(yemenLookup);
     if (yemenLookup == null) {
       governorates.clear();
       return;

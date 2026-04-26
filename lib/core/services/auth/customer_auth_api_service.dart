@@ -69,6 +69,7 @@ class CustomerAuthApiService extends GetConnect {
     required bool privacyPolicyAccepted,
     String deviceName = 'rwnaqk-mobile',
   }) {
+    
     return post('$_apiPrefix/register', <String, dynamic>{
       'first_name': firstName,
       'last_name': lastName,

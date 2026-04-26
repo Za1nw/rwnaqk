@@ -89,7 +89,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       final message = await Get.find<LoginService>()
           .verifyEmailVerificationCode(code: _verificationCode);
       AppNotifier.success(message);
-      Get.offAllNamed(AppRoutes.login);
+      Get.offAllNamed(AppRoutes.main);
     } catch (error) {
       AppNotifier.errorFrom(error);
     } finally {

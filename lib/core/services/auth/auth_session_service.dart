@@ -88,6 +88,23 @@ class AuthSessionService extends GetxService {
     unawaited(_persistToken(null));
   }
 
+  Future<void> completeEmailVerification() async {
+    final currentToken = (token.value ?? '').trim();
+
+    if (currentToken.isEmpty) {
+      _setEmailVerificationRequired(false);
+      return;
+    }
+
+    final currentCustomer = customer.value;
+    if (currentCustomer != null && currentCustomer.emailVerifiedAt == null) {
+      customer.value = currentCustomer.copyWith(emailVerifiedAt: DateTime.now());
+    }
+
+    _setEmailVerificationRequired(false);
+    await _persistToken(currentToken);
+  }
+
   void setEmailVerificationRequired(bool value) {
     _setEmailVerificationRequired(value);
   }
