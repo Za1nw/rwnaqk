@@ -20,6 +20,8 @@ abstract final class Tk {
   static const commonCopied = 'common.copied';
   static const commonCamera = 'common.camera';
   static const commonGallery = 'common.gallery';
+  static const commonUploadReceiptImage = 'common.upload_receipt_image';
+  static const commonChooseImage = 'common.choose_image';
   static const commonMockAction = 'common.mock_action';
   static const commonSomethingWentWrong = 'common.something_went_wrong';
   static const commonPleaseTryAgain = 'common.please_try_again';
@@ -157,6 +159,8 @@ abstract final class Tk {
   static const settingsSupport = 'settings.support';
   static const settingsHelpCenter = 'settings.help_center';
   static const settingsHelpCenterSubtitle = 'settings.help_center_subtitle';
+  static const settingsWallet = 'settings.wallet';
+  static const settingsWalletSubtitle = 'settings.wallet_subtitle';
   static const helpCenterTitle = 'help_center.title';
   static const helpCenterSubtitle = 'help_center.subtitle';
   static const helpCenterQuickActions = 'help_center.quick_actions';
@@ -247,6 +251,11 @@ abstract final class Tk {
   static const addressesAddress = 'addresses.address';
   static const addressesCity = 'addresses.city';
   static const addressesPostcode = 'addresses.postcode';
+  static const addressesGovernorate = 'addresses.governorate';
+  static const addressesDistrict = 'addresses.district';
+  static const addressesStreet = 'addresses.street';
+  static const addressesAddressDetails = 'addresses.address_details';
+  static const addressesAddressDetailsHint = 'addresses.address_details_hint';
   static const addressesPhone = 'addresses.phone';
   static const addressesEmail = 'addresses.email';
   static const addressesSaveChanges = 'addresses.save_changes';
@@ -390,8 +399,114 @@ abstract final class Tk {
   static const cartValidationContactMissing = 'cart.validation.contact_missing';
   static const cartValidationWalletTitle = 'cart.validation.wallet_title';
   static const cartValidationWalletMissing = 'cart.validation.wallet_missing';
+  static const cartValidationReceiptMissing = 'cart.validation.receipt_missing';
   static const cartOrderCreatedTitle = 'cart.order_created_title';
   static const cartOrderCreatedMessage = 'cart.order_created_message';
+  static const walletTitle = 'wallet.title';
+  static const walletBalance = 'wallet.balance';
+  static const walletAvailableBalance = 'wallet.available_balance';
+  static const walletDeposit = 'wallet.deposit';
+  static const walletWithdraw = 'wallet.withdraw';
+  static const walletTransactions = 'wallet.transactions';
+  static const walletRefundCheck = 'wallet.refund_check';
+  static const walletEnterAmount = 'wallet.enter_amount';
+  static const walletConfirm = 'wallet.confirm';
+  static const walletNoTransactions = 'wallet.no_transactions';
+  static const walletNoTransactionsHint = 'wallet.no_transactions_hint';
+  static const walletErrorInvalidAmount = 'wallet.error_invalid_amount';
+  static const walletErrorInsufficientBalance =
+      'wallet.error_insufficient_balance';
+  static const walletRecentTransactions = 'wallet.recent_transactions';
+  static const walletViewAll = 'wallet.view_all';
+  static const walletUpdatedAt = 'wallet.updated_at';
+  static const walletSuggestedAmounts = 'wallet.suggested_amounts';
+  static const walletAvailableToWithdraw = 'wallet.available_to_withdraw';
+  static const walletTransferMethodTitle = 'wallet.transfer_method_title';
+  static const walletTransferMethodSubtitle = 'wallet.transfer_method_subtitle';
+  static const walletDepositTransferInfo = 'wallet.deposit_transfer_info';
+  static const walletDepositReceiptRequired = 'wallet.deposit_receipt_required';
+  static const walletDepositRequestSubmitted =
+      'wallet.deposit_request_submitted';
+  static const walletNoTransferAccounts = 'wallet.no_transfer_accounts';
+  static const walletWithdrawMethodTitle = 'wallet.withdraw_method_title';
+  static const walletWithdrawWalletTitle = 'wallet.withdraw_wallet_title';
+  static const walletWithdrawWalletSubtitle = 'wallet.withdraw_wallet_subtitle';
+  static const walletWithdrawHawalaTitle = 'wallet.withdraw_hawala_title';
+  static const walletWithdrawHawalaSubtitle = 'wallet.withdraw_hawala_subtitle';
+  static const walletWithdrawWalletInfo = 'wallet.withdraw_wallet_info';
+  static const walletWithdrawHawalaInfo = 'wallet.withdraw_hawala_info';
+  static const walletWithdrawWalletName = 'wallet.withdraw_wallet_name';
+  static const walletWithdrawWalletNumber = 'wallet.withdraw_wallet_number';
+  static const walletWithdrawHawalaFullName =
+      'wallet.withdraw_hawala_full_name';
+  static const walletWithdrawHawalaPhone = 'wallet.withdraw_hawala_phone';
+  static const walletWithdrawFeeLabel = 'wallet.withdraw_fee_label';
+  static const walletWithdrawNetAmount = 'wallet.withdraw_net_amount';
+  static const walletWithdrawSummaryTitle = 'wallet.withdraw_summary_title';
+  static const walletWithdrawRequestSubmitted =
+      'wallet.withdraw_request_submitted';
+  static const walletErrorFullNameRequired = 'wallet.error_full_name_required';
+  static const walletErrorWalletNumberRequired =
+      'wallet.error_wallet_number_required';
+  static const walletErrorPhoneRequired = 'wallet.error_phone_required';
+  static const walletErrorPhoneInvalid = 'wallet.error_phone_invalid';
+  static const walletErrorAmountBelowHawalaFee =
+      'wallet.error_amount_below_hawala_fee';
+  static const walletOperationDetails = 'wallet.operation_details';
+  static const walletOperationId = 'wallet.operation_id';
+  static const walletOperationType = 'wallet.operation_type';
+  static const walletOperationStatus = 'wallet.operation_status';
+  static const walletOperationDate = 'wallet.operation_date';
+  static const walletOperationAmount = 'wallet.operation_amount';
+  static const walletOperationDescription = 'wallet.operation_description';
+  static const walletRefundLookupHint = 'wallet.refund_lookup_hint';
+  static const walletCheckNow = 'wallet.check_now';
+  static const walletRefundResultTitle = 'wallet.refund_result_title';
+  static const walletRefundId = 'wallet.refund_id';
+  static const walletOrderId = 'wallet.order_id';
+  static const walletMessage = 'wallet.message';
+  static const walletFilterAll = 'wallet.filter.all';
+  static const walletFilterDeposit = 'wallet.filter.deposit';
+  static const walletFilterWithdraw = 'wallet.filter.withdraw';
+  static const walletFilterRefund = 'wallet.filter.refund';
+  static const walletTypeDeposit = 'wallet.type.deposit';
+  static const walletTypeWithdraw = 'wallet.type.withdraw';
+  static const walletTypeRefund = 'wallet.type.refund';
+  static const walletStatusPending = 'wallet.status.pending';
+  static const walletStatusApproved = 'wallet.status.approved';
+  static const walletStatusRejected = 'wallet.status.rejected';
+  static const walletStatusRefunded = 'wallet.status.refunded';
+  static const walletStatusCompleted = 'wallet.status.completed';
+  static const walletStatusFailed = 'wallet.status.failed';
+  static const walletLoadFailed = 'wallet.load_failed';
+  static const walletDepositSuccess = 'wallet.deposit_success';
+  static const walletWithdrawSuccess = 'wallet.withdraw_success';
+  static const walletRefundCheckEmpty = 'wallet.refund_check_empty';
+  static const walletRefundNotFound = 'wallet.refund_not_found';
+  static const walletEmptyTitle = 'wallet.empty_title';
+  static const walletEmptySubtitle = 'wallet.empty_subtitle';
+  static const walletRecentEmptyTitle = 'wallet.recent_empty_title';
+  static const walletRecentEmptySubtitle = 'wallet.recent_empty_subtitle';
+  static const walletOperationMissingTitle = 'wallet.operation_missing_title';
+  static const walletOperationMissingSubtitle =
+      'wallet.operation_missing_subtitle';
+  static const walletDescriptionManualDeposit =
+      'wallet.description.manual_deposit';
+  static const walletDescriptionDepositReview =
+      'wallet.description.deposit_review';
+  static const walletDescriptionWithdrawRequest =
+      'wallet.description.withdraw_request';
+  static const walletDescriptionWithdrawWalletRequest =
+      'wallet.description.withdraw_wallet_request';
+  static const walletDescriptionWithdrawHawalaRequest =
+      'wallet.description.withdraw_hawala_request';
+  static const walletDescriptionOrderRefund = 'wallet.description.order_refund';
+  static const walletDescriptionRefundReview =
+      'wallet.description.refund_review';
+  static const walletRefundMessagePending = 'wallet.refund_message.pending';
+  static const walletRefundMessageApproved = 'wallet.refund_message.approved';
+  static const walletRefundMessageRejected = 'wallet.refund_message.rejected';
+  static const walletRefundMessageRefunded = 'wallet.refund_message.refunded';
   static const filterTitle = 'filter.title';
   static const filterSize = 'filter.size';
   static const filterClothes = 'filter.clothes';
@@ -413,9 +528,54 @@ abstract final class Tk {
   static const productDetailsSpecifications = 'product_details.specifications';
   static const productDetailsMaterial = 'product_details.material';
   static const productDetailsOrigin = 'product_details.origin';
+  static const productDetailsPurchaseLimits = 'product_details.purchase_limits';
+  static const productDetailsMinOrder = 'product_details.min_order';
+  static const productDetailsMaxOrder = 'product_details.max_order';
+  static const productDetailsOrderStep = 'product_details.order_step';
+  static const productDetailsPiecesUnit = 'product_details.pieces_unit';
+  static const productDetailsPurchaseLimitRangeNote =
+      'product_details.purchase_limit_range_note';
+  static const productDetailsPurchaseLimitMinOnlyNote =
+      'product_details.purchase_limit_min_only_note';
+  static const productDetailsPurchaseLimitMaxOnlyNote =
+      'product_details.purchase_limit_max_only_note';
   static const productDetailsSizeGuide = 'product_details.size_guide';
   static const productDetailsSizeGuideOpened =
       'product_details.size_guide_opened';
+  static const productDetailsSizeGuideCm = 'product_details.size_guide_cm';
+  static const productDetailsSizeGuideWomen =
+      'product_details.size_guide_women';
+  static const productDetailsSizeGuideMen = 'product_details.size_guide_men';
+  static const productDetailsSizeGuideKids = 'product_details.size_guide_kids';
+  static const productDetailsSizeGuideHowToChoose =
+      'product_details.size_guide_how_to_choose';
+  static const productDetailsSizeGuideSubtitle =
+      'product_details.size_guide_subtitle';
+  static const productDetailsSizeGuideInternational =
+      'product_details.size_guide_international';
+  static const productDetailsSizeGuideInternationalNote =
+      'product_details.size_guide_international_note';
+  static const productDetailsSizeGuideSelectedTitle =
+      'product_details.size_guide_selected_title';
+  static const productDetailsSizeGuideMeasurementNote =
+      'product_details.size_guide_measurement_note';
+  static const productDetailsSizeGuideHowToMeasure =
+      'product_details.size_guide_how_to_measure';
+  static const productDetailsSizeGuideCompareTitle =
+      'product_details.size_guide_compare_title';
+  static const productDetailsSizeGuideChestHelp =
+      'product_details.size_guide_chest_help';
+  static const productDetailsSizeGuideWaistHelp =
+      'product_details.size_guide_waist_help';
+  static const productDetailsSizeGuideHipsHelp =
+      'product_details.size_guide_hips_help';
+  static const productDetailsSizeGuideLengthHelp =
+      'product_details.size_guide_length_help';
+  static const productDetailsSizeColumn = 'product_details.size_column';
+  static const productDetailsChestColumn = 'product_details.chest_column';
+  static const productDetailsWaistColumn = 'product_details.waist_column';
+  static const productDetailsHipsColumn = 'product_details.hips_column';
+  static const productDetailsLengthColumn = 'product_details.length_column';
   static const productDetailsDelivery = 'product_details.delivery';
   static const productDetailsDeliveryStandardTitle =
       'product_details.delivery.standard_title';

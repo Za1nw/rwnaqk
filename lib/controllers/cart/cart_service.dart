@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
+import 'package:rwnaqk/controllers/addresses/addresses_service.dart';
 import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
-import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk/models/contact_info_model.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/models/order_details_model.dart';
@@ -25,12 +25,14 @@ class CartService {
 
   final ProfileStoreService _profileStore;
 
-  /// الدول المتاحة حاليًا في نموذج الشحن.
-  List<String> get shippingCountries =>
-      AppMockContentUtils.localizedCountries();
+  List<String> get shippingGovernorates =>
+      List<String>.unmodifiable(AddressesService.localizedGovernorateOptions());
 
-  String localizedCountryLabel(String value) =>
-      AppMockContentUtils.localizedCountryLabel(value);
+  List<String> shippingDistrictsForGovernorate(String? governorate) {
+    return AddressesService.districtsForGovernorateValue(
+      governorate: governorate,
+    );
+  }
 
   /// خيارات الشحن المتاحة في صفحة الدفع.
   List<ShippingOptionModel> get shippingOptions => [

@@ -1,5 +1,101 @@
 import 'product_color_option.dart';
 
+class ProductPurchaseLimit {
+  final int? minQty;
+  final int? maxQty;
+  final int stepQty;
+
+  const ProductPurchaseLimit({
+    this.minQty,
+    this.maxQty,
+    this.stepQty = 1,
+  });
+
+  bool get hasValues => minQty != null || maxQty != null || stepQty > 1;
+
+  ProductPurchaseLimit copyWith({
+    int? minQty,
+    int? maxQty,
+    int? stepQty,
+  }) {
+    return ProductPurchaseLimit(
+      minQty: minQty ?? this.minQty,
+      maxQty: maxQty ?? this.maxQty,
+      stepQty: stepQty ?? this.stepQty,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'minQty': minQty,
+      'maxQty': maxQty,
+      'stepQty': stepQty,
+    };
+  }
+
+  factory ProductPurchaseLimit.fromMap(Map<String, dynamic> map) {
+    return ProductPurchaseLimit(
+      minQty:
+          map['minQty'] == null ? null : int.tryParse(map['minQty'].toString()),
+      maxQty:
+          map['maxQty'] == null ? null : int.tryParse(map['maxQty'].toString()),
+      stepQty: int.tryParse((map['stepQty'] ?? 1).toString()) ?? 1,
+    );
+  }
+}
+
+class ProductSizeGuideRow {
+  final String size;
+  final String chest;
+  final String waist;
+  final String hips;
+  final String length;
+
+  const ProductSizeGuideRow({
+    required this.size,
+    required this.chest,
+    required this.waist,
+    required this.hips,
+    required this.length,
+  });
+
+  ProductSizeGuideRow copyWith({
+    String? size,
+    String? chest,
+    String? waist,
+    String? hips,
+    String? length,
+  }) {
+    return ProductSizeGuideRow(
+      size: size ?? this.size,
+      chest: chest ?? this.chest,
+      waist: waist ?? this.waist,
+      hips: hips ?? this.hips,
+      length: length ?? this.length,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'size': size,
+      'chest': chest,
+      'waist': waist,
+      'hips': hips,
+      'length': length,
+    };
+  }
+
+  factory ProductSizeGuideRow.fromMap(Map<String, dynamic> map) {
+    return ProductSizeGuideRow(
+      size: (map['size'] ?? '').toString(),
+      chest: (map['chest'] ?? '').toString(),
+      waist: (map['waist'] ?? '').toString(),
+      hips: (map['hips'] ?? '').toString(),
+      length: (map['length'] ?? '').toString(),
+    );
+  }
+}
+
 class HomeProductItem {
   final String id;
   final String title;
@@ -20,6 +116,8 @@ class HomeProductItem {
   final List<String> images;
   final List<ProductColorOption> availableColors;
   final List<String> availableSizes;
+  final ProductPurchaseLimit? purchaseLimit;
+  final List<ProductSizeGuideRow> sizeGuide;
 
   const HomeProductItem({
     required this.id,
@@ -38,10 +136,11 @@ class HomeProductItem {
     this.images = const [],
     this.availableColors = const [],
     this.availableSizes = const [],
+    this.purchaseLimit,
+    this.sizeGuide = const [],
   });
 
-  bool get hasDiscount =>
-      discountPercent != null && discountPercent! > 0;
+  bool get hasDiscount => discountPercent != null && discountPercent! > 0;
 
   double get salePrice {
     if (!hasDiscount) return price;
@@ -65,6 +164,8 @@ class HomeProductItem {
     List<String>? images,
     List<ProductColorOption>? availableColors,
     List<String>? availableSizes,
+    ProductPurchaseLimit? purchaseLimit,
+    List<ProductSizeGuideRow>? sizeGuide,
   }) {
     return HomeProductItem(
       id: id ?? this.id,
@@ -83,6 +184,8 @@ class HomeProductItem {
       images: images ?? this.images,
       availableColors: availableColors ?? this.availableColors,
       availableSizes: availableSizes ?? this.availableSizes,
+      purchaseLimit: purchaseLimit ?? this.purchaseLimit,
+      sizeGuide: sizeGuide ?? this.sizeGuide,
     );
   }
 
@@ -104,6 +207,8 @@ class HomeProductItem {
       'images': images,
       'availableColors': availableColors.map((e) => e.toMap()).toList(),
       'availableSizes': availableSizes,
+      'purchaseLimit': purchaseLimit?.toMap(),
+      'sizeGuide': sizeGuide.map((e) => e.toMap()).toList(),
     };
   }
 
@@ -119,14 +224,12 @@ class HomeProductItem {
       isNew: map['isNew'] == true,
       tagKey: (map['tagKey'] ?? '').toString(),
       description: (map['description'] ?? '').toString(),
-      material: map['material'] == null ? null : map['material'].toString(),
+      material: map['material']?.toString(),
       brand: (map['brand'] ?? '').toString(),
       sku: (map['sku'] ?? '').toString(),
       stockText: (map['stockText'] ?? '').toString(),
       soldText: (map['soldText'] ?? '').toString(),
-      images: (map['images'] as List?)
-              ?.map((e) => e.toString())
-              .toList() ??
+      images: (map['images'] as List?)?.map((e) => e.toString()).toList() ??
           const [],
       availableColors: (map['availableColors'] as List?)
               ?.map(
@@ -136,8 +239,22 @@ class HomeProductItem {
               )
               .toList() ??
           const [],
-      availableSizes: (map['availableSizes'] as List?)
-              ?.map((e) => e.toString())
+      availableSizes:
+          (map['availableSizes'] as List?)?.map((e) => e.toString()).toList() ??
+              const [],
+      purchaseLimit: map['purchaseLimit'] is Map<String, dynamic>
+          ? ProductPurchaseLimit.fromMap(map['purchaseLimit'])
+          : map['purchaseLimit'] is Map
+              ? ProductPurchaseLimit.fromMap(
+                  Map<String, dynamic>.from(map['purchaseLimit'] as Map),
+                )
+              : null,
+      sizeGuide: (map['sizeGuide'] as List?)
+              ?.map(
+                (e) => ProductSizeGuideRow.fromMap(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
               .toList() ??
           const [],
     );

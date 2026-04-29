@@ -1,17 +1,23 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 /// كرت رفع صورة سند الحوالة/الإشعار
 class PaymentReceiptUploadCard extends StatelessWidget {
   final File? imageFile;
   final VoidCallback onPickImage;
   final VoidCallback? onRemoveImage;
+  final String? titleText;
+  final String? pickImageText;
 
   const PaymentReceiptUploadCard({
     super.key,
     required this.imageFile,
     required this.onPickImage,
     this.onRemoveImage,
+    this.titleText,
+    this.pickImageText,
   });
 
   @override
@@ -22,13 +28,15 @@ class PaymentReceiptUploadCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(.35)),
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withValues(alpha: .35),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'إرفاق صورة سند الحوالة',
+            titleText ?? Tk.commonUploadReceiptImage.tr,
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
@@ -40,7 +48,7 @@ class PaymentReceiptUploadCard extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onPickImage,
               icon: const Icon(Icons.add_a_photo_outlined),
-              label: const Text('اختيار صورة'),
+              label: Text(pickImageText ?? Tk.commonChooseImage.tr),
             )
           else
             Stack(

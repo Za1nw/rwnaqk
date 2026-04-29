@@ -24,6 +24,7 @@ class PaymentMethodSection extends StatelessWidget {
 
   final int selectedWalletAccountIndex;
   final ValueChanged<int> onWalletAccountChanged;
+  final bool showCashOption;
 
   final String? infoMessage;
   final IconData infoIcon;
@@ -42,6 +43,7 @@ class PaymentMethodSection extends StatelessWidget {
     required this.onChanged,
     required this.selectedWalletAccountIndex,
     required this.onWalletAccountChanged,
+    this.showCashOption = true,
     this.infoMessage,
     this.infoIcon = Icons.info_outline_rounded,
   });
@@ -76,20 +78,22 @@ class PaymentMethodSection extends StatelessWidget {
           color: context.card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
-            side: BorderSide(color: context.border.withOpacity(.35)),
+            side: BorderSide(color: context.border.withValues(alpha: .35)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               children: [
-                PaymentOptionTile(
-                  selected: selectedId == 'cod',
-                  title: cashTitle,
-                  subtitle: cashSubtitle,
-                  leadingIcon: Icons.payments_outlined,
-                  onTap: () => onChanged('cod'),
-                ),
-                const SizedBox(height: 10),
+                if (showCashOption) ...[
+                  PaymentOptionTile(
+                    selected: selectedId == 'cod',
+                    title: cashTitle,
+                    subtitle: cashSubtitle,
+                    leadingIcon: Icons.payments_outlined,
+                    onTap: () => onChanged('cod'),
+                  ),
+                  const SizedBox(height: 10),
+                ],
                 PaymentOptionTile(
                   selected: isWallet,
                   title: walletTitle,
@@ -150,9 +154,9 @@ class _WalletDetailsCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: context.input.withOpacity(context.isDark ? .35 : .55),
+        color: context.input.withValues(alpha: context.isDark ? .35 : .55),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.border.withOpacity(.35)),
+        border: Border.all(color: context.border.withValues(alpha: .35)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -18,6 +18,7 @@ class AppActionIconButton extends StatelessWidget {
   final double size;
   final double iconSize;
   final double radius;
+  final bool circular;
 
   const AppActionIconButton({
     super.key,
@@ -29,26 +30,33 @@ class AppActionIconButton extends StatelessWidget {
     this.size = 42,
     this.iconSize = 20,
     this.radius = 14,
+    this.circular = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ?? context.primary.withOpacity(.10);
+    final bg = backgroundColor ?? context.primary.withValues(alpha: .10);
     final ic = iconColor ?? context.primary;
     final bd = borderColor;
+    final shape = circular
+        ? const CircleBorder()
+        : RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radius),
+          );
 
     return Material(
       color: Colors.transparent,
-      shape: const CircleBorder(),
+      shape: shape,
       child: InkWell(
         onTap: onTap,
-        customBorder: const CircleBorder(),
+        customBorder: shape,
         child: Ink(
           width: size,
           height: size,
           decoration: BoxDecoration(
             color: bg,
-            shape: BoxShape.circle,
+            shape: circular ? BoxShape.circle : BoxShape.rectangle,
+            borderRadius: circular ? null : BorderRadius.circular(radius),
             border: bd != null ? Border.all(color: bd) : null,
           ),
           child: Center(

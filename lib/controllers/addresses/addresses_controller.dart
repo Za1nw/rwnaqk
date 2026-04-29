@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/addresses/addresses_service.dart';
 import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
@@ -28,22 +29,18 @@ class AddressesController extends GetxController {
 
   // =========================
   // UI BRIDGES
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  List<String> get countries => _service.countries;
+  List<String> get governorates => _service.governorates;
+  TextEditingController get governorateCtrl => ui.governorateCtrl;
+  TextEditingController get districtCtrl => ui.districtCtrl;
+  TextEditingController get streetCtrl => ui.streetCtrl;
+  TextEditingController get addressDetailsCtrl => ui.addressDetailsCtrl;
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get addressCtrl => ui.addressCtrl;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get cityCtrl => ui.cityCtrl;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get postcodeCtrl => ui.postcodeCtrl;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  RxnString get country => ui.country;
+  List<String> districtsForGovernorate(String? governorate) {
+    return _service.districtsForGovernorate(governorate);
+  }
 
   @override
+
   /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
   /// نستخدمها لتهيئة الـ UI controller وتحميل البيانات التجريبية.
   void onInit() {
@@ -63,11 +60,6 @@ class AddressesController extends GetxController {
     _service.saveAddresses(_service.seedMockAddresses());
   }
 
-  /// هذه الدالة تغيّر الدولة المختارة في النموذج.
-  void setCountry(String? value) {
-    ui.setCountry(value);
-  }
-
   /// هذه الدالة تجهز النموذج لوضع إضافة عنوان جديد.
   ///
   /// أبقينا نفس التوقيع الحالي حتى لا تنكسر الشاشة.
@@ -84,12 +76,15 @@ class AddressesController extends GetxController {
   /// - تضيف عنوانًا جديدًا إذا لم نكن في وضع التعديل
   /// - أو تعدّل العنوان الحالي إذا كان هناك editingId
   void saveFromSheet() {
-    final c = (country.value ?? '').trim();
-    final a = addressCtrl.text.trim();
-    final city = cityCtrl.text.trim();
-    final p = postcodeCtrl.text.trim();
+    final governorate = governorateCtrl.text.trim();
+    final district = districtCtrl.text.trim();
+    final street = streetCtrl.text.trim();
+    final addressDetails = addressDetailsCtrl.text.trim();
 
-    if (c.isEmpty || a.isEmpty || city.isEmpty || p.isEmpty) {
+    if (governorate.isEmpty ||
+        district.isEmpty ||
+        street.isEmpty ||
+        addressDetails.isEmpty) {
       Get.snackbar(Tk.commonError.tr, Tk.profileEditFillAll.tr);
       return;
     }

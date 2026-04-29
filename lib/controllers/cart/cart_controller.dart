@@ -29,7 +29,7 @@ import 'package:rwnaqk/models/shipping_option_model.dart';
 /// - CartUiController الخاص بحالات الواجهة
 /// - CartService الخاص بالبيانات والتجهيزات
 class CartController extends GetxController {
-    /// مؤشر المحفظة المختارة (من ui)
+  /// مؤشر المحفظة المختارة (من ui)
   /// تحويل حسابات المحافظ الإدارية إلى WalletCompany لعرضها في الواجهة
   CartController(this._service);
 
@@ -83,9 +83,6 @@ class CartController extends GetxController {
 
   /// النص المنسق لعنوان الشحن.
   String get shippingAddressText => shippingAddress.value.formatted;
-
-  String get selectedShippingCountryLabel =>
-      _service.localizedCountryLabel(shippingAddress.value.country);
 
   /// السطور الجاهزة لعرض بيانات التواصل.
   List<String> get contactLines => contactInfo.value.lines;
@@ -141,13 +138,18 @@ class CartController extends GetxController {
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
-  TextEditingController get shippingAddressCtrl => ui.shippingAddressCtrl;
+  TextEditingController get shippingGovernorateCtrl =>
+      ui.shippingGovernorateCtrl;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
-  TextEditingController get shippingCityCtrl => ui.shippingCityCtrl;
+  TextEditingController get shippingDistrictCtrl => ui.shippingDistrictCtrl;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
-  TextEditingController get shippingPostcodeCtrl => ui.shippingPostcodeCtrl;
+  TextEditingController get shippingStreetCtrl => ui.shippingStreetCtrl;
+
+  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
+  TextEditingController get shippingAddressDetailsCtrl =>
+      ui.shippingAddressDetailsCtrl;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات.
   TextEditingController get contactPhoneCtrl => ui.contactPhoneCtrl;
@@ -161,8 +163,11 @@ class CartController extends GetxController {
 
   // =========================
   // STATIC DATA
-  /// الدول المتاحة في نموذج عنوان الشحن.
-  List<String> get shippingCountries => _service.shippingCountries;
+  List<String> get shippingGovernorates => _service.shippingGovernorates;
+
+  List<String> shippingDistrictsForGovernorate(String? governorate) {
+    return _service.shippingDistrictsForGovernorate(governorate);
+  }
 
   /// خيارات الشحن المتاحة في صفحة الدفع.
   List<ShippingOptionModel> get shippingOptions => _service.shippingOptions;
@@ -183,15 +188,6 @@ class CartController extends GetxController {
 
   // =========================
   // SHIPPING ADDRESS FORM
-  /// هذه الدالة تغيّر دولة عنوان الشحن الحالي.
-  void setShippingCountry(String value) {
-    ui.setShippingCountry(
-      current: shippingAddress.value,
-      value: value,
-      updateAddress: (next) => shippingAddress.value = next,
-    );
-  }
-
   /// هذه الدالة تعبئ النموذج من العنوان الحالي.
   void fillShippingFormFromState() {
     ui.fillShippingFormFromState(shippingAddress.value);
@@ -199,10 +195,7 @@ class CartController extends GetxController {
 
   /// هذه الدالة تنظف النموذج الحالي.
   void clearShippingForm() {
-    ui.clearShippingForm(
-      current: shippingAddress.value,
-      updateAddress: (next) => shippingAddress.value = next,
-    );
+    ui.clearShippingForm();
   }
 
   /// هذه الدالة تجهز النموذج لإضافة عنوان شحن جديد.
@@ -446,6 +439,5 @@ class CartController extends GetxController {
       );
       ui.fillContactFormFromState(contactInfo.value);
     }
-
   }
 }

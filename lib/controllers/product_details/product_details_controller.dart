@@ -60,9 +60,7 @@ class ProductDetailsController extends GetxController {
 
   String get description {
     final value = product?.description.trim() ?? '';
-    return value.isEmpty
-        ? Mk.productDefaultDescription.tr
-        : value.tr;
+    return value.isEmpty ? Mk.productDefaultDescription.tr : value.tr;
   }
 
   String get imageUrl => product?.imageUrl ?? '';
@@ -171,6 +169,61 @@ class ProductDetailsController extends GetxController {
   }
 
   int get photosCount => images.length;
+
+  // =========================================================
+  // Product limits and size guide
+  // =========================================================
+  ProductPurchaseLimit? get purchaseLimit => product?.purchaseLimit;
+
+  bool get hasPurchaseLimit {
+    final limit = purchaseLimit;
+    if (limit == null) return false;
+    return limit.minQty != null || limit.maxQty != null;
+  }
+
+  List<ProductSizeGuideRow> get sizeGuide {
+    final raw = product?.sizeGuide ?? const <ProductSizeGuideRow>[];
+    return raw
+        .where(
+          (row) =>
+              row.size.trim().isNotEmpty &&
+              row.chest.trim().isNotEmpty &&
+              row.waist.trim().isNotEmpty &&
+              row.hips.trim().isNotEmpty &&
+              row.length.trim().isNotEmpty,
+        )
+        .toList();
+  }
+
+  bool get hasSizeGuide => sizeGuide.isNotEmpty;
+
+  List<String> get sizeGuideLabels {
+    final seen = <String>{};
+    final labels = <String>[];
+
+    for (final row in sizeGuide) {
+      final label = row.size.trim().toUpperCase();
+      if (label.isEmpty || seen.contains(label)) continue;
+      seen.add(label);
+      labels.add(label);
+    }
+
+    return labels;
+  }
+
+  ProductSizeGuideRow? get selectedSizeGuideRow {
+    final rows = sizeGuide;
+    if (rows.isEmpty) return null;
+
+    final selected = selectedSize.value.trim().toUpperCase();
+    if (selected.isEmpty) return rows.first;
+
+    for (final row in rows) {
+      if (row.size.trim().toUpperCase() == selected) return row;
+    }
+
+    return rows.first;
+  }
 
   // =========================================================
   // Reviews helpers

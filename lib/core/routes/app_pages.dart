@@ -6,6 +6,7 @@ import 'package:rwnaqk/controllers/profile/edit_profile_service.dart';
 import 'package:rwnaqk/controllers/profile/profile_service.dart';
 import 'package:rwnaqk/controllers/profile/edit_profile_ui_controller.dart';
 import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
+import 'package:rwnaqk/core/bindings/wallet_binding.dart';
 import 'package:rwnaqk/core/bindings/flash_sale_binding.dart';
 import 'package:rwnaqk/core/bindings/forgot_password_binding.dart';
 import 'package:rwnaqk/core/bindings/login_binding.dart';
@@ -17,6 +18,7 @@ import 'package:rwnaqk/core/bindings/reviews_binding.dart';
 import 'package:rwnaqk/core/bindings/search_binding.dart';
 import 'package:rwnaqk/core/bindings/support_binding.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/routes/wallet_routes.dart';
 import 'package:rwnaqk/screens/auth/forgot_password_method_screen.dart';
 import 'package:rwnaqk/screens/auth/login_screen.dart';
 import 'package:rwnaqk/screens/auth/otp_verify_screen.dart';
@@ -44,6 +46,12 @@ import 'package:rwnaqk/screens/search_results_screen.dart';
 import 'package:rwnaqk/screens/search_screen.dart';
 import 'package:rwnaqk/screens/settings_screen.dart';
 import 'package:rwnaqk/screens/support_chat_screen.dart';
+import 'package:rwnaqk/screens/wallet/deposit_screen.dart';
+import 'package:rwnaqk/screens/wallet/refund_check_screen.dart';
+import 'package:rwnaqk/screens/wallet/wallet_operation_details_screen.dart';
+import 'package:rwnaqk/screens/wallet/wallet_screen.dart';
+import 'package:rwnaqk/screens/wallet/wallet_transactions_screen.dart';
+import 'package:rwnaqk/screens/wallet/withdraw_screen.dart';
 import 'package:rwnaqk/screens/wishlist_screen.dart';
 
 class AppPages {
@@ -115,6 +123,36 @@ class AppPages {
     GetPage(
       name: AppRoutes.settings,
       page: () => const SettingsScreen(),
+    ),
+    GetPage(
+      name: WalletRoutes.wallet,
+      page: () => const WalletScreen(),
+      binding: WalletBinding(),
+    ),
+    GetPage(
+      name: WalletRoutes.deposit,
+      page: () => const DepositScreen(),
+      binding: WalletBinding(),
+    ),
+    GetPage(
+      name: WalletRoutes.withdraw,
+      page: () => const WithdrawScreen(),
+      binding: WalletBinding(),
+    ),
+    GetPage(
+      name: WalletRoutes.transactions,
+      page: () => const WalletTransactionsScreen(),
+      binding: WalletBinding(),
+    ),
+    GetPage(
+      name: WalletRoutes.refundCheck,
+      page: () => const RefundCheckScreen(),
+      binding: WalletBinding(),
+    ),
+    GetPage(
+      name: WalletRoutes.operationDetails,
+      page: () => const WalletOperationDetailsScreen(),
+      binding: WalletBinding(),
     ),
     GetPage(
       name: AppRoutes.profile,

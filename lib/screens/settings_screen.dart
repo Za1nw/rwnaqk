@@ -4,6 +4,7 @@ import 'package:rwnaqk/controllers/app_settings/app_settings_controller.dart';
 import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
+import 'package:rwnaqk/core/routes/wallet_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/common/app_sectioned_page.dart';
 import 'package:rwnaqk/widgets/settings/settings_profile_card.dart';
@@ -62,6 +63,17 @@ class SettingsScreen extends GetView<AppSettingsController> {
               ],
             ),
             SettingsSectionSpec(
+              title: Tk.walletTitle.tr,
+              tiles: [
+                SettingsTileSpec(
+                  icon: Icons.account_balance_wallet_outlined,
+                  title: Tk.settingsWallet.tr,
+                  subtitle: Tk.settingsWalletSubtitle.tr,
+                  onTap: () => Get.toNamed(WalletRoutes.wallet),
+                ),
+              ],
+            ),
+            SettingsSectionSpec(
               title: Tk.settingsPreferences.tr,
               tiles: [
                 SettingsTileSpec(
@@ -92,10 +104,10 @@ class SettingsScreen extends GetView<AppSettingsController> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: context.primary.withOpacity(.08),
+                        color: context.primary.withValues(alpha: .08),
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(
-                          color: context.primary.withOpacity(.18),
+                          color: context.primary.withValues(alpha: .18),
                         ),
                       ),
                       child: Text(
@@ -136,13 +148,13 @@ class SettingsScreen extends GetView<AppSettingsController> {
                   subtitle: Tk.settingsLogoutSubtitle.tr,
                   trailing: Icon(
                     Icons.logout_rounded,
-                    color: Colors.redAccent.withOpacity(.95),
+                    color: Colors.redAccent.withValues(alpha: .95),
                     size: 20,
                   ),
                   trailingMaxWidth: 60,
                   showChevron: false,
-                  onTap: () =>
-                      Get.snackbar(Tk.settingsLogout.tr, Tk.commonMockAction.tr),
+                  onTap: () => Get.snackbar(
+                      Tk.settingsLogout.tr, Tk.commonMockAction.tr),
                 ),
               ],
             ),

@@ -1,59 +1,57 @@
-import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
-import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
-
 class ShippingAddress {
   final String id;
-  final String country;
-  final String address;
-  final String city;
-  final String postcode;
+  final String governorate;
+  final String district;
+  final String street;
+  final String addressDetails;
 
   /// default marker
   final bool isDefault;
 
   const ShippingAddress({
     required this.id,
-    required this.country,
-    required this.address,
-    required this.city,
-    required this.postcode,
+    required this.governorate,
+    required this.district,
+    required this.street,
+    required this.addressDetails,
     this.isDefault = false,
   });
 
   ShippingAddress copyWith({
     String? id,
-    String? country,
-    String? address,
-    String? city,
-    String? postcode,
+    String? governorate,
+    String? district,
+    String? street,
+    String? addressDetails,
     bool? isDefault,
   }) {
     return ShippingAddress(
       id: id ?? this.id,
-      country: country ?? this.country,
-      address: address ?? this.address,
-      city: city ?? this.city,
-      postcode: postcode ?? this.postcode,
+      governorate: governorate ?? this.governorate,
+      district: district ?? this.district,
+      street: street ?? this.street,
+      addressDetails: addressDetails ?? this.addressDetails,
       isDefault: isDefault ?? this.isDefault,
     );
   }
 
-  bool get isEmpty =>
-      address.trim().isEmpty && city.trim().isEmpty && postcode.trim().isEmpty;
-
-  String get localizedCountry =>
-      AppMockContentUtils.localizedCountryLabel(country);
+  bool get isEmpty {
+    return governorate.trim().isEmpty &&
+        district.trim().isEmpty &&
+        street.trim().isEmpty &&
+        addressDetails.trim().isEmpty;
+  }
 
   String get formatted {
-    final line2 = [
-      if (city.trim().isNotEmpty) city.trim(),
-      if (postcode.trim().isNotEmpty) postcode.trim(),
+    final locationLine = [
+      if (district.trim().isNotEmpty) district.trim(),
+      if (governorate.trim().isNotEmpty) governorate.trim(),
     ].join(', ');
 
     return [
-      if (address.trim().isNotEmpty) address.trim(),
-      if (line2.isNotEmpty) line2,
-      if (country.trim().isNotEmpty) localizedCountry.trim(),
+      if (addressDetails.trim().isNotEmpty) addressDetails.trim(),
+      if (street.trim().isNotEmpty) street.trim(),
+      if (locationLine.isNotEmpty) locationLine,
     ].join('\n');
   }
 
@@ -62,10 +60,10 @@ class ShippingAddress {
   factory ShippingAddress.empty() {
     return const ShippingAddress(
       id: '',
-      country: Mk.countryYemen,
-      address: '',
-      city: '',
-      postcode: '',
+      governorate: '',
+      district: '',
+      street: '',
+      addressDetails: '',
     );
   }
 }

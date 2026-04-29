@@ -1,7 +1,6 @@
 import 'package:rwnaqk/models/wallet_transfer_account.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 
 class ProfileStoreService extends GetxService {
@@ -34,6 +33,7 @@ class ProfileStoreService extends GetxService {
     if (walletAccounts.isEmpty) return null;
     return walletAccounts.first;
   }
+
   final name = 'Zain Al-Zubair'.obs;
   final phone = '+967 772923592'.obs;
   final email = 'zain@rwnaq.app'.obs;
@@ -51,8 +51,10 @@ class ProfileStoreService extends GetxService {
 
   String get location {
     final current = defaultAddress;
-    if (current == null) return 'Taiz';
-    return '${current.city}, ${current.localizedCountry}';
+    if (current == null) return _localizedValue(ar: 'تعز', en: 'Taiz');
+    return [current.district, current.governorate]
+        .where((item) => item.trim().isNotEmpty)
+        .join(', ');
   }
 
   void seedAddressesIfNeeded() {
@@ -61,18 +63,21 @@ class ProfileStoreService extends GetxService {
     addresses.assignAll([
       ShippingAddress(
         id: '1',
-        country: Mk.countryYemen,
-        address: Mk.addressStreetMall.tr,
-        city: Mk.cityTaiz.tr,
-        postcode: '12345',
+        governorate: _localizedValue(ar: 'تعز', en: 'Taiz'),
+        district: _localizedValue(ar: 'القاهرة', en: 'Al Qahirah'),
+        street: _localizedValue(ar: 'شارع جمال', en: 'Jamal Street'),
+        addressDetails: _localizedValue(
+            ar: 'عمارة السلام، أمام الجامعة',
+            en: 'Al Salam Building, in front of the university'),
         isDefault: true,
       ),
       ShippingAddress(
         id: '2',
-        country: Mk.countrySaudiArabia,
-        address: Mk.addressKingRoad.tr,
-        city: Mk.cityRiyadh.tr,
-        postcode: '65432',
+        governorate: _localizedValue(ar: 'عدن', en: 'Aden'),
+        district: _localizedValue(ar: 'المنصورة', en: 'Al Mansoura'),
+        street: _localizedValue(ar: 'شارع الكورنيش', en: 'Corniche Street'),
+        addressDetails: _localizedValue(
+            ar: 'بجوار مول الخليج', en: 'Next to Al Khalij Mall'),
       ),
     ]);
   }
@@ -101,10 +106,10 @@ class ProfileStoreService extends GetxService {
     final next = ShippingAddress(
       id: defaultAddress?.id ??
           DateTime.now().millisecondsSinceEpoch.toString(),
-      country: model.country,
-      address: model.address,
-      city: model.city,
-      postcode: model.postcode,
+      governorate: model.governorate,
+      district: model.district,
+      street: model.street,
+      addressDetails: model.addressDetails,
       isDefault: true,
     );
 
@@ -129,5 +134,12 @@ class ProfileStoreService extends GetxService {
     }
 
     addresses.assignAll(updated);
+  }
+
+  String _localizedValue({
+    required String ar,
+    required String en,
+  }) {
+    return (Get.locale?.languageCode ?? 'en') == 'ar' ? ar : en;
   }
 }

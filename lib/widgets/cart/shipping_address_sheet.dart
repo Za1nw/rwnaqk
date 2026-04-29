@@ -13,13 +13,12 @@ class ShippingAddressSheet extends StatefulWidget {
 
   /// -----------------------
   /// Shipping controllers
-  final TextEditingController? addressController;
-  final TextEditingController? cityController;
-  final TextEditingController? postcodeController;
-
-  final String? country;
-  final List<String>? countries;
-  final ValueChanged<String?>? onCountryChanged;
+  final TextEditingController? governorateController;
+  final TextEditingController? districtController;
+  final TextEditingController? streetController;
+  final TextEditingController? addressDetailsController;
+  final List<String>? governorates;
+  final List<String> Function(String? governorate)? districtsForGovernorate;
 
   /// -----------------------
   /// Contact controllers
@@ -32,24 +31,25 @@ class ShippingAddressSheet extends StatefulWidget {
   const ShippingAddressSheet({
     super.key,
     required this.section,
-    this.addressController,
-    this.cityController,
-    this.postcodeController,
-    this.country,
-    this.countries,
-    this.onCountryChanged,
+    this.governorateController,
+    this.districtController,
+    this.streetController,
+    this.addressDetailsController,
+    this.governorates,
+    this.districtsForGovernorate,
     this.phoneController,
     this.emailController,
     required this.onSave,
-  }) : assert(
+  })  : assert(
           section == EditSection.shipping
-              ? (addressController != null &&
-                  cityController != null &&
-                  postcodeController != null &&
-                  countries != null &&
-                  onCountryChanged != null)
+              ? (governorateController != null &&
+                  districtController != null &&
+                  streetController != null &&
+                  addressDetailsController != null &&
+                  governorates != null &&
+                  districtsForGovernorate != null)
               : true,
-          'Shipping mode requires address/city/postcode/countries/onCountryChanged',
+          'Shipping mode requires governorate/district/street/addressDetails/governorates/districtsForGovernorate',
         ),
         assert(
           section == EditSection.contact
@@ -64,12 +64,12 @@ class ShippingAddressSheet extends StatefulWidget {
 
   static Future<void> showShipping(
     BuildContext context, {
-    required TextEditingController addressController,
-    required TextEditingController cityController,
-    required TextEditingController postcodeController,
-    required String? country,
-    required List<String> countries,
-    required ValueChanged<String?> onCountryChanged,
+    required TextEditingController governorateController,
+    required TextEditingController districtController,
+    required TextEditingController streetController,
+    required TextEditingController addressDetailsController,
+    required List<String> governorates,
+    required List<String> Function(String? governorate) districtsForGovernorate,
     required VoidCallback onSave,
   }) {
     return showModalBottomSheet(
@@ -78,12 +78,12 @@ class ShippingAddressSheet extends StatefulWidget {
       backgroundColor: Colors.transparent,
       builder: (_) => ShippingAddressSheet(
         section: EditSection.shipping,
-        addressController: addressController,
-        cityController: cityController,
-        postcodeController: postcodeController,
-        country: country,
-        countries: countries,
-        onCountryChanged: onCountryChanged,
+        governorateController: governorateController,
+        districtController: districtController,
+        streetController: streetController,
+        addressDetailsController: addressDetailsController,
+        governorates: governorates,
+        districtsForGovernorate: districtsForGovernorate,
         onSave: onSave,
       ),
     );
@@ -118,6 +118,16 @@ class _ShippingAddressSheetState extends State<ShippingAddressSheet> {
     final bottom = MediaQuery.of(context).viewInsets.bottom;
 
     final isShipping = widget.section == EditSection.shipping;
+    final selectedGovernorate = _normalizedValue(
+      widget.governorateController?.text,
+      widget.governorates ?? const [],
+    );
+    final districtItems =
+        widget.districtsForGovernorate?.call(selectedGovernorate) ?? const [];
+    final selectedDistrict = _normalizedValue(
+      widget.districtController?.text,
+      districtItems,
+    );
 
     final title = isShipping
         ? Tk.addressesShippingAddress.tr
@@ -168,36 +178,54 @@ class _ShippingAddressSheetState extends State<ShippingAddressSheet> {
                 // =========================
                 if (isShipping) ...[
                   AppSelectField<String>(
-                    label: Tk.addressesCountry.tr,
-                    hint: Tk.addressesSelectCountry.tr,
-                    value: widget.country,
-                    items: widget.countries!,
-                    prefixIcon: Icons.public,
-                    itemLabel: (e) => e,
-                    onChanged: widget.onCountryChanged!,
+                    label: Tk.addressesGovernorate.tr,
+                    hint: Tk.addressesGovernorate.tr,
+                    items: widget.governorates!,
+                    value: selectedGovernorate,
+                    itemLabel: (item) => item,
+                    prefixIcon: Icons.map_outlined,
+                    onChanged: (value) {
+                      final nextValue = (value ?? '').trim();
+                      final currentValue =
+                          widget.governorateController!.text.trim();
+
+                      widget.governorateController!.text = nextValue;
+                      if (nextValue != currentValue) {
+                        widget.districtController!.clear();
+                      }
+
+                      setState(() {});
+                    },
                   ),
                   const SizedBox(height: 12),
-
-                  AppInputField(
-                    controller: widget.addressController!,
-                    label: Tk.addressesAddress.tr,
-                    prefixIcon: Icons.location_on_outlined,
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 12),
-
-                  AppInputField(
-                    controller: widget.cityController!,
-                    label: Tk.addressesCity.tr,
+                  AppSelectField<String>(
+                    label: Tk.addressesDistrict.tr,
+                    hint: Tk.addressesDistrict.tr,
+                    items: districtItems,
+                    value: selectedDistrict,
+                    itemLabel: (item) => item,
                     prefixIcon: Icons.location_city_outlined,
+                    enabled:
+                        selectedGovernorate != null && districtItems.isNotEmpty,
+                    onChanged: (value) {
+                      widget.districtController!.text = (value ?? '').trim();
+                      setState(() {});
+                    },
                   ),
                   const SizedBox(height: 12),
-
                   AppInputField(
-                    controller: widget.postcodeController!,
-                    label: Tk.addressesPostcode.tr,
-                    prefixIcon: Icons.local_post_office_outlined,
-                    keyboardType: TextInputType.number,
+                    controller: widget.streetController!,
+                    label: Tk.addressesStreet.tr,
+                    hint: Tk.addressesStreet.tr,
+                    prefixIcon: Icons.route_outlined,
+                  ),
+                  const SizedBox(height: 12),
+                  AppInputField(
+                    controller: widget.addressDetailsController!,
+                    label: Tk.addressesAddressDetails.tr,
+                    hint: Tk.addressesAddressDetailsHint.tr,
+                    prefixIcon: Icons.apartment_outlined,
+                    maxLines: 2,
                   ),
                 ],
 
@@ -212,7 +240,6 @@ class _ShippingAddressSheetState extends State<ShippingAddressSheet> {
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 12),
-
                   AppInputField(
                     controller: widget.emailController!,
                     label: Tk.addressesEmail.tr,
@@ -234,5 +261,11 @@ class _ShippingAddressSheetState extends State<ShippingAddressSheet> {
         ),
       ),
     );
+  }
+
+  String? _normalizedValue(String? raw, List<String> items) {
+    final value = (raw ?? '').trim();
+    if (value.isEmpty) return null;
+    return items.contains(value) ? value : null;
   }
 }

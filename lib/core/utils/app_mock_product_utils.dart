@@ -48,6 +48,8 @@ class AppMockProductUtils {
         images: includeDetails ? _detailImages(id) : const [],
         availableColors: includeDetails ? _defaultColors(id) : const [],
         availableSizes: includeDetails ? _defaultSizes : const [],
+        purchaseLimit: includeDetails ? _purchaseLimitFor(index) : null,
+        sizeGuide: includeDetails ? _sizeGuideRows(index) : const [],
       );
     });
   }
@@ -78,4 +80,49 @@ class AppMockProductUtils {
       ];
 
   static const List<String> _defaultSizes = ['S', 'M', 'L', 'XL'];
+
+  static ProductPurchaseLimit? _purchaseLimitFor(int index) {
+    if (index.isOdd) return null;
+
+    return ProductPurchaseLimit(
+      minQty: 1,
+      maxQty: index % 3 == 0 ? 3 : 5,
+      stepQty: index % 4 == 0 ? 2 : 1,
+    );
+  }
+
+  static List<ProductSizeGuideRow> _sizeGuideRows(int index) {
+    final offset = index % 3;
+
+    return [
+      ProductSizeGuideRow(
+        size: 'S',
+        chest: '${84 + offset}',
+        waist: '${66 + offset}',
+        hips: '${92 + offset}',
+        length: '${58 + offset}',
+      ),
+      ProductSizeGuideRow(
+        size: 'M',
+        chest: '${88 + offset}',
+        waist: '${70 + offset}',
+        hips: '${96 + offset}',
+        length: '${60 + offset}',
+      ),
+      ProductSizeGuideRow(
+        size: 'L',
+        chest: '${92 + offset}',
+        waist: '${74 + offset}',
+        hips: '${100 + offset}',
+        length: '${62 + offset}',
+      ),
+      ProductSizeGuideRow(
+        size: 'XL',
+        chest: '${96 + offset}',
+        waist: '${78 + offset}',
+        hips: '${104 + offset}',
+        length: '${64 + offset}',
+      ),
+    ];
+  }
 }

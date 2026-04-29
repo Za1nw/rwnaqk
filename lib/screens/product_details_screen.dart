@@ -5,15 +5,45 @@ import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
+import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
 import 'package:rwnaqk/widgets/card/product_grid_section.dart';
 import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
+import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
 import 'package:rwnaqk/widgets/product_details/product_details_header_card.dart';
 import 'package:rwnaqk/widgets/product_details/product_reviews_section.dart';
+
+import 'product_size_guide_screen.dart';
 
 const double _sectionGap = 18;
 const double _innerGap = 12;
 const double _gridSpacing = 12;
+
+String _purchaseLimitNote(ProductPurchaseLimit limit) {
+  final minQty = limit.minQty;
+  final maxQty = limit.maxQty;
+
+  if (minQty != null && maxQty != null) {
+    return Tk.productDetailsPurchaseLimitRangeNote.trParams({
+      'min': '$minQty',
+      'max': '$maxQty',
+    });
+  }
+
+  if (minQty != null) {
+    return Tk.productDetailsPurchaseLimitMinOnlyNote.trParams({
+      'min': '$minQty',
+    });
+  }
+
+  if (maxQty != null) {
+    return Tk.productDetailsPurchaseLimitMaxOnlyNote.trParams({
+      'max': '$maxQty',
+    });
+  }
+
+  return '';
+}
 
 class ProductDetailsScreen extends GetView<ProductDetailsController> {
   const ProductDetailsScreen({super.key});
@@ -87,14 +117,17 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
                 title: Tk.productDetailsOrigin.tr,
                 chips: const ['EU'],
               ),
-              const SizedBox(height: 10),
-              _LinkRow(
-                text: Tk.productDetailsSizeGuide.tr,
-                onTap: () => Get.snackbar(
-                  Tk.productDetailsSizeGuide.tr,
-                  Tk.productDetailsSizeGuideOpened.tr,
+              if (controller.hasPurchaseLimit) ...[
+                const SizedBox(height: 14),
+                _PurchaseLimitsCard(limit: controller.purchaseLimit!),
+              ],
+              if (controller.hasSizeGuide) ...[
+                const SizedBox(height: _sectionGap),
+                _LinkRow(
+                  title: Tk.productDetailsSizeGuide.tr,
+                  onTap: () => Get.to(() => const ProductSizeGuideScreen()),
                 ),
-              ),
+              ],
               const SizedBox(height: _sectionGap),
               ShippingMethodSelector(
                 headerTitle: Tk.productDetailsDelivery.tr,
@@ -156,11 +189,9 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
 
 class _SectionTitle extends StatelessWidget {
   final String title;
-  final Widget? trailing;
 
   const _SectionTitle({
     required this.title,
-    this.trailing,
   });
 
   @override
@@ -175,8 +206,6 @@ class _SectionTitle extends StatelessWidget {
             fontSize: 18,
           ),
         ),
-        const Spacer(),
-        if (trailing != null) trailing!,
       ],
     );
   }
@@ -215,12 +244,12 @@ class _SpecRow extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: context.background.withOpacity(
-                      context.isDark ? 0.18 : 0.75,
+                    color: context.background.withValues(
+                      alpha: context.isDark ? .18 : .75,
                     ),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: context.border.withOpacity(0.35),
+                      color: context.border.withValues(alpha: .35),
                     ),
                   ),
                   child: Text(
@@ -240,44 +269,212 @@ class _SpecRow extends StatelessWidget {
   }
 }
 
-class _LinkRow extends StatelessWidget {
+class _PurchaseLimitsCard extends StatelessWidget {
+  final ProductPurchaseLimit limit;
+
+  const _PurchaseLimitsCard({required this.limit});
+
+  @override
+  Widget build(BuildContext context) {
+    final minQty = limit.minQty;
+    final maxQty = limit.maxQty;
+    final note = _purchaseLimitNote(limit);
+
+    if (minQty == null && maxQty == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          Tk.productDetailsPurchaseLimits.tr,
+          style: TextStyle(
+            color: context.foreground,
+            fontWeight: FontWeight.w900,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: context.card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: context.border.withValues(alpha: .35)),
+            boxShadow: [
+              BoxShadow(
+                color: context.shadow
+                    .withValues(alpha: context.isDark ? .10 : .06),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              if (minQty != null)
+                _PurchaseLimitRow(
+                  icon: Icons.remove_rounded,
+                  label: Tk.productDetailsMinOrder.tr,
+                  value: minQty,
+                ),
+              if (minQty != null && maxQty != null)
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: context.border.withValues(alpha: .25),
+                ),
+              if (maxQty != null)
+                _PurchaseLimitRow(
+                  icon: Icons.add_rounded,
+                  label: Tk.productDetailsMaxOrder.tr,
+                  value: maxQty,
+                ),
+              if (note.trim().isNotEmpty) ...[
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: context.border.withValues(alpha: .25),
+                ),
+                _PurchaseLimitNote(text: note),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PurchaseLimitRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final int value;
+
+  const _PurchaseLimitRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 20,
+            color: context.mutedForeground,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: context.foreground,
+                fontWeight: FontWeight.w900,
+                fontSize: 14,
+                height: 1,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            '$value ${Tk.productDetailsPiecesUnit.tr}',
+            style: TextStyle(
+              color: context.foreground,
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+              height: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PurchaseLimitNote extends StatelessWidget {
   final String text;
+
+  const _PurchaseLimitNote({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(44, 8, 12, 10),
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Text(
+          text,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: context.mutedForeground,
+            fontWeight: FontWeight.w700,
+            fontSize: 11.5,
+            height: 1.25,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LinkRow extends StatelessWidget {
+  final String title;
   final VoidCallback onTap;
 
   const _LinkRow({
-    required this.text,
+    required this.title,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Row(
-        children: [
-          Text(
-            text,
-            style: TextStyle(
-              color: context.foreground,
-              fontWeight: FontWeight.w900,
-            ),
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    color: context.foreground,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                    height: 1.1,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              AppActionIconButton(
+                icon: isRtl ? Icons.west_rounded : Icons.east_rounded,
+                onTap: onTap,
+                backgroundColor: context.primary,
+                iconColor: context.primaryForeground,
+                size: 40,
+                iconSize: 20,
+                radius: 5,
+                circular: false,
+              ),
+            ],
           ),
-          const Spacer(),
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: context.primary,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.arrow_forward_rounded,
-              color: context.primaryForeground,
-              size: 18,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -306,7 +503,7 @@ class _BottomBar extends StatelessWidget {
           color: context.background,
           border: Border(
             top: BorderSide(
-              color: context.border.withOpacity(0.35),
+              color: context.border.withValues(alpha: .35),
             ),
           ),
         ),
@@ -322,7 +519,7 @@ class _BottomBar extends StatelessWidget {
                   color: context.card,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: context.border.withOpacity(0.55),
+                    color: context.border.withValues(alpha: .55),
                   ),
                 ),
                 child: Icon(

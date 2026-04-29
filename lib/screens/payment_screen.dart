@@ -22,20 +22,20 @@ import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
 import 'package:rwnaqk/widgets/common/app_empty_state.dart';
 
 class PaymentScreen extends GetView<CartController> {
-    // حالة صورة السند
-    final Rx<File?> _receiptImage = Rx<File?>(null);
+  final Rx<File?> _receiptImage = Rx<File?>(null);
 
-    Future<void> _pickReceiptImage() async {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(source: ImageSource.gallery);
-      if (picked != null) {
-        _receiptImage.value = File(picked.path);
-      }
+  Future<void> _pickReceiptImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      _receiptImage.value = File(picked.path);
     }
+  }
 
-    void _removeReceiptImage() {
-      _receiptImage.value = null;
-    }
+  void _removeReceiptImage() {
+    _receiptImage.value = null;
+  }
+
   PaymentScreen({super.key});
 
   void _openShippingSheet(BuildContext context, {required bool isEdit}) {
@@ -47,14 +47,12 @@ class PaymentScreen extends GetView<CartController> {
 
     ShippingAddressSheet.showShipping(
       context,
-      addressController: controller.shippingAddressCtrl,
-      cityController: controller.shippingCityCtrl,
-      postcodeController: controller.shippingPostcodeCtrl,
-      country: controller.selectedShippingCountryLabel,
-      countries: controller.shippingCountries,
-      onCountryChanged: (v) {
-        if (v != null) controller.setShippingCountry(v);
-      },
+      governorateController: controller.shippingGovernorateCtrl,
+      districtController: controller.shippingDistrictCtrl,
+      streetController: controller.shippingStreetCtrl,
+      addressDetailsController: controller.shippingAddressDetailsCtrl,
+      governorates: controller.shippingGovernorates,
+      districtsForGovernorate: controller.shippingDistrictsForGovernorate,
       onSave: () {
         controller.saveShippingFromForm();
         Navigator.pop(context);
@@ -100,9 +98,10 @@ class PaymentScreen extends GetView<CartController> {
           buttonWidth: 186,
           onCheckout: () {
             if (isWallet && !hasReceipt) {
-              // إظهار رسالة تنبيه
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('يجب رفع صورة سند الحوالة أولاً')),
+                SnackBar(
+                  content: Text(Tk.cartValidationReceiptMissing.tr),
+                ),
               );
               return;
             }
@@ -134,7 +133,8 @@ class PaymentScreen extends GetView<CartController> {
                   decoration: BoxDecoration(
                     color: context.card,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: context.border.withOpacity(.35)),
+                    border: Border.all(
+                        color: context.border.withValues(alpha: .35)),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,7 +143,7 @@ class PaymentScreen extends GetView<CartController> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: context.primary.withOpacity(.10),
+                          color: context.primary.withValues(alpha: .10),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -207,7 +207,8 @@ class PaymentScreen extends GetView<CartController> {
                   color: context.card,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
-                    side: BorderSide(color: context.border.withOpacity(.35)),
+                    side: BorderSide(
+                        color: context.border.withValues(alpha: .35)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8),
@@ -234,7 +235,7 @@ class PaymentScreen extends GetView<CartController> {
                             Divider(
                               height: 1,
                               thickness: 1,
-                              color: context.border.withOpacity(.18),
+                              color: context.border.withValues(alpha: .18),
                             ),
                         ],
                       ],
@@ -252,7 +253,6 @@ class PaymentScreen extends GetView<CartController> {
                 ),
                 const SizedBox(height: 20),
                 _PaymentMethodBlock(),
-                // واجهة رفع صورة السند
                 Obx(() {
                   if (!payment.isWalletPayment) return const SizedBox.shrink();
                   return Padding(
@@ -261,6 +261,8 @@ class PaymentScreen extends GetView<CartController> {
                       imageFile: _receiptImage.value,
                       onPickImage: _pickReceiptImage,
                       onRemoveImage: _removeReceiptImage,
+                      titleText: Tk.commonUploadReceiptImage.tr,
+                      pickImageText: Tk.commonChooseImage.tr,
                     ),
                   );
                 }),
@@ -281,13 +283,11 @@ class PaymentScreen extends GetView<CartController> {
   }
 }
 
-
 class _PaymentMethodBlock extends StatelessWidget {
   const _PaymentMethodBlock();
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<CartController>();
     final payment = Get.find<PaymentController>();
 
     return Obx(() {
@@ -335,10 +335,10 @@ class _PaymentSummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: context.border.withOpacity(.35)),
+        border: Border.all(color: context.border.withValues(alpha: .35)),
         boxShadow: [
           BoxShadow(
-            color: context.shadow.withOpacity(.04),
+            color: context.shadow.withValues(alpha: .04),
             blurRadius: 14,
             offset: const Offset(0, 8),
           ),
@@ -376,7 +376,7 @@ class _PaymentSummaryCard extends StatelessWidget {
           Divider(
             height: 22,
             thickness: 1,
-            color: context.border.withOpacity(.25),
+            color: context.border.withValues(alpha: .25),
           ),
           _SummaryRow(
             label: Tk.cartPaymentFinalTotal.tr,

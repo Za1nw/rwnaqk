@@ -12,26 +12,21 @@ import 'package:rwnaqk/models/shipping_address.dart';
 /// الهدف أن يبقى الكنترولر الرئيسي مسؤولًا عن قائمة العناوين
 /// والعمليات الأساسية، بينما تبقى تفاصيل الفورم هنا.
 class AddressesUiController extends GetxController {
-  /// متحكم حقل العنوان.
-  final addressCtrl = TextEditingController();
+  /// متحكم حقل المحافظة.
+  final governorateCtrl = TextEditingController();
 
-  /// متحكم حقل المدينة.
-  final cityCtrl = TextEditingController();
+  /// متحكم حقل المديرية.
+  final districtCtrl = TextEditingController();
 
-  /// متحكم حقل الرمز البريدي.
-  final postcodeCtrl = TextEditingController();
+  /// متحكم حقل الشارع.
+  final streetCtrl = TextEditingController();
 
-  /// الدولة المختارة حاليًا في النموذج.
-  final country = RxnString();
+  /// متحكم حقل العنوان التفصيلي.
+  final addressDetailsCtrl = TextEditingController();
 
   /// معرّف العنوان الجاري تعديله.
   /// إذا كانت القيمة null فهذا يعني أننا في وضع الإضافة.
   String? editingId;
-
-  /// هذه الدالة تغيّر الدولة المختارة في النموذج.
-  void setCountry(String? value) {
-    country.value = value;
-  }
 
   /// هذه الدالة تنظف النموذج وتجهزه لإضافة عنوان جديد.
   void openAddSheet() {
@@ -43,18 +38,18 @@ class AddressesUiController extends GetxController {
   /// وتجهز النموذج لوضع التعديل.
   void openEditSheet(ShippingAddress item) {
     editingId = item.id;
-    addressCtrl.text = item.address;
-    cityCtrl.text = item.city;
-    postcodeCtrl.text = item.postcode;
-    country.value = item.country;
+    governorateCtrl.text = item.governorate;
+    districtCtrl.text = item.district;
+    streetCtrl.text = item.street;
+    addressDetailsCtrl.text = item.addressDetails;
   }
 
   /// هذه الدالة تنظف حقول النموذج بالكامل.
   void clearForm() {
-    addressCtrl.clear();
-    cityCtrl.clear();
-    postcodeCtrl.clear();
-    country.value = null;
+    governorateCtrl.clear();
+    districtCtrl.clear();
+    streetCtrl.clear();
+    addressDetailsCtrl.clear();
   }
 
   /// هذه الدالة تبني عنوانًا جديدًا من بيانات النموذج الحالية.
@@ -64,21 +59,23 @@ class AddressesUiController extends GetxController {
   }) {
     return ShippingAddress(
       id: id,
-      country: (country.value ?? '').trim(),
-      address: addressCtrl.text.trim(),
-      city: cityCtrl.text.trim(),
-      postcode: postcodeCtrl.text.trim(),
+      governorate: governorateCtrl.text.trim(),
+      district: districtCtrl.text.trim(),
+      street: streetCtrl.text.trim(),
+      addressDetails: addressDetailsCtrl.text.trim(),
       isDefault: isDefault,
     );
   }
 
   @override
+
   /// هذه الدالة تُستدعى عند التخلص من الكنترولر.
   /// نستخدمها لتحرير متحكمات الحقول.
   void onClose() {
-    addressCtrl.dispose();
-    cityCtrl.dispose();
-    postcodeCtrl.dispose();
+    governorateCtrl.dispose();
+    districtCtrl.dispose();
+    streetCtrl.dispose();
+    addressDetailsCtrl.dispose();
     super.onClose();
   }
 }

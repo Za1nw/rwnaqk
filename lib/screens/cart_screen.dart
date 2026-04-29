@@ -25,16 +25,12 @@ class CartScreen extends GetView<CartController> {
 
     ShippingAddressSheet.showShipping(
       context,
-      addressController: controller.shippingAddressCtrl,
-      cityController: controller.shippingCityCtrl,
-      postcodeController: controller.shippingPostcodeCtrl,
-      country: controller.selectedShippingCountryLabel,
-      countries: controller.shippingCountries,
-      onCountryChanged: (value) {
-        if (value != null) {
-          controller.setShippingCountry(value);
-        }
-      },
+      governorateController: controller.shippingGovernorateCtrl,
+      districtController: controller.shippingDistrictCtrl,
+      streetController: controller.shippingStreetCtrl,
+      addressDetailsController: controller.shippingAddressDetailsCtrl,
+      governorates: controller.shippingGovernorates,
+      districtsForGovernorate: controller.shippingDistrictsForGovernorate,
       onSave: () {
         controller.saveShippingFromForm();
         Navigator.pop(context);
@@ -89,7 +85,8 @@ class CartScreen extends GetView<CartController> {
                     Map<String, int>.from(controller.itemQuantities);
                 final variantTexts =
                     Map<String, String>.from(controller.itemVariantTexts);
-                final ratings = Map<String, double>.from(controller.itemRatings);
+                final ratings =
+                    Map<String, double>.from(controller.itemRatings);
                 final reviewsCounts =
                     Map<String, int>.from(controller.itemReviewsCounts);
 
