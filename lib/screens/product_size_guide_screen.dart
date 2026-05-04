@@ -33,8 +33,6 @@ class ProductSizeGuideScreen extends GetView<ProductDetailsController> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _SizeGuideAudienceTabs(),
-                const SizedBox(height: 14),
                 _SizeGuideTable(
                   rows: rows,
                   selectedSize: controller.selectedSize.value,
@@ -249,74 +247,6 @@ class _SizeGuideMatrixCell extends StatelessWidget {
           fontWeight: isLabel || isActive ? FontWeight.w900 : FontWeight.w700,
           fontSize: isLabel ? 11.2 : 12,
         ),
-      ),
-    );
-  }
-}
-
-class _SizeGuideAudienceTabs extends StatefulWidget {
-  const _SizeGuideAudienceTabs();
-
-  @override
-  State<_SizeGuideAudienceTabs> createState() => _SizeGuideAudienceTabsState();
-}
-
-class _SizeGuideAudienceTabsState extends State<_SizeGuideAudienceTabs> {
-  int selectedIndex = 1;
-
-  @override
-  Widget build(BuildContext context) {
-    final labels = [
-      Tk.productDetailsSizeGuideWomen.tr,
-      Tk.productDetailsSizeGuideMen.tr,
-      Tk.productDetailsSizeGuideKids.tr,
-    ];
-
-    return Container(
-      width: double.infinity,
-      height: 46,
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: context.border.withValues(alpha: .35)),
-      ),
-      child: Row(
-        children: labels.asMap().entries.map((entry) {
-          final index = entry.key;
-          final isSelected = selectedIndex == index;
-
-          return Expanded(
-            child: InkWell(
-              onTap: () => setState(() => selectedIndex = index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 160),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: isSelected ? context.primary : Colors.transparent,
-                  border: BorderDirectional(
-                    end: index == labels.length - 1
-                        ? BorderSide.none
-                        : BorderSide(
-                            color: context.border.withValues(alpha: .30),
-                          ),
-                  ),
-                ),
-                child: Text(
-                  entry.value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isSelected
-                        ? context.primaryForeground
-                        : context.foreground,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

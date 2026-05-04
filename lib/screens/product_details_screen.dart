@@ -470,7 +470,6 @@ class _LinkRow extends StatelessWidget {
                 size: 40,
                 iconSize: 20,
                 radius: 5,
-                circular: false,
               ),
             ],
           ),

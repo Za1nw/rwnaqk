@@ -152,9 +152,6 @@ const Map<String, String> enShopTranslations = {
   'product_details.size_guide': 'Size guide',
   'product_details.size_guide_opened': 'Open size guide',
   'product_details.size_guide_cm': 'Measurements in cm',
-  'product_details.size_guide_women': 'Women',
-  'product_details.size_guide_men': 'Men',
-  'product_details.size_guide_kids': 'Kids',
   'product_details.size_guide_how_to_choose': 'How to choose size?',
   'product_details.size_guide_subtitle':
       'International sizes with body measurements',
@@ -350,9 +347,6 @@ const Map<String, String> arShopTranslations = {
   'product_details.size_guide': 'دليل المقاسات',
   'product_details.size_guide_opened': 'فتح دليل المقاسات',
   'product_details.size_guide_cm': 'المقاسات بالسنتيمتر',
-  'product_details.size_guide_women': 'نساء',
-  'product_details.size_guide_men': 'رجال',
-  'product_details.size_guide_kids': 'أطفال',
   'product_details.size_guide_how_to_choose': 'كيف تختار المقاس؟',
   'product_details.size_guide_subtitle':
       'مقاسات عالمية مع القياسات الفعلية للجسم',

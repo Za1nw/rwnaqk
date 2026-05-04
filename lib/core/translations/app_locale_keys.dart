@@ -543,10 +543,6 @@ abstract final class Tk {
   static const productDetailsSizeGuideOpened =
       'product_details.size_guide_opened';
   static const productDetailsSizeGuideCm = 'product_details.size_guide_cm';
-  static const productDetailsSizeGuideWomen =
-      'product_details.size_guide_women';
-  static const productDetailsSizeGuideMen = 'product_details.size_guide_men';
-  static const productDetailsSizeGuideKids = 'product_details.size_guide_kids';
   static const productDetailsSizeGuideHowToChoose =
       'product_details.size_guide_how_to_choose';
   static const productDetailsSizeGuideSubtitle =
