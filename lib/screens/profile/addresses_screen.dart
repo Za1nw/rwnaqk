@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
+import 'package:rwnaqk/widgets/common/app_empty_state.dart';
 
 import '../../controllers/addresses/addresses_controller.dart';
-import '../../widgets/cart/address_section.dart';
 import '../../widgets/cart/shipping_address_sheet.dart';
 
 class AddressesScreen extends GetView<AddressesController> {
@@ -63,13 +64,11 @@ class AddressesScreen extends GetView<AddressesController> {
             const SizedBox(height: 10),
             Obx(() {
               if (controller.addresses.isEmpty) {
-                return AddressSection(
-                  title: Tk.addressesShippingAddress.tr,
-                  address: null,
-                  lines: const [],
-                  allowAddWhenEmpty: true,
-                  emptyHint: Tk.addressesEmptyHint.tr,
-                  onEdit: () => _openAdd(context),
+                return AppEmptyState(
+                  title: Tk.addressesEmptyHint.tr,
+                  lottieAsset: EmptyStateLottieAssets.addresses,
+                  buttonText: Tk.addressesAddAddress.tr,
+                  onButtonPressed: () => _openAdd(context),
                 );
               }
 

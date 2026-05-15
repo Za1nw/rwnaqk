@@ -40,6 +40,7 @@ class OnboardingController extends GetxController {
   }
 
   @override
+
   /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
   /// نستخدمها لتهيئة الـ UI controller.
   void onInit() {
@@ -63,8 +64,8 @@ class OnboardingController extends GetxController {
     }
 
     pageCtrl.nextPage(
-      duration: const Duration(milliseconds: 260),
-      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 360),
+      curve: Curves.easeInOutCubic,
     );
   }
 
@@ -72,8 +73,8 @@ class OnboardingController extends GetxController {
   void onSkip() {
     pageCtrl.animateToPage(
       slides.length - 1,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOut,
+      duration: const Duration(milliseconds: 420),
+      curve: Curves.easeInOutCubic,
     );
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/orders/orders_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/common/app_empty_state.dart';
@@ -44,6 +45,7 @@ class OrdersScreen extends GetView<OrdersController> {
                   if (list.isEmpty) {
                     return AppEmptyState(
                       icon: Icons.receipt_long_outlined,
+                      lottieAsset: EmptyStateLottieAssets.orders,
                       title: Tk.ordersEmptyTitle.tr,
                       subtitle: Tk.ordersEmptySubtitle.tr,
                     );

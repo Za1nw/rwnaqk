@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/app_network_image.dart';
 import 'package:rwnaqk/controllers/reviews/reviews_controller.dart';
+import 'package:rwnaqk/widgets/common/app_empty_state.dart';
 
 class ReviewsScreen extends GetView<ReviewsController> {
   const ReviewsScreen({super.key});
@@ -22,7 +24,8 @@ class ReviewsScreen extends GetView<ReviewsController> {
                 children: [
                   IconButton(
                     onPressed: () => Get.back(),
-                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.foreground),
+                    icon: Icon(Icons.arrow_back_ios_new_rounded,
+                        color: context.foreground),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -37,10 +40,16 @@ class ReviewsScreen extends GetView<ReviewsController> {
                 ],
               ),
               const SizedBox(height: 14),
-
               Expanded(
                 child: Obx(() {
                   final reviews = controller.reviews;
+                  if (reviews.isEmpty) {
+                    return const AppEmptyState(
+                      title: Tk.reviewsEmpty,
+                      lottieAsset: EmptyStateLottieAssets.reviews,
+                    );
+                  }
+
                   return ListView.separated(
                     physics: const BouncingScrollPhysics(),
                     itemCount: reviews.length,
@@ -156,7 +165,9 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final letter = name.trim().isNotEmpty ? name.trim().characters.first.toUpperCase() : '?';
+    final letter = name.trim().isNotEmpty
+        ? name.trim().characters.first.toUpperCase()
+        : '?';
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(999),
@@ -193,12 +204,15 @@ class _StarsRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (i) {
         if (i < full) {
-          return const Icon(Icons.star_rounded, size: 18, color: Color(0xFFF59E0B));
+          return const Icon(Icons.star_rounded,
+              size: 18, color: Color(0xFFF59E0B));
         }
         if (i == full && hasHalf) {
-          return const Icon(Icons.star_half_rounded, size: 18, color: Color(0xFFF59E0B));
+          return const Icon(Icons.star_half_rounded,
+              size: 18, color: Color(0xFFF59E0B));
         }
-        return Icon(Icons.star_rounded, size: 18, color: context.border.withOpacity(0.8));
+        return Icon(Icons.star_rounded,
+            size: 18, color: context.border.withOpacity(0.8));
       }),
     );
   }

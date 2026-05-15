@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/models/product_review.dart';
+import 'package:rwnaqk/widgets/common/app_empty_state.dart';
 
 class ProductReviewsSection extends StatelessWidget {
   final String? title;
@@ -102,18 +104,11 @@ class _EmptyReviews extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.border.withOpacity(0.55)),
-      ),
-      child: Text(
-        Tk.reviewsEmpty.tr,
-        style: TextStyle(color: context.mutedForeground),
-      ),
+    return const AppEmptyState(
+      title: Tk.reviewsEmpty,
+      lottieAsset: EmptyStateLottieAssets.reviews,
+      animationSize: 104,
+      padding: EdgeInsets.all(14),
     );
   }
 }

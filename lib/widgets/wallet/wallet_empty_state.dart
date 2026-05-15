@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 
 class WalletEmptyState extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
+  final String lottieAsset;
+  final double animationSize;
 
   const WalletEmptyState({
     super.key,
     required this.title,
     required this.subtitle,
     this.icon = Icons.account_balance_wallet_outlined,
+    this.lottieAsset = EmptyStateLottieAssets.wallet,
+    this.animationSize = 122,
   });
 
   @override
@@ -26,19 +32,30 @@ class WalletEmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: context.input,
-              shape: BoxShape.circle,
+          if (lottieAsset.trim().isNotEmpty)
+            SizedBox(
+              width: animationSize,
+              height: animationSize,
+              child: Lottie.asset(
+                lottieAsset,
+                fit: BoxFit.contain,
+                repeat: true,
+              ),
+            )
+          else
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: context.input,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: context.mutedForeground,
+                size: 28,
+              ),
             ),
-            child: Icon(
-              icon,
-              color: context.mutedForeground,
-              size: 28,
-            ),
-          ),
           const SizedBox(height: 14),
           Text(
             title,

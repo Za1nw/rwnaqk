@@ -54,10 +54,12 @@ class ProductCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: context.card,
                 borderRadius: BorderRadius.circular(radius),
-                border: Border.all(color: context.border.withOpacity(.45)),
+                border: Border.all(
+                  color: context.border.withValues(alpha: .45),
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: context.shadow.withOpacity(.08),
+                    color: context.shadow.withValues(alpha: .08),
                     blurRadius: 14,
                     offset: const Offset(0, 6),
                   ),
@@ -148,11 +150,13 @@ class ProductCard extends StatelessWidget {
                                 onTap: _addToCart,
                                 size: 30,
                                 iconSize: 15,
-                                backgroundColor: context.primary.withOpacity(
-                                  .10,
+                                backgroundColor: context.primary.withValues(
+                                  alpha: .10,
                                 ),
                                 iconColor: context.primary,
-                                borderColor: context.primary.withOpacity(.14),
+                                borderColor: context.primary.withValues(
+                                  alpha: .14,
+                                ),
                               ),
                             ],
                           ],
@@ -181,9 +185,9 @@ class _PriceBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
-        color: context.primary.withOpacity(.10),
+        color: context.primary.withValues(alpha: .10),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: context.primary.withOpacity(.12)),
+        border: Border.all(color: context.primary.withValues(alpha: .12)),
       ),
       child: Text(
         text,

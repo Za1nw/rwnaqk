@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/flash_sale/flash_sale_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_date_utils.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
@@ -33,7 +34,6 @@ class FlashSaleScreen extends GetView<FlashSaleController> {
                 children: [
                   _FlashSaleHeroHeader(controller: controller),
                   const SizedBox(height: 12),
-
                   Obx(() {
                     return _FlashSaleDiscountTabs(
                       discounts: controller.discounts,
@@ -41,9 +41,7 @@ class FlashSaleScreen extends GetView<FlashSaleController> {
                       onChanged: controller.selectDiscount,
                     );
                   }),
-
                   const SizedBox(height: 14),
-
                   Obx(() {
                     final d = controller.selectedDiscount.value;
                     final title = d == 0
@@ -75,9 +73,7 @@ class FlashSaleScreen extends GetView<FlashSaleController> {
                       ],
                     );
                   }),
-
                   const SizedBox(height: 12),
-
                   Obx(() {
                     final items = controller.flashSaleProducts.toList();
 
@@ -88,6 +84,7 @@ class FlashSaleScreen extends GetView<FlashSaleController> {
                           title: Tk.flashSaleNoOffersTitle.tr,
                           subtitle: Tk.flashSaleNoOffersSubtitle.tr,
                           icon: Icons.local_offer_outlined,
+                          lottieAsset: EmptyStateLottieAssets.offers,
                         ),
                       );
                     }
@@ -122,12 +119,10 @@ class _FlashSaleHeroHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final primary = context.primary;
     final accent = context.accent;
-    final headerBg = context.isDark
-        ? context.card.withOpacity(0.96)
-        : context.background;
-    final softCircle = context.isDark
-        ? accent.withOpacity(0.18)
-        : accent.withOpacity(0.90);
+    final headerBg =
+        context.isDark ? context.card.withOpacity(0.96) : context.background;
+    final softCircle =
+        context.isDark ? accent.withOpacity(0.18) : accent.withOpacity(0.90);
     final deepCircle = context.isDark ? primary.withOpacity(0.85) : primary;
 
     return ClipRRect(

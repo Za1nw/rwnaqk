@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/cart/shipping_address_sheet.dart';
 import 'package:rwnaqk/widgets/common/app_page_header.dart';
@@ -103,6 +104,7 @@ class CartScreen extends GetView<CartController> {
                       if (isEmpty)
                         AppEmptyState(
                           icon: Icons.shopping_bag_outlined,
+                          lottieAsset: EmptyStateLottieAssets.cart,
                           title: Tk.cartEmptyTitle.tr,
                           subtitle: Tk.cartEmptySubtitle.tr,
                         )

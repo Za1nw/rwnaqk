@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 
@@ -82,6 +83,7 @@ class SearchResultsScreen extends GetView<AppSearchController> {
                         child: AppEmptyState(
                           title: Tk.searchNoResultsTitle.tr,
                           subtitle: Tk.searchNoResultsSubtitle.tr,
+                          lottieAsset: EmptyStateLottieAssets.search,
                         ),
                       );
                     }
@@ -101,9 +103,8 @@ class SearchResultsScreen extends GetView<AppSearchController> {
                         ProductGridSection(
                           items: items,
                           crossAxisCount: cols,
-                          childAspectRatio: w >= AppBreakpoints.compact
-                              ? 0.74
-                              : 0.72,
+                          childAspectRatio:
+                              w >= AppBreakpoints.compact ? 0.74 : 0.72,
                           onTap: controller.openProduct,
                         ),
                       ],

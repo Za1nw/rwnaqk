@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/cart/cart_controller.dart';
 import 'package:rwnaqk/controllers/payment/payment_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
@@ -449,6 +450,7 @@ class _PaymentEmptyState extends StatelessWidget {
           children: [
             AppEmptyState(
               icon: Icons.shopping_bag_outlined,
+              lottieAsset: EmptyStateLottieAssets.cart,
               title: Tk.cartPaymentNoItemsTitle.tr,
               subtitle: Tk.cartPaymentNoItemsSubtitle.tr,
             ),

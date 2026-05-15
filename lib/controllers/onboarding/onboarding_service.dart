@@ -31,17 +31,17 @@ class OnboardingService {
   /// الشرائح الحالية المعروضة في شاشة الـ Onboarding.
   List<OnboardingSlide> get slides => const <OnboardingSlide>[
         OnboardingSlide(
-          icon: Icons.shopping_bag_rounded,
+          icon: Icons.search_rounded,
           titleKey: Tk.onboardingS1Title,
           subtitleKey: Tk.onboardingS1Subtitle,
         ),
         OnboardingSlide(
-          icon: Icons.local_shipping_rounded,
+          icon: Icons.lock_rounded,
           titleKey: Tk.onboardingS2Title,
           subtitleKey: Tk.onboardingS2Subtitle,
         ),
         OnboardingSlide(
-          icon: Icons.discount_rounded,
+          icon: Icons.local_shipping_rounded,
           titleKey: Tk.onboardingS3Title,
           subtitleKey: Tk.onboardingS3Subtitle,
         ),

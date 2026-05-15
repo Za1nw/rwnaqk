@@ -6,9 +6,9 @@ import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
-import 'package:rwnaqk/widgets/app_button.dart';
 import 'package:rwnaqk/widgets/card/product_grid_section.dart';
 import 'package:rwnaqk/widgets/cart/shipping_method_selector.dart';
+import 'package:rwnaqk/widgets/common/add_to_cart_animated_button.dart';
 import 'package:rwnaqk/widgets/common/app_action_icon_button.dart';
 import 'package:rwnaqk/widgets/product_details/product_details_header_card.dart';
 import 'package:rwnaqk/widgets/product_details/product_reviews_section.dart';
@@ -65,7 +65,7 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
           isFavorite: controller.isFavorite.value,
           onFavorite: controller.toggleFavorite,
           onAdd: controller.addToCart,
-          onBuy: controller.buyNow,
+          onCart: () => Get.toNamed(AppRoutes.cart),
         ),
         body: SafeArea(
           child: ListView(
@@ -483,13 +483,13 @@ class _BottomBar extends StatelessWidget {
   final bool isFavorite;
   final VoidCallback onFavorite;
   final VoidCallback onAdd;
-  final VoidCallback onBuy;
+  final VoidCallback onCart;
 
   const _BottomBar({
     required this.isFavorite,
     required this.onFavorite,
     required this.onAdd,
-    required this.onBuy,
+    required this.onCart,
   });
 
   @override
@@ -508,48 +508,63 @@ class _BottomBar extends StatelessWidget {
         ),
         child: Row(
           children: [
-            InkWell(
+            _BottomIconButton(
               onTap: onFavorite,
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: context.card,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: context.border.withValues(alpha: .55),
-                  ),
-                ),
-                child: Icon(
-                  isFavorite
-                      ? Icons.favorite_rounded
-                      : Icons.favorite_border_rounded,
-                  color: isFavorite
-                      ? context.destructive
-                      : context.mutedForeground,
-                ),
-              ),
+              icon: isFavorite
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              iconColor:
+                  isFavorite ? context.destructive : context.mutedForeground,
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: AppButton(
-                text: Tk.productDetailsAddToCart.tr,
+              child: AddToCartAnimatedButton(
+                label: Tk.productDetailsAddToCart.tr,
                 onPressed: onAdd,
-                height: 44,
-                backgroundColor: const Color(0xFF22252B),
-                foregroundColor: Colors.white,
               ),
             ),
             const SizedBox(width: 10),
-            Expanded(
-              child: AppButton(
-                text: Tk.productDetailsBuyNow.tr,
-                onPressed: onBuy,
-                height: 44,
-              ),
+            _BottomIconButton(
+              onTap: onCart,
+              icon: Icons.shopping_cart_outlined,
+              iconColor: context.primary,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomIconButton extends StatelessWidget {
+  final VoidCallback onTap;
+  final IconData icon;
+  final Color iconColor;
+
+  const _BottomIconButton({
+    required this.onTap,
+    required this.icon,
+    required this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: context.card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: context.border.withValues(alpha: .55),
+          ),
+        ),
+        child: Icon(
+          icon,
+          color: iconColor,
         ),
       ),
     );

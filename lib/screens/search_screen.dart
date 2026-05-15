@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 
 import 'package:rwnaqk/controllers/search/app_search_controller.dart';
+import '../widgets/common/app_empty_state.dart';
 import '../widgets/common/app_section_header.dart';
 import '../widgets/card/product_horizontal_list.dart';
 import '../widgets/home/shop_top_bar.dart';
@@ -47,12 +49,11 @@ class SearchScreen extends GetView<AppSearchController> {
                 final items = controller.history.toList(growable: false);
 
                 if (items.isEmpty) {
-                  return Text(
-                    Tk.searchNoRecent.tr,
-                    style: TextStyle(
-                      color: context.mutedForeground,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  return const AppEmptyState(
+                    title: Tk.searchNoRecent,
+                    lottieAsset: EmptyStateLottieAssets.search,
+                    animationSize: 96,
+                    padding: EdgeInsets.all(14),
                   );
                 }
 

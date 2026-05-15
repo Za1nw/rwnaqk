@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
-import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_product_utils.dart';
 import 'package:rwnaqk/models/home_product_item.dart';

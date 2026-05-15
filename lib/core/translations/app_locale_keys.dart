@@ -44,6 +44,14 @@ abstract final class Tk {
   static const onboardingS2Subtitle = 'onboarding.s2_subtitle';
   static const onboardingS3Title = 'onboarding.s3_title';
   static const onboardingS3Subtitle = 'onboarding.s3_subtitle';
+  static const onboardingSetupBadge = 'onboarding.setup_badge';
+  static const onboardingSetupTitle = 'onboarding.setup_title';
+  static const onboardingSetupSubtitle = 'onboarding.setup_subtitle';
+  static const onboardingLanguageHint = 'onboarding.language_hint';
+  static const onboardingThemeHint = 'onboarding.theme_hint';
+  static const onboardingThemeLight = 'onboarding.theme_light';
+  static const onboardingThemeDark = 'onboarding.theme_dark';
+  static const onboardingSwipeHint = 'onboarding.swipe_hint';
   static const loginTitle = 'login.title';
   static const loginSubtitle = 'login.subtitle';
   static const loginEmailLabel = 'login.email.label';

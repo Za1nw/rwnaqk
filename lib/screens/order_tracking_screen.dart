@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/orders/orders_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_order_utils.dart';
 import 'package:rwnaqk/models/order_model.dart';
+import 'package:rwnaqk/widgets/common/app_empty_state.dart';
 import 'package:rwnaqk/widgets/dialogs/review_dialog.dart';
 import 'package:rwnaqk/widgets/orders/order_timeline.dart';
 import 'package:rwnaqk/widgets/orders/order_tracking_actions.dart';
@@ -38,57 +40,13 @@ class OrderTrackingScreen extends GetView<OrdersController> {
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.receipt_long_outlined,
-                    size: 56,
-                    color: context.muted,
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    Tk.ordersTrackingMissingTitle.tr,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: context.foreground,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 17,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    Tk.ordersTrackingMissingMessage.tr,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: context.muted,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    width: 140,
-                    height: 46,
-                    child: ElevatedButton(
-                      onPressed: Get.back,
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: context.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: Text(
-                        Tk.commonBack.tr,
-                        style: TextStyle(
-                          color: context.primaryForeground,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: AppEmptyState(
+                icon: Icons.receipt_long_outlined,
+                lottieAsset: EmptyStateLottieAssets.orders,
+                title: Tk.ordersTrackingMissingTitle.tr,
+                subtitle: Tk.ordersTrackingMissingMessage.tr,
+                buttonText: Tk.commonBack.tr,
+                onButtonPressed: Get.back,
               ),
             ),
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/common/app_empty_state.dart';
 import 'package:rwnaqk/widgets/common/app_error_state.dart';
@@ -69,6 +70,7 @@ class ListingEmptySliver extends StatelessWidget {
               title: Tk.listingEmptyTitle.tr,
               subtitle: Tk.listingEmptySubtitle.tr,
               icon: Icons.inventory_2_outlined,
+              lottieAsset: EmptyStateLottieAssets.products,
             ),
             const SizedBox(height: 14),
             SizedBox(

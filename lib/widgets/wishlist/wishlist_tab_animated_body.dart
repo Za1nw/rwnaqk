@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_controller.dart';
+import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_breakpoints.dart';
 import 'package:rwnaqk/widgets/common/app_empty_state.dart';
@@ -96,6 +97,7 @@ class _WishlistTabContent extends StatelessWidget {
     if (controller.wishlist.isEmpty) {
       return const AppEmptyState(
         icon: Icons.favorite_border_rounded,
+        lottieAsset: EmptyStateLottieAssets.favorites,
         title: Tk.wishlistEmptyTitle,
         subtitle: Tk.wishlistEmptySubtitle,
       );
@@ -140,6 +142,7 @@ class _RecentTabContent extends StatelessWidget {
           Expanded(
             child: AppEmptyState(
               icon: Icons.history_rounded,
+              lottieAsset: EmptyStateLottieAssets.products,
               title: Tk.wishlistRecentEmptyTitle,
               subtitle: Tk.wishlistRecentEmptySubtitle,
             ),
