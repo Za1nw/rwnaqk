@@ -18,6 +18,7 @@ abstract class AppRoutes {
   static const settings = '/settings';
   static const profile = '/profile';
   static const helpCenter = '/help-center';
+  static const legalDocuments = '/legal-documents';
   static const supportChat = '/support-chat';
   static const editProfile = '/edit-profile';
   static const addresses = '/addresses';

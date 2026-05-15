@@ -28,6 +28,7 @@ import 'package:rwnaqk/screens/cart_screen.dart';
 import 'package:rwnaqk/screens/flash_sale_screen.dart';
 import 'package:rwnaqk/screens/home_screen.dart';
 import 'package:rwnaqk/screens/help_center_screen.dart';
+import 'package:rwnaqk/screens/legal_documents_screen.dart';
 import 'package:rwnaqk/screens/main_screen.dart';
 import 'package:rwnaqk/screens/onboarding_screen.dart';
 import 'package:rwnaqk/screens/order_details_screen.dart';
@@ -170,6 +171,10 @@ class AppPages {
       name: AppRoutes.helpCenter,
       page: () => const HelpCenterScreen(),
       binding: SupportBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.legalDocuments,
+      page: () => const LegalDocumentsScreen(),
     ),
     GetPage(
       name: AppRoutes.supportChat,

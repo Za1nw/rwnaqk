@@ -29,6 +29,144 @@ double _resolveCurrentPage(OnboardingController controller) {
   return controller.pageCtrl.page ?? controller.pageIndex.value.toDouble();
 }
 
+class _HeroPalette {
+  final Color shellTop;
+  final Color shellBottom;
+  final Color shellBorder;
+  final Color shellGlow;
+  final Color shellGlowSoft;
+  final Color sceneBackdropTop;
+  final Color sceneBackdropBottom;
+  final Color floatSurface;
+  final Color floatAccentSurface;
+  final Color floatBorder;
+  final Color floatAccentBorder;
+  final Color panelSurface;
+  final Color panelBorder;
+  final Color chipSurface;
+  final Color chipAccentSurface;
+  final Color chipBorder;
+  final Color chipAccentBorder;
+  final Color showcaseSurface;
+  final Color showcaseBorder;
+  final Color actionSurface;
+  final Color actionBorder;
+  final Color sparkSurface;
+  final Color sparkSoftSurface;
+  final Color sparkBorder;
+  final Color softTrack;
+
+  const _HeroPalette({
+    required this.shellTop,
+    required this.shellBottom,
+    required this.shellBorder,
+    required this.shellGlow,
+    required this.shellGlowSoft,
+    required this.sceneBackdropTop,
+    required this.sceneBackdropBottom,
+    required this.floatSurface,
+    required this.floatAccentSurface,
+    required this.floatBorder,
+    required this.floatAccentBorder,
+    required this.panelSurface,
+    required this.panelBorder,
+    required this.chipSurface,
+    required this.chipAccentSurface,
+    required this.chipBorder,
+    required this.chipAccentBorder,
+    required this.showcaseSurface,
+    required this.showcaseBorder,
+    required this.actionSurface,
+    required this.actionBorder,
+    required this.sparkSurface,
+    required this.sparkSoftSurface,
+    required this.sparkBorder,
+    required this.softTrack,
+  });
+
+  factory _HeroPalette.of(BuildContext context) {
+    return _HeroPalette(
+      shellTop: Color.lerp(
+        context.card,
+        context.background,
+        context.isDark ? 0.16 : 0.08,
+      )!,
+      shellBottom: Color.lerp(
+        context.card,
+        context.primary,
+        context.isDark ? 0.06 : 0.02,
+      )!,
+      shellBorder: context.border.withValues(
+        alpha: context.isDark ? 0.72 : 0.64,
+      ),
+      shellGlow: Color.lerp(context.primary, context.background, 0.96)!,
+      shellGlowSoft: Color.lerp(context.primary, context.background, 0.98)!,
+      sceneBackdropTop: Color.lerp(
+        context.background,
+        context.primary,
+        context.isDark ? 0.12 : 0.04,
+      )!,
+      sceneBackdropBottom: Color.lerp(
+        context.card,
+        context.background,
+        context.isDark ? 0.18 : 0.08,
+      )!,
+      floatSurface: context.background.withValues(
+        alpha: context.isDark ? 0.38 : 0.86,
+      ),
+      floatAccentSurface: Color.lerp(context.accent, context.background, 0.1)!,
+      floatBorder: context.border.withValues(
+        alpha: context.isDark ? 0.46 : 0.28,
+      ),
+      floatAccentBorder: context.primary.withValues(
+        alpha: context.isDark ? 0.22 : 0.1,
+      ),
+      panelSurface: context.background.withValues(
+        alpha: context.isDark ? 0.48 : 0.9,
+      ),
+      panelBorder: context.border.withValues(
+        alpha: context.isDark ? 0.42 : 0.24,
+      ),
+      chipSurface: context.background.withValues(
+        alpha: context.isDark ? 0.46 : 0.94,
+      ),
+      chipAccentSurface: Color.lerp(context.accent, context.background, 0.16)!,
+      chipBorder: context.border.withValues(
+        alpha: context.isDark ? 0.38 : 0.24,
+      ),
+      chipAccentBorder: context.primary.withValues(
+        alpha: context.isDark ? 0.22 : 0.14,
+      ),
+      showcaseSurface: Color.lerp(
+        context.card,
+        context.background,
+        context.isDark ? 0.2 : 0.52,
+      )!,
+      showcaseBorder: context.border.withValues(
+        alpha: context.isDark ? 0.34 : 0.22,
+      ),
+      actionSurface: context.background.withValues(
+        alpha: context.isDark ? 0.42 : 0.9,
+      ),
+      actionBorder: context.border.withValues(
+        alpha: context.isDark ? 0.42 : 0.24,
+      ),
+      sparkSurface: context.background.withValues(
+        alpha: context.isDark ? 0.54 : 0.94,
+      ),
+      sparkSoftSurface: Color.lerp(
+        context.secondary,
+        context.background,
+        context.isDark ? 0.24 : 0.12,
+      )!,
+      sparkBorder: context.border.withValues(
+        alpha: context.isDark ? 0.42 : 0.34,
+      ),
+      softTrack: context.border.withValues(alpha: 0.62),
+    );
+  }
+}
+
 class _SlideMetrics {
   final double heroHeight;
   final double heroArtworkExtent;
@@ -390,6 +528,7 @@ class _HeroShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardRadius = compact ? 24.0 : 28.0;
+    final palette = _HeroPalette.of(context);
 
     return Opacity(
       opacity: lerpDouble(0.78, 1, reveal)!,
@@ -405,24 +544,9 @@ class _HeroShell extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Color.lerp(
-                      context.card,
-                      context.background,
-                      context.isDark ? 0.16 : 0.08,
-                    )!,
-                    Color.lerp(
-                      context.card,
-                      context.primary,
-                      context.isDark ? 0.06 : 0.02,
-                    )!,
-                  ],
+                  colors: [palette.shellTop, palette.shellBottom],
                 ),
-                border: Border.all(
-                  color: context.border.withValues(
-                    alpha: context.isDark ? 0.72 : 0.64,
-                  ),
-                ),
+                border: Border.all(color: palette.shellBorder),
                 boxShadow: [
                   BoxShadow(
                     color: context.shadow.withValues(
@@ -444,16 +568,8 @@ class _HeroShell extends StatelessWidget {
                             center: const Alignment(0, -0.2),
                             radius: 1.05,
                             colors: [
-                              Color.lerp(
-                                context.background,
-                                context.primary,
-                                context.isDark ? 0.12 : 0.04,
-                              )!,
-                              Color.lerp(
-                                context.card,
-                                context.background,
-                                context.isDark ? 0.18 : 0.08,
-                              )!,
+                              palette.sceneBackdropTop,
+                              palette.sceneBackdropBottom,
                             ],
                           ),
                         ),
@@ -464,11 +580,7 @@ class _HeroShell extends StatelessWidget {
                       start: 10,
                       child: _BackgroundGlow(
                         size: compact ? 42 : 52,
-                        color: Color.lerp(
-                          context.primary,
-                          context.background,
-                          0.96,
-                        )!,
+                        color: palette.shellGlow,
                       ),
                     ),
                     PositionedDirectional(
@@ -476,11 +588,7 @@ class _HeroShell extends StatelessWidget {
                       end: 12,
                       child: _BackgroundGlow(
                         size: compact ? 22 : 28,
-                        color: Color.lerp(
-                          context.primary,
-                          context.background,
-                          0.98,
-                        )!,
+                        color: palette.shellGlowSoft,
                       ),
                     ),
                     Positioned.fill(
@@ -959,20 +1067,16 @@ class _FloatIconCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = compact ? 38.0 : 42.0;
+    final palette = _HeroPalette.of(context);
 
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: emphasis
-            ? Color.lerp(context.accent, context.background, 0.1)!
-            : context.background
-                .withValues(alpha: context.isDark ? 0.38 : 0.86),
+        color: emphasis ? palette.floatAccentSurface : palette.floatSurface,
         borderRadius: BorderRadius.circular(size * 0.32),
         border: Border.all(
-          color: emphasis
-              ? context.primary.withValues(alpha: context.isDark ? 0.22 : 0.1)
-              : context.border.withValues(alpha: context.isDark ? 0.46 : 0.28),
+          color: emphasis ? palette.floatAccentBorder : palette.floatBorder,
         ),
       ),
       child: Icon(
@@ -999,16 +1103,14 @@ class _ScenePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = _HeroPalette.of(context);
     return Container(
       height: 36,
       padding: const EdgeInsets.symmetric(horizontal: 11),
       decoration: BoxDecoration(
-        color:
-            context.background.withValues(alpha: context.isDark ? 0.48 : 0.9),
+        color: palette.panelSurface,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: context.border.withValues(alpha: context.isDark ? 0.42 : 0.24),
-        ),
+        border: Border.all(color: palette.panelBorder),
       ),
       child: Row(
         children: [
@@ -1060,16 +1162,14 @@ class _DiscoverySearchHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = _HeroPalette.of(context);
     return Container(
       height: 34,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color:
-            context.background.withValues(alpha: context.isDark ? 0.46 : 0.94),
+        color: palette.chipSurface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: context.border.withValues(alpha: context.isDark ? 0.42 : 0.22),
-        ),
+        border: Border.all(color: palette.panelBorder),
       ),
       child: Row(
         children: [
@@ -1103,19 +1203,15 @@ class _DiscoveryMiniChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = _HeroPalette.of(context);
     return Container(
       width: 26,
       height: 26,
       decoration: BoxDecoration(
-        color: accent
-            ? Color.lerp(context.accent, context.background, 0.16)!
-            : context.background
-                .withValues(alpha: context.isDark ? 0.42 : 0.94),
+        color: accent ? palette.chipAccentSurface : palette.chipSurface,
         borderRadius: BorderRadius.circular(13),
         border: Border.all(
-          color: accent
-              ? context.primary.withValues(alpha: context.isDark ? 0.22 : 0.14)
-              : context.border.withValues(alpha: context.isDark ? 0.38 : 0.24),
+          color: accent ? palette.chipAccentBorder : palette.chipBorder,
         ),
       ),
       child: Icon(
@@ -1132,20 +1228,15 @@ class _DiscoveryShowcaseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = _HeroPalette.of(context);
     return Container(
       width: 62,
       height: 102,
       padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
       decoration: BoxDecoration(
-        color: Color.lerp(
-          context.card,
-          context.background,
-          context.isDark ? 0.2 : 0.52,
-        )!,
+        color: palette.showcaseSurface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: context.border.withValues(alpha: context.isDark ? 0.34 : 0.22),
-        ),
+        border: Border.all(color: palette.showcaseBorder),
       ),
       child: Column(
         children: [
@@ -1185,16 +1276,14 @@ class _DiscoveryFooterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = _HeroPalette.of(context);
     return Container(
       height: 30,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color:
-            context.background.withValues(alpha: context.isDark ? 0.46 : 0.94),
+        color: palette.chipSurface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.border.withValues(alpha: context.isDark ? 0.42 : 0.22),
-        ),
+        border: Border.all(color: palette.panelBorder),
       ),
       child: Row(
         children: [
@@ -1246,6 +1335,7 @@ class _ActionStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = filled ? context.primaryForeground : context.primary;
+    final palette = _HeroPalette.of(context);
     final barColor = filled
         ? context.primaryForeground.withValues(alpha: 0.24)
         : context.muted.withValues(alpha: context.isDark ? 0.42 : 0.72);
@@ -1254,17 +1344,9 @@ class _ActionStrip extends StatelessWidget {
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: filled
-            ? context.primary
-            : context.background.withValues(alpha: context.isDark ? 0.42 : 0.9),
+        color: filled ? context.primary : palette.actionSurface,
         borderRadius: BorderRadius.circular(18),
-        border: filled
-            ? null
-            : Border.all(
-                color: context.border.withValues(
-                  alpha: context.isDark ? 0.42 : 0.24,
-                ),
-              ),
+        border: filled ? null : Border.all(color: palette.actionBorder),
       ),
       child: Row(
         children: [
@@ -1298,22 +1380,17 @@ class _AccentSpark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = _HeroPalette.of(context);
     return Container(
       width: 18,
       height: 18,
       decoration: BoxDecoration(
-        color: primary
-            ? context.background.withValues(alpha: context.isDark ? 0.54 : 0.94)
-            : Color.lerp(
-                context.secondary,
-                context.background,
-                context.isDark ? 0.24 : 0.12,
-              )!,
+        color: primary ? palette.sparkSurface : palette.sparkSoftSurface,
         shape: BoxShape.circle,
         border: Border.all(
           color: primary
               ? context.primary.withValues(alpha: context.isDark ? 0.28 : 0.24)
-              : context.border.withValues(alpha: context.isDark ? 0.42 : 0.34),
+              : palette.sparkBorder,
         ),
       ),
       child: Icon(
@@ -1357,6 +1434,7 @@ class _StepNode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = _HeroPalette.of(context);
     return Container(
       width: 30,
       height: 30,
@@ -1364,12 +1442,11 @@ class _StepNode extends StatelessWidget {
         shape: BoxShape.circle,
         color: active
             ? Color.lerp(context.primary, context.background, 0.84)
-            : context.background
-                .withValues(alpha: context.isDark ? 0.42 : 0.92),
+            : palette.chipSurface,
         border: Border.all(
           color: active
               ? context.primary.withValues(alpha: context.isDark ? 0.28 : 0.18)
-              : context.border.withValues(alpha: context.isDark ? 0.42 : 0.32),
+              : palette.chipBorder,
         ),
       ),
       child: Icon(
@@ -1388,12 +1465,13 @@ class _StepConnector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = _HeroPalette.of(context);
     return Container(
       height: 3,
       decoration: BoxDecoration(
         color: active
             ? context.primary.withValues(alpha: 0.22)
-            : context.border.withValues(alpha: 0.58),
+            : palette.softTrack,
         borderRadius: BorderRadius.circular(999),
       ),
     );
@@ -1415,6 +1493,7 @@ class _TrackStop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = _HeroPalette.of(context);
     return SizedBox(
       width: 50,
       child: Column(
@@ -1426,7 +1505,7 @@ class _TrackStop extends StatelessWidget {
               shape: BoxShape.circle,
               color: active
                   ? Color.lerp(context.primary, context.background, 0.84)
-                  : Color.lerp(context.secondary, context.background, 0.12),
+                  : palette.sparkSoftSurface,
             ),
             child: Icon(
               icon,

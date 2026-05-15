@@ -137,6 +137,12 @@ class SettingsScreen extends GetView<AppSettingsController> {
                   subtitle: Tk.settingsHelpCenterSubtitle.tr,
                   onTap: () => Get.toNamed(AppRoutes.helpCenter),
                 ),
+                SettingsTileSpec(
+                  icon: Icons.verified_user_outlined,
+                  title: Tk.legalTitle.tr,
+                  subtitle: Tk.registerTermsView.tr,
+                  onTap: () => Get.toNamed(AppRoutes.legalDocuments),
+                ),
               ],
             ),
             SettingsSectionSpec(

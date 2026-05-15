@@ -70,10 +70,35 @@ const Map<String, String> enAuthTranslations = {
   'register.password.required': 'Password is required',
   'register.password.short': 'Minimum 6 characters',
   'register.terms.text': 'I agree to Terms & Privacy Policy',
+  'register.terms.view': 'View terms and privacy policy',
   'register.terms.required': 'You must agree to continue',
   'register.submit': 'Create account',
   'register.have_account': 'Already have an account?',
   'register.sign_in': 'Sign in',
+  'legal.title': 'Terms & Privacy',
+  'legal.subtitle':
+      'Review how the app handles account use, privacy, and consent before you continue.',
+  'legal.terms.title': 'Terms of Use',
+  'legal.terms.intro':
+      'These terms explain how the app should be used when browsing, ordering, and managing your account.',
+  'legal.terms.bullet_1':
+      'Use accurate account, contact, and shipping details so orders and support requests can be handled correctly.',
+  'legal.terms.bullet_2':
+      'Do not misuse the app, attempt unauthorized access, or submit harmful or fraudulent activity.',
+  'legal.terms.bullet_3':
+      'Prices, stock, and order confirmation may change based on product availability and store review policies.',
+  'legal.consent.title': 'Privacy & Consent Policy',
+  'legal.consent.intro':
+      'This policy explains what information is collected and how your approval is used inside the app.',
+  'legal.consent.bullet_1':
+      'We use your name, phone, address, and order details to complete purchases, delivery, and account support.',
+  'legal.consent.bullet_2':
+      'Your continued use means you agree to receive essential order updates, service notifications, and security messages.',
+  'legal.consent.bullet_3':
+      'You can review or update your account information later from your profile and app settings when available.',
+  'legal.notice.title': 'Your approval matters',
+  'legal.notice.body':
+      'By creating an account or continuing to use the app, you confirm that you reviewed these terms and agree to the store policies shown here.',
   'fp.title': 'Password Recovery',
   'fp.subtitle': 'Choose how you want to reset your password',
   'fp.sms': 'SMS',
@@ -170,10 +195,35 @@ const Map<String, String> arAuthTranslations = {
   'register.password.required': 'كلمة المرور مطلوبة',
   'register.password.short': 'الحد الأدنى 6 أحرف',
   'register.terms.text': 'أوافق على الشروط وسياسة الخصوصية',
+  'register.terms.view': 'عرض الشروط وسياسة الخصوصية',
   'register.terms.required': 'يجب الموافقة للمتابعة',
   'register.submit': 'إنشاء حساب',
   'register.have_account': 'لديك حساب بالفعل؟',
   'register.sign_in': 'تسجيل الدخول',
+  'legal.title': 'الشروط والخصوصية',
+  'legal.subtitle':
+      'راجع طريقة استخدام التطبيق وسياسة الخصوصية والموافقة قبل المتابعة.',
+  'legal.terms.title': 'شروط الاستخدام',
+  'legal.terms.intro':
+      'توضح هذه الشروط كيفية استخدام التطبيق عند التصفح والطلب وإدارة الحساب بشكل صحيح.',
+  'legal.terms.bullet_1':
+      'يجب إدخال بيانات الحساب والتواصل والشحن بشكل دقيق حتى يمكن تنفيذ الطلبات وخدمة الدعم بصورة صحيحة.',
+  'legal.terms.bullet_2':
+      'يُمنع إساءة استخدام التطبيق أو محاولة الوصول غير المصرح به أو إدخال أي نشاط ضار أو احتيالي.',
+  'legal.terms.bullet_3':
+      'قد تتغير الأسعار والتوفر وتأكيد الطلب بحسب حالة المخزون وسياسات المراجعة داخل المتجر.',
+  'legal.consent.title': 'سياسة الخصوصية والموافقة',
+  'legal.consent.intro':
+      'توضح هذه السياسة ما البيانات التي يتم استخدامها وكيف يتم الاعتماد على موافقتك داخل التطبيق.',
+  'legal.consent.bullet_1':
+      'نستخدم الاسم ورقم الهاتف والعنوان وبيانات الطلب لإتمام الشراء والتوصيل وتقديم الدعم الخاص بالحساب.',
+  'legal.consent.bullet_2':
+      'استمرارك في استخدام التطبيق يعني موافقتك على استقبال تحديثات الطلب والإشعارات الخدمية ورسائل الأمان الأساسية.',
+  'legal.consent.bullet_3':
+      'يمكنك مراجعة بيانات حسابك أو تحديثها لاحقًا من الملف الشخصي وإعدادات التطبيق عند توفر ذلك.',
+  'legal.notice.title': 'موافقتك مهمة',
+  'legal.notice.body':
+      'عند إنشاء الحساب أو الاستمرار في استخدام التطبيق فأنت تؤكد أنك اطلعت على هذه الشروط ووافقت على سياسات المتجر المعروضة هنا.',
   'fp.title': 'استعادة كلمة المرور',
   'fp.subtitle': 'اختر الطريقة التي تريد بها إعادة تعيين كلمة المرور',
   'fp.sms': 'رسالة SMS',

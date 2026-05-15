@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 import '../../controllers/register/register_controller.dart';
@@ -19,19 +20,19 @@ class RegisterScreen extends GetView<RegisterController> {
     final cardShadows = context.isDark
         ? <BoxShadow>[
             BoxShadow(
-              color: context.shadow.withOpacity(0.22),
+              color: context.shadow.withValues(alpha: 0.22),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
           ]
         : <BoxShadow>[
             BoxShadow(
-              color: context.background.withOpacity(0.85),
+              color: context.background.withValues(alpha: 0.85),
               blurRadius: 14,
               offset: const Offset(-6, -6),
             ),
             BoxShadow(
-              color: context.shadow.withOpacity(0.28),
+              color: context.shadow.withValues(alpha: 0.28),
               blurRadius: 18,
               offset: const Offset(10, 10),
             ),
@@ -68,12 +69,14 @@ class RegisterScreen extends GetView<RegisterController> {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color:
-                        context.card.withOpacity(context.isDark ? 0.92 : 0.96),
+                    color: context.card.withValues(
+                      alpha: context.isDark ? 0.92 : 0.96,
+                    ),
                     borderRadius: BorderRadius.circular(22),
                     border: Border.all(
-                      color: context.border
-                          .withOpacity(context.isDark ? 0.45 : 0.70),
+                      color: context.border.withValues(
+                        alpha: context.isDark ? 0.45 : 0.70,
+                      ),
                       width: 1,
                     ),
                     boxShadow: cardShadows,
@@ -92,8 +95,9 @@ class RegisterScreen extends GetView<RegisterController> {
                                 prefixIcon: Icons.person_outline,
                                 validator: (v) {
                                   final value = (v ?? '').trim();
-                                  if (value.isEmpty)
+                                  if (value.isEmpty) {
                                     return Tk.registerFirstNameRequired.tr;
+                                  }
                                   return null;
                                 },
                               ),
@@ -107,8 +111,9 @@ class RegisterScreen extends GetView<RegisterController> {
                                 prefixIcon: Icons.badge_outlined,
                                 validator: (v) {
                                   final value = (v ?? '').trim();
-                                  if (value.isEmpty)
+                                  if (value.isEmpty) {
                                     return Tk.registerLastNameRequired.tr;
+                                  }
                                   return null;
                                 },
                               ),
@@ -124,10 +129,12 @@ class RegisterScreen extends GetView<RegisterController> {
                           keyboardType: TextInputType.phone,
                           validator: (v) {
                             final value = (v ?? '').trim();
-                            if (value.isEmpty)
+                            if (value.isEmpty) {
                               return Tk.registerPhoneRequired.tr;
-                            if (value.length < 8)
+                            }
+                            if (value.length < 8) {
                               return Tk.registerPhoneInvalid.tr;
+                            }
                             return null;
                           },
                         ),
@@ -140,10 +147,12 @@ class RegisterScreen extends GetView<RegisterController> {
                           keyboardType: TextInputType.emailAddress,
                           validator: (v) {
                             final value = (v ?? '').trim();
-                            if (value.isEmpty)
+                            if (value.isEmpty) {
                               return Tk.registerEmailRequired.tr;
-                            if (!GetUtils.isEmail(value))
+                            }
+                            if (!GetUtils.isEmail(value)) {
                               return Tk.registerEmailInvalid.tr;
+                            }
                             return null;
                           },
                         ),
@@ -171,60 +180,92 @@ class RegisterScreen extends GetView<RegisterController> {
                           textInputAction: TextInputAction.done,
                           validator: (v) {
                             final value = (v ?? '');
-                            if (value.isEmpty)
+                            if (value.isEmpty) {
                               return Tk.registerPasswordRequired.tr;
-                            if (value.length < 6)
+                            }
+                            if (value.length < 6) {
                               return Tk.registerPasswordShort.tr;
+                            }
                             return null;
                           },
                         ),
                         const SizedBox(height: 12),
                         // ملاحظة: Obx هنا مخصص فقط لحالة الموافقة لتقليل إعادة البناء.
                         Obx(() {
-                          return InkWell(
-                            borderRadius: BorderRadius.circular(14),
-                            onTap: controller.toggleAgreed,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6),
-                              child: Row(
-                                children: [
-                                  Container(
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 6),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                InkWell(
+                                  borderRadius: BorderRadius.circular(8),
+                                  onTap: controller.toggleAgreed,
+                                  child: Container(
                                     width: 22,
                                     height: 22,
                                     decoration: BoxDecoration(
                                       color: context.input,
                                       borderRadius: BorderRadius.circular(7),
                                       border: Border.all(
-                                        color: context.border.withOpacity(
-                                            context.isDark ? 0.55 : 0.75),
+                                        color: context.border.withValues(
+                                          alpha: context.isDark ? 0.55 : 0.75,
+                                        ),
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: context.shadow.withOpacity(
-                                              context.isDark ? 0.25 : 0.12),
+                                          color: context.shadow.withValues(
+                                            alpha: context.isDark ? 0.25 : 0.12,
+                                          ),
                                           blurRadius: 8,
                                           offset: const Offset(0, 4),
                                         ),
                                       ],
                                     ),
                                     child: controller.agreed.value
-                                        ? Icon(Icons.check,
-                                            size: 16, color: context.primary)
+                                        ? Icon(
+                                            Icons.check,
+                                            size: 16,
+                                            color: context.primary,
+                                          )
                                         : const SizedBox.shrink(),
                                   ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      Tk.registerTermsText.tr,
-                                      style: TextStyle(
-                                        color: context.mutedForeground,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12.5,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: controller.toggleAgreed,
+                                        child: Text(
+                                          Tk.registerTermsText.tr,
+                                          style: TextStyle(
+                                            color: context.mutedForeground,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12.5,
+                                            height: 1.45,
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 4),
+                                      GestureDetector(
+                                        onTap: () => Get.toNamed(
+                                          AppRoutes.legalDocuments,
+                                        ),
+                                        child: Text(
+                                          Tk.registerTermsView.tr,
+                                          style: TextStyle(
+                                            color: context.primary,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 12.3,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           );
                         }),
