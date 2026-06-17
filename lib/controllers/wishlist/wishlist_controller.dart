@@ -4,6 +4,7 @@ import 'package:rwnaqk/controllers/wishlist/wishlist_service.dart';
 import 'package:rwnaqk/controllers/wishlist/wishlist_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة المفضلة.
@@ -112,11 +113,12 @@ class WishlistController extends GetxController {
       Get.find<CartController>().addToCart(item);
     }
 
-    Get.snackbar(
-      Tk.cartTitle.tr,
-      Tk.wishlistAddedToCartMessage.trParams({'title': item.title.tr}),
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 1),
+    AppToast.show(
+      Get.context!,
+      title: Tk.cartTitle.tr,
+      message: Tk.wishlistAddedToCartMessage.trParams({'title': item.title.tr}),
+      type: AppToastType.success,
+      duration: const Duration(seconds: 3),
     );
   }
 

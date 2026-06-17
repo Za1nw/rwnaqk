@@ -38,9 +38,9 @@ class AppSectionHeader extends StatelessWidget {
     this.reserveActionSpace = false,
     this.padding,
   }) : assert(
-          !(actionText != null && actionIcon != null),
-          'Use either actionText or actionIcon, not both.',
-        );
+         !(actionText != null && actionIcon != null),
+         'Use either actionText or actionIcon, not both.',
+       );
 
   bool get _hasTextAction =>
       actionText != null &&
@@ -59,7 +59,7 @@ class AppSectionHeader extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: titleColor ?? context.foreground,
+              color: context.foreground.withOpacity(.75),
               fontSize: titleFontSize,
               fontWeight: titleFontWeight,
             ),
@@ -76,7 +76,7 @@ class AppSectionHeader extends StatelessWidget {
                 Text(
                   actionText!,
                   style: TextStyle(
-                    color: actionColor ?? context.mutedForeground,
+                    color: actionColor ?? context.foreground.withOpacity(.75),
                     fontSize: actionFontSize,
                     fontWeight: actionFontWeight,
                   ),
@@ -110,20 +110,14 @@ class AppSectionHeader extends StatelessWidget {
             ),
           )
         else if (_hasIconAction)
-          AppActionIconButton(
-            icon: actionIcon!,
-            onTap: onActionTap!,
-          )
+          AppActionIconButton(icon: actionIcon!, onTap: onActionTap!)
         else if (reserveActionSpace)
           const SizedBox(width: 34, height: 34),
       ],
     );
 
     if (padding != null) {
-      return Padding(
-        padding: padding!,
-        child: child,
-      );
+      return Padding(padding: padding!, child: child);
     }
 
     return child;

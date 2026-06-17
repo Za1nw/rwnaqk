@@ -1,68 +1,78 @@
 import 'package:flutter/material.dart';
 
 class LightColors {
-  static const background = Color(0xFFFFFFFF);
-  static const foreground = Color(0xFF1F2937);
-  static const card = Color(0xFFF8FAFC);
-  static const cardForeground = Color(0xFF1F2937);
-  static const popover = Color(0xFFF1F5F9);
-  static const popoverForeground = Color(0xFF1F2937);
-  static const primary = Color(0xFF2563EB);
-  static const primaryForeground = Color(0xFFFFFFFF);
-  static const secondary = Color(0xFFE2E8F0);
-  static const secondaryForeground = Color(0xFF334155);
-  static const muted = Color(0xFFE5E7EB);
-  static const mutedForeground = Color(0xFF64748B);
-  static const accent = Color(0xFFDCE7FF);
-  static const accentForeground = Color(0xFF1E40AF);
-  static const destructive = Color(0xFFDC2626);
+  // الألوان الرئيسية للهوية الجديدة (النسخة الفاتحة)
+  static const background = Color(0xFFFFFFFF); // أبيض للخلفية
+  static const foreground = Color(0xFF101626); // brand-ink للنص الرئيسي
+  static const card = Color(0xFFF8FAFC); // فاتح قليلاً للبطاقات
+  static const cardForeground = Color(0xFF101626); // brand-ink
+  static const popover = Color(0xFFFFFFFF);
+  static const popoverForeground = Color(0xFF101626);
+  static const primary = Color(0xFFDE706B); // brand-main (اللون الأساسي)
+  static const primaryForeground = Color(0xFFFFFFFF); // أبيض للنص على الأساسي
+  static const secondary = Color(0xFFD88869); // brand-secondary
+  static const secondaryForeground = Color(0xFFFFFFFF);
+  static const muted = Color(0xFFF1F5F9);
+  static const mutedForeground = Color(0xFFA7B2C0); // brand-slate
+  static const accent = Color(0xFFFF7378); // brand-coral
+  static const accentForeground = Color(0xFFFFFFFF);
+  static const destructive = Color(0xFFDE706B); // استخدام brand-main لل destructive
   static const border = Color(0xFFE2E8F0);
   static const input = Color(0xFFF1F5F9);
-  static const ring = Color(0xFF2563EB);
+  static const ring = Color(0xFFDE706B); // brand-main
 
-  static const chart1 = Color(0xFF2563EB);
-  static const chart2 = Color(0xFF06B6D4);
-  static const chart3 = Color(0xFF6366F1);
-  static const chart4 = Color(0xFF22C55E);
-  static const chart5 = Color(0xFF0EA5E9);
+  // ألوان المخططات (charts)
+  static const chart1 = Color(0xFFDE706B); // brand-main
+  static const chart2 = Color(0xFFD88869); // brand-secondary
+  static const chart3 = Color(0xFFFF7378); // brand-coral
+  static const chart4 = Color(0xFFA7B2C0); // brand-slate
+  static const chart5 = Color(0xFF061A2C); // brand-teal
+  
   static const sidebar = Color(0xFFFFFFFF);
-  static const sidebarForeground = Color(0xFF1F2937);
-  static const success = Color(0xFF22C55E);
-  static const info = Color(0xFF0EA5E9);
-  static const warning = Color(0xFFF59E0B);
+  static const sidebarForeground = Color(0xFF101626); // brand-ink
+  
+  // حالة الألوان
+  static const success = Color(0xFF22C55E); // تم الإبقاء عليه (أخضر)
+  static const info = Color(0xFF0EA5E9); // تم الإبقاء عليه (أزرق فاتح)
+  static const warning = Color(0xFFF59E0B); // تم الإبقاء عليه (برتقالي)
 
   // Shadow
   static const shadow = Color(0x1A000000);
 }
 
 class DarkColors {
-  static const background = Color(0xFF0F172A);
-  static const foreground = Color(0xFFF8FAFC);
-  static const card = Color(0xFF1E293B);
+  // الألوان الرئيسية للهوية الجديدة (النسخة الداكنة)
+  static const background = Color(0xFF061A2C); // brand-teal للخلفية الداكنة
+  static const foreground = Color(0xFFF8FAFC); // فاتح للنص في الوضع الداكن
+  static const card = Color(0xFF0F1E2E); // أغمق قليلاً من الخلفية
   static const cardForeground = Color(0xFFF8FAFC);
-  static const popover = Color(0xFF1E293B);
+  static const popover = Color(0xFF0F1E2E);
   static const popoverForeground = Color(0xFFF8FAFC);
-  static const primary = Color(0xFF3B82F6);
+  static const primary = Color(0xFFDE706B); // brand-main
   static const primaryForeground = Color(0xFFFFFFFF);
-  static const secondary = Color(0xFF334155);
-  static const secondaryForeground = Color(0xFFF1F5F9);
-  static const muted = Color(0xFF334155);
-  static const mutedForeground = Color(0xFF94A3B8);
-  static const accent = Color(0xFF1E3A8A);
-  static const accentForeground = Color(0xFFE0E7FF);
-  static const destructive = Color(0xFFEF4444);
-  static const border = Color(0xFF334155);
-  static const input = Color(0xFF1E293B);
-  static const ring = Color(0xFF3B82F6);
+  static const secondary = Color(0xFFD88869); // brand-secondary
+  static const secondaryForeground = Color(0xFFFFFFFF);
+  static const muted = Color(0xFF0F1E2E);
+  static const mutedForeground = Color(0xFFA7B2C0); // brand-slate
+  static const accent = Color(0xFFFF7378); // brand-coral
+  static const accentForeground = Color(0xFFFFFFFF);
+  static const destructive = Color(0xFFFF7378); // brand-coral لل destructive في الداكن
+  static const border = Color(0xFF1A2A3A);
+  static const input = Color(0xFF0F1E2E);
+  static const ring = Color(0xFFDE706B); // brand-main
 
-  static const chart1 = Color(0xFF3B82F6);
-  static const chart2 = Color(0xFF22D3EE);
-  static const chart3 = Color(0xFF818CF8);
-  static const chart4 = Color(0xFF4ADE80);
-  static const chart5 = Color(0xFF38BDF8);
-  static const sidebar = Color(0xFF020617);
+  // ألوان المخططات (charts) - نفس الألوان مع تعديل بسيط للتباين
+  static const chart1 = Color(0xFFDE706B);
+  static const chart2 = Color(0xFFD88869);
+  static const chart3 = Color(0xFFFF7378);
+  static const chart4 = Color(0xFFA7B2C0);
+  static const chart5 = Color(0xFF3B7A9E); // نسخة أفتح من brand-teal للتباين
+  
+  static const sidebar = Color(0xFF061A2C);
   static const sidebarForeground = Color(0xFFF8FAFC);
-  static const success = Color(0xFF22C55E);
+  
+  // حالة الألوان للوضع الداكن
+  static const success = Color(0xFF4ADE80);
   static const info = Color(0xFF38BDF8);
   static const warning = Color(0xFFFBBF24);
 

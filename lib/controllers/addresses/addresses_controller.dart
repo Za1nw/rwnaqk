@@ -4,6 +4,7 @@ import 'package:rwnaqk/controllers/addresses/addresses_service.dart';
 import 'package:rwnaqk/controllers/profile/profile_store_service.dart';
 import 'package:rwnaqk/controllers/addresses/addresses_ui_controller.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة العناوين.
@@ -85,7 +86,13 @@ class AddressesController extends GetxController {
         district.isEmpty ||
         street.isEmpty ||
         addressDetails.isEmpty) {
-      Get.snackbar(Tk.commonError.tr, Tk.profileEditFillAll.tr);
+      AppToast.show(
+        Get.context!,
+        title: Tk.commonError.tr,
+        message: Tk.profileEditFillAll.tr,
+        type: AppToastType.error,
+        duration: const Duration(seconds: 3),
+      );
       return;
     }
 

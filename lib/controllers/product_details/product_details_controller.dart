@@ -7,6 +7,7 @@ import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk/core/utils/app_product_utils.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/models/product_color_option.dart';
 import 'package:rwnaqk/models/product_review.dart';
@@ -337,7 +338,10 @@ class ProductDetailsController extends GetxController {
       );
     }
 
-    Get.snackbar(Tk.cartTitle.tr, Tk.productDetailsAddedToCart.tr);
+    Get.context!.showSuccessToast(
+      title: Tk.cartTitle.tr,
+      message: Tk.productDetailsAddedToCart.tr,
+    );
   }
 
   void buyNow() {
@@ -345,9 +349,9 @@ class ProductDetailsController extends GetxController {
     if (current == null) return;
 
     if (!Get.isRegistered<CartController>()) {
-      Get.snackbar(
-        Tk.productDetailsBuyNow.tr,
-        Tk.productDetailsProceedToCheckout.tr,
+      Get.context!.showInfoToast(
+        title: Tk.productDetailsBuyNow.tr,
+        message: Tk.productDetailsProceedToCheckout.tr,
       );
       return;
     }
@@ -382,10 +386,9 @@ class ProductDetailsController extends GetxController {
       );
     } on MissingPluginException {
       await Clipboard.setData(ClipboardData(text: shareText));
-      Get.snackbar(
-        Tk.commonDone.tr,
-        Tk.commonCopied.tr,
-        snackPosition: SnackPosition.BOTTOM,
+      Get.context!.showSuccessToast(
+        title: Tk.commonDone.tr,
+        message: Tk.commonCopied.tr,
       );
     }
   }

@@ -7,7 +7,6 @@ import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 
 import '../controllers/onboarding/onboarding_controller.dart';
 import '../controllers/onboarding/onboarding_service.dart';
-import '../widgets/app_toggles.dart';
 
 const double _kCompactHeightBreakpoint = 760;
 const double _kCompactWidthBreakpoint = 370;
@@ -282,7 +281,6 @@ class OnboardingScreen extends GetView<OnboardingController> {
                   ),
                   child: Column(
                     children: [
-                      const _Header(),
                       SizedBox(height: compact ? 10 : 14),
                       _BrandLockup(compact: compact),
                       SizedBox(height: compact ? 10 : 14),
@@ -302,21 +300,6 @@ class OnboardingScreen extends GetView<OnboardingController> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _Header extends StatelessWidget {
-  const _Header();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const AppToggles(showLanguage: true, showTheme: false),
-        const Spacer(),
-        const AppToggles(showLanguage: false, showTheme: true),
-      ],
     );
   }
 }
@@ -422,18 +405,30 @@ class _OnboardingSlidePage extends StatelessWidget {
                 SizedBox(
                   height: metrics.heroHeight,
                   child: Center(
-                    child: _HeroShell(
-                      reveal: reveal,
-                      delta: delta,
-                      compact: metrics.compact,
-                      artworkExtent: metrics.heroArtworkExtent,
-                      child: _SceneByIndex(
-                        index: slideIndex,
-                        icon: slide.icon,
-                        reveal: reveal,
-                        delta: delta,
-                        compact: metrics.compact,
-                        sceneExtent: metrics.sceneExtent,
+                    child: Opacity(
+                      opacity: lerpDouble(0.78, 1, reveal)!,
+                      child: Transform.translate(
+                        offset: Offset(delta * 10, lerpDouble(18, 0, reveal)!),
+                        child: Transform.scale(
+                          scale: lerpDouble(0.94, 1, reveal)!,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: _kHeroMaxWidth),
+                            child: SizedBox(
+                              width: metrics.heroArtworkExtent,
+                              height: metrics.heroArtworkExtent,
+                              child: FittedBox(
+                                fit: BoxFit.contain,
+                                child: SizedBox(
+                                  width: metrics.heroArtworkExtent,
+                                  height: metrics.heroArtworkExtent,
+                                  child: _OnboardingHeroPlaceholder(
+                                    icon: slide.icon,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -510,158 +505,30 @@ class _OnboardingSlidePage extends StatelessWidget {
   }
 }
 
-class _HeroShell extends StatelessWidget {
-  final Widget child;
-  final double reveal;
-  final double delta;
-  final bool compact;
-  final double artworkExtent;
+class _OnboardingHeroPlaceholder extends StatelessWidget {
+  final IconData icon;
 
-  const _HeroShell({
-    required this.child,
-    required this.reveal,
-    required this.delta,
-    required this.compact,
-    required this.artworkExtent,
-  });
+  const _OnboardingHeroPlaceholder({required this.icon});
 
   @override
   Widget build(BuildContext context) {
-    final cardRadius = compact ? 24.0 : 28.0;
-    final palette = _HeroPalette.of(context);
-
-    return Opacity(
-      opacity: lerpDouble(0.78, 1, reveal)!,
-      child: Transform.translate(
-        offset: Offset(delta * 10, lerpDouble(18, 0, reveal)!),
-        child: Transform.scale(
-          scale: lerpDouble(0.94, 1, reveal)!,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _kHeroMaxWidth),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(cardRadius),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [palette.shellTop, palette.shellBottom],
-                ),
-                border: Border.all(color: palette.shellBorder),
-                boxShadow: [
-                  BoxShadow(
-                    color: context.shadow.withValues(
-                      alpha: context.isDark ? 0.24 : 0.06,
-                    ),
-                    offset: const Offset(0, 18),
-                    blurRadius: 30,
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(cardRadius),
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: RadialGradient(
-                            center: const Alignment(0, -0.2),
-                            radius: 1.05,
-                            colors: [
-                              palette.sceneBackdropTop,
-                              palette.sceneBackdropBottom,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    PositionedDirectional(
-                      top: 10,
-                      start: 10,
-                      child: _BackgroundGlow(
-                        size: compact ? 42 : 52,
-                        color: palette.shellGlow,
-                      ),
-                    ),
-                    PositionedDirectional(
-                      top: 14,
-                      end: 12,
-                      child: _BackgroundGlow(
-                        size: compact ? 22 : 28,
-                        color: palette.shellGlowSoft,
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: Padding(
-                        padding: EdgeInsets.all(compact ? 8 : 10),
-                        child: Center(
-                          child: FittedBox(
-                            fit: BoxFit.contain,
-                            child: SizedBox(
-                              width: artworkExtent,
-                              height: artworkExtent,
-                              child: child,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: context.card.withValues(alpha: context.isDark ? 0.16 : 0.08),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(
+          color: context.border.withValues(alpha: 0.22),
+          width: 1.2,
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          icon,
+          size: 52,
+          color: context.primary.withOpacity(0.8),
         ),
       ),
     );
-  }
-}
-
-class _SceneByIndex extends StatelessWidget {
-  final int index;
-  final IconData icon;
-  final double reveal;
-  final double delta;
-  final bool compact;
-  final double sceneExtent;
-
-  const _SceneByIndex({
-    required this.index,
-    required this.icon,
-    required this.reveal,
-    required this.delta,
-    required this.compact,
-    required this.sceneExtent,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    switch (index) {
-      case 0:
-        return _DiscoveryScene(
-          icon: icon,
-          reveal: reveal,
-          delta: delta,
-          compact: compact,
-          sceneExtent: sceneExtent,
-        );
-      case 1:
-        return _CheckoutScene(
-          icon: icon,
-          reveal: reveal,
-          delta: delta,
-          compact: compact,
-          sceneExtent: sceneExtent,
-        );
-      default:
-        return _TrackingScene(
-          icon: icon,
-          reveal: reveal,
-          delta: delta,
-          compact: compact,
-          sceneExtent: sceneExtent,
-        );
-    }
   }
 }
 

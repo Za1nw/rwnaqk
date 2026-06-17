@@ -38,7 +38,7 @@ class AppActionIconButton extends StatelessWidget {
     final bd = borderColor;
 
     return Material(
-      color: Colors.transparent,
+      color: context.background.withValues(alpha: 0),
       shape: const CircleBorder(),
       child: InkWell(
         onTap: onTap,

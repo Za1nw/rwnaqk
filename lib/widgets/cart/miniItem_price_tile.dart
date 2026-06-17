@@ -33,7 +33,6 @@ class MiniItemPriceTile extends StatelessWidget {
         final img = compact ? imageSize - 4 : imageSize;
         final titleSize = compact ? 12.5 : 13.5;
         final subSize = compact ? 11.5 : 12.5;
-        final priceSize = compact ? 13 : 14;
 
         return Material(
           color: Colors.transparent,

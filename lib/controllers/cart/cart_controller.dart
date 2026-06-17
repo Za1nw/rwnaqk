@@ -11,6 +11,7 @@ import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 import 'package:rwnaqk/models/contact_info_model.dart';
 import 'package:rwnaqk/models/home_product_item.dart';
 import 'package:rwnaqk/models/shipping_address.dart';
@@ -329,23 +330,34 @@ class CartController extends GetxController {
   /// هذه الدالة تنفذ عملية الدفع الحالية وتحوّلها إلى Order جاهز.
   void payNow() {
     if (cartItems.isEmpty) {
-      Get.snackbar(
-          Tk.cartValidationCartTitle.tr, Tk.cartValidationCartEmpty.tr);
+      AppToast.show(
+        Get.context!,
+        title: Tk.cartValidationCartTitle.tr,
+        message: Tk.cartValidationCartEmpty.tr,
+        type: AppToastType.warning,
+        duration: const Duration(seconds: 3),
+      );
       return;
     }
 
     if (!hasShippingAddress) {
-      Get.snackbar(
-        Tk.cartValidationShippingTitle.tr,
-        Tk.cartValidationShippingMissing.tr,
+      AppToast.show(
+        Get.context!,
+        title: Tk.cartValidationShippingTitle.tr,
+        message: Tk.cartValidationShippingMissing.tr,
+        type: AppToastType.warning,
+        duration: const Duration(seconds: 3),
       );
       return;
     }
 
     if (contactInfo.value.isEmpty) {
-      Get.snackbar(
-        Tk.cartValidationContactTitle.tr,
-        Tk.cartValidationContactMissing.tr,
+      AppToast.show(
+        Get.context!,
+        title: Tk.cartValidationContactTitle.tr,
+        message: Tk.cartValidationContactMissing.tr,
+        type: AppToastType.warning,
+        duration: const Duration(seconds: 3),
       );
       return;
     }
@@ -357,9 +369,12 @@ class CartController extends GetxController {
       if (acc == null ||
           acc.receiverName.trim().isEmpty ||
           acc.walletNumber.trim().isEmpty) {
-        Get.snackbar(
-          Tk.cartValidationWalletTitle.tr,
-          Tk.cartValidationWalletMissing.tr,
+        AppToast.show(
+          Get.context!,
+          title: Tk.cartValidationWalletTitle.tr,
+          message: Tk.cartValidationWalletMissing.tr,
+          type: AppToastType.warning,
+          duration: const Duration(seconds: 3),
         );
         return;
       }
@@ -385,9 +400,12 @@ class CartController extends GetxController {
     ui.completeCheckout();
 
     Get.offNamed(AppRoutes.orderTracking, arguments: order);
-    Get.snackbar(
-      Tk.cartOrderCreatedTitle.tr,
-      Tk.cartOrderCreatedMessage.tr,
+    AppToast.show(
+      Get.context!,
+      title: Tk.cartOrderCreatedTitle.tr,
+      message: Tk.cartOrderCreatedMessage.tr,
+      type: AppToastType.success,
+      duration: const Duration(seconds: 3),
     );
   }
 

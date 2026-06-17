@@ -9,6 +9,7 @@ import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/widgets/common/app_sectioned_page.dart';
 import 'package:rwnaqk/widgets/settings/settings_profile_card.dart';
 import 'package:rwnaqk/widgets/settings/settings_sections.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 
 import '../controllers/main/main_controller.dart';
 
@@ -19,8 +20,9 @@ class SettingsScreen extends GetView<AppSettingsController> {
   Widget build(BuildContext context) {
     final app = Get.find<AppSettingsController>();
     final profileStore = Get.find<ProfileStoreService>();
-    final main =
-        Get.isRegistered<MainController>() ? Get.find<MainController>() : null;
+    final main = Get.isRegistered<MainController>()
+        ? Get.find<MainController>()
+        : null;
 
     return AppSectionedPage(
       title: Tk.settingsTitle.tr,
@@ -154,13 +156,18 @@ class SettingsScreen extends GetView<AppSettingsController> {
                   subtitle: Tk.settingsLogoutSubtitle.tr,
                   trailing: Icon(
                     Icons.logout_rounded,
-                    color: Colors.redAccent.withValues(alpha: .95),
+                    color: context.destructive.withValues(alpha: .95),
                     size: 20,
                   ),
                   trailingMaxWidth: 60,
                   showChevron: false,
-                  onTap: () => Get.snackbar(
-                      Tk.settingsLogout.tr, Tk.commonMockAction.tr),
+                  onTap: () => AppToast.show(
+                    context,
+                    title: Tk.settingsLogout.tr,
+                    message: Tk.commonMockAction.tr,
+                    type: AppToastType.warning,
+                    duration: const Duration(seconds: 3),
+                  ),
                 ),
               ],
             ),

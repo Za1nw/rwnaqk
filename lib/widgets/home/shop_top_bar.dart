@@ -101,10 +101,6 @@ class _SearchPill extends StatelessWidget {
         ? context.card.withOpacity(0.45)
         : const Color(0xFFF3F4F6);
 
-    final borderColor = context.isDark
-        ? context.border.withOpacity(0.35)
-        : Colors.transparent; // المرجع غالباً بدون border في light
-
     return Container(
       height: 36, // ✅ مهم: مثل المرجع، الحقل أصغر من البار
       decoration: BoxDecoration(

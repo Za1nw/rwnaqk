@@ -5,6 +5,7 @@ import 'package:rwnaqk/controllers/profile/edit_profile_service.dart';
 import 'package:rwnaqk/controllers/profile/edit_profile_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 import 'package:rwnaqk/widgets/dialogs/app_saved_dialog.dart';
 
 
@@ -48,11 +49,23 @@ class EditProfileController extends GetxController {
     try {
       final result = await _service.pickAvatar(source);
       if (result == null) return;
-      Get.snackbar(Tk.commonDone.tr, Tk.profileEditPhotoUpdated.tr);
+      AppToast.show(
+        Get.context!,
+        title: Tk.commonDone.tr,
+        message: Tk.profileEditPhotoUpdated.tr,
+        type: AppToastType.success,
+        duration: const Duration(seconds: 3),
+      );
       _avatarPath.value = result;
       _avatarUrl.value = '';
     } catch (_) {
-      Get.snackbar(Tk.commonError.tr, Tk.profileEditPhotoPickFailed.tr);
+      AppToast.show(
+        Get.context!,
+        title: Tk.commonError.tr,
+        message: Tk.profileEditPhotoPickFailed.tr,
+        type: AppToastType.error,
+        duration: const Duration(seconds: 3),
+      );
     } finally {
       _isUploadingAvatar.value = false;
     }
@@ -66,7 +79,13 @@ class EditProfileController extends GetxController {
       email: emailCtrl.text,
     );
     if (!canSave) {
-      Get.snackbar(Tk.commonError.tr, Tk.profileEditFillAll.tr);
+      AppToast.show(
+        Get.context!,
+        title: Tk.commonError.tr,
+        message: Tk.profileEditFillAll.tr,
+        type: AppToastType.error,
+        duration: const Duration(seconds: 3),
+      );
       return;
     }
 
@@ -82,7 +101,13 @@ class EditProfileController extends GetxController {
         Get.back<void>();
       }
     } catch (_) {
-      Get.snackbar(Tk.commonError.tr, Tk.commonUnexpectedError.tr);
+      AppToast.show(
+        Get.context!,
+        title: Tk.commonError.tr,
+        message: Tk.commonUnexpectedError.tr,
+        type: AppToastType.error,
+        duration: const Duration(seconds: 3),
+      );
     } finally {
       if (!isClosed) {
         _isSaving.value = false;

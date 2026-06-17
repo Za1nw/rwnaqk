@@ -10,6 +10,7 @@ import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 import 'package:rwnaqk/widgets/app_button.dart';
 import 'package:rwnaqk/widgets/cart/address_section.dart';
 import 'package:rwnaqk/widgets/cart/cart_header.dart';
@@ -99,10 +100,9 @@ class PaymentScreen extends GetView<CartController> {
           buttonWidth: 186,
           onCheckout: () {
             if (isWallet && !hasReceipt) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(Tk.cartValidationReceiptMissing.tr),
-                ),
+              context.showWarningToast(
+                title: Tk.commonError.tr,
+                message: Tk.cartValidationReceiptMissing.tr,
               );
               return;
             }

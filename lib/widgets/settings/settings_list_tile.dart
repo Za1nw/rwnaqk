@@ -196,7 +196,7 @@ class _Texts extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: context.muted,
+              color: context.foreground.withOpacity(.75),
               fontWeight: FontWeight.w700,
               fontSize: 12.3,
             ),

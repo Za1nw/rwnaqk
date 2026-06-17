@@ -3,6 +3,7 @@ import 'package:rwnaqk/controllers/forgot_password/forgot_password_service.dart'
 import 'package:rwnaqk/controllers/forgot_password/forgot_password_ui_controller.dart';
 import 'package:rwnaqk/core/routes/app_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة استعادة كلمة المرور.
 ///
@@ -86,7 +87,13 @@ class ForgotPasswordController extends GetxController {
     ui.startResendTimer();
 
     Get.toNamed(AppRoutes.otp);
-    Get.snackbar(Tk.commonOk.tr, Tk.fpVerifySent.tr);
+    AppToast.show(
+      Get.context!,
+      title: Tk.commonOk.tr,
+      message: Tk.fpVerifySent.tr,
+      type: AppToastType.success,
+      duration: const Duration(seconds: 3),
+    );
   }
 
   /// هذه الدالة تحدّث رمز التحقق الحالي.
@@ -99,7 +106,13 @@ class ForgotPasswordController extends GetxController {
   /// إذا كان صحيحًا ننتقل إلى شاشة إعادة تعيين كلمة المرور.
   void verifyOtp() {
     if (!_service.isValidOtp(otp.value)) {
-      Get.snackbar(Tk.commonError.tr, Tk.fpVerifyInvalid.tr);
+      AppToast.show(
+        Get.context!,
+        title: Tk.commonError.tr,
+        message: Tk.fpVerifyInvalid.tr,
+        type: AppToastType.error,
+        duration: const Duration(seconds: 3),
+      );
       return;
     }
 
@@ -111,7 +124,13 @@ class ForgotPasswordController extends GetxController {
     if (!canResend.value) return;
 
     ui.startResendTimer();
-    Get.snackbar(Tk.commonOk.tr, Tk.fpVerifySent.tr);
+    AppToast.show(
+      Get.context!,
+      title: Tk.commonOk.tr,
+      message: Tk.fpVerifySent.tr,
+      type: AppToastType.success,
+      duration: const Duration(seconds: 3),
+    );
   }
 
   /// هذه الدالة تحفظ كلمة المرور الجديدة بعد التحقق من صحة البيانات.
@@ -134,7 +153,13 @@ class ForgotPasswordController extends GetxController {
       confirmPassword: p2,
     )) {
       if (isValid && p1 != p2) {
-        Get.snackbar(Tk.commonError.tr, Tk.fpNewMismatch.tr);
+        AppToast.show(
+          Get.context!,
+          title: Tk.commonError.tr,
+          message: Tk.fpNewMismatch.tr,
+          type: AppToastType.error,
+          duration: const Duration(seconds: 3),
+        );
       }
       return;
     }
@@ -144,7 +169,13 @@ class ForgotPasswordController extends GetxController {
     try {
       await Future.delayed(const Duration(milliseconds: 600));
 
-      Get.snackbar(Tk.commonOk.tr, Tk.fpDone.tr);
+      AppToast.show(
+        Get.context!,
+        title: Tk.commonOk.tr,
+        message: Tk.fpDone.tr,
+        type: AppToastType.success,
+        duration: const Duration(seconds: 3),
+      );
       Get.offAllNamed(AppRoutes.login);
     } finally {
       ui.setLoading(false);

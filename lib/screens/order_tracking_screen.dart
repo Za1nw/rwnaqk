@@ -4,6 +4,7 @@ import 'package:rwnaqk/controllers/orders/orders_controller.dart';
 import 'package:rwnaqk/core/constants/app_colors.dart';
 import 'package:rwnaqk/core/constants/app_lottie_assets.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 import 'package:rwnaqk/core/utils/app_order_utils.dart';
 import 'package:rwnaqk/models/order_model.dart';
 import 'package:rwnaqk/widgets/common/app_empty_state.dart';
@@ -107,13 +108,22 @@ class OrderTrackingScreen extends GetView<OrdersController> {
               canReorder: AppOrderUtils.canReorder(order.status),
               showReview: order.status == 'delivered',
               onCancel: () {
-                Get.snackbar(
-                  Tk.ordersActionCancel.tr,
-                  Tk.commonMockAction.tr,
+                AppToast.show(
+                  context,
+                  title: Tk.ordersActionCancel.tr,
+                  message: Tk.commonMockAction.tr,
+                  type: AppToastType.info,
+                  duration: const Duration(seconds: 3),
                 );
               },
               onHelpOrReorder: () {
-                Get.snackbar(Tk.commonDone.tr, Tk.commonMockAction.tr);
+                AppToast.show(
+                  context,
+                  title: Tk.commonDone.tr,
+                  message: Tk.commonMockAction.tr,
+                  type: AppToastType.success,
+                  duration: const Duration(seconds: 3),
+                );
               },
               onReview: () {
                 ReviewDialog.show(
@@ -122,7 +132,13 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                   userName: 'Zain Alzubair',
                   orderId: order.id,
                   onSubmit: (_, __) {
-                    Get.snackbar(Tk.commonDone.tr, Tk.reviewsSubmitted.tr);
+                    AppToast.show(
+                      context,
+                      title: Tk.commonDone.tr,
+                      message: Tk.reviewsSubmitted.tr,
+                      type: AppToastType.success,
+                      duration: const Duration(seconds: 3),
+                    );
                   },
                 );
               },

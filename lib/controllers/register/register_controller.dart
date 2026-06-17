@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk/controllers/register/register_service.dart';
 import 'package:rwnaqk/controllers/register/register_ui_controller.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة إنشاء الحساب.
 ///
@@ -81,18 +82,27 @@ class RegisterController extends GetxController {
     if (!isValid) return;
 
     if (governorate.value == null || governorate.value!.trim().isEmpty) {
-      Get.snackbar(Tk.registerTitle.tr, Tk.registerGovernorateRequired.tr);
+      Get.context!.showWarningToast(
+        title: Tk.registerTitle.tr,
+        message: Tk.registerGovernorateRequired.tr,
+      );
       return;
     }
 
     if (!agreed.value) {
-      Get.snackbar(Tk.registerTitle.tr, Tk.registerTermsRequired.tr);
+      Get.context!.showWarningToast(
+        title: Tk.registerTitle.tr,
+        message: Tk.registerTermsRequired.tr,
+      );
       return;
     }
 
     if (!canContinue) return;
 
-    Get.snackbar(Tk.commonOk.tr, Tk.registerSubmit.tr);
+    Get.context!.showSuccessToast(
+      title: Tk.commonOk.tr,
+      message: Tk.registerSubmit.tr,
+    );
   }
 
   /// هذه الدالة تنقل المستخدم إلى شاشة تسجيل الدخول.

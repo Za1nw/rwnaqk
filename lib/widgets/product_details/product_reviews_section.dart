@@ -76,9 +76,8 @@ class ProductReviewsSection extends StatelessWidget {
 
 class _SectionTitle extends StatelessWidget {
   final String title;
-  final Widget? trailing;
 
-  const _SectionTitle({required this.title, this.trailing});
+  const _SectionTitle({required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +92,6 @@ class _SectionTitle extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        if (trailing != null) trailing!,
       ],
     );
   }

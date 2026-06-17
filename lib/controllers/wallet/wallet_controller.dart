@@ -8,6 +8,7 @@ import 'package:rwnaqk/controllers/wallet/wallet_service.dart';
 import 'package:rwnaqk/controllers/wallet/wallet_ui_controller.dart';
 import 'package:rwnaqk/core/routes/wallet_routes.dart';
 import 'package:rwnaqk/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk/core/utils/app_toast.dart';
 import 'package:rwnaqk/core/utils/app_date_utils.dart';
 import 'package:rwnaqk/core/utils/app_money_utils.dart';
 import 'package:rwnaqk/models/wallet/refund_status_model.dart';
@@ -238,12 +239,14 @@ class WalletController extends GetxController {
       ui.clearDepositAmount();
       ui.clearDepositReceiptImage();
 
-      Get.snackbar(
-        Tk.commonSuccess.tr,
-        Tk.walletDepositRequestSubmitted.trParams({
+      AppToast.show(
+        Get.context!,
+        title: Tk.commonSuccess.tr,
+        message: Tk.walletDepositRequestSubmitted.trParams({
           'amount': formatMoney(value),
         }),
-        snackPosition: SnackPosition.BOTTOM,
+        type: AppToastType.success,
+        duration: const Duration(seconds: 3),
       );
       return true;
     } catch (_) {
@@ -308,13 +311,15 @@ class WalletController extends GetxController {
       ui.clearWithdrawAmount();
       ui.clearWithdrawRecipientFields();
 
-      Get.snackbar(
-        Tk.commonSuccess.tr,
-        Tk.walletWithdrawRequestSubmitted.trParams({
+      AppToast.show(
+        Get.context!,
+        title: Tk.commonSuccess.tr,
+        message: Tk.walletWithdrawRequestSubmitted.trParams({
           'amount': formatMoney(value),
           'net': formatMoney(netAmount),
         }),
-        snackPosition: SnackPosition.BOTTOM,
+        type: AppToastType.success,
+        duration: const Duration(seconds: 3),
       );
       return true;
     } catch (_) {
