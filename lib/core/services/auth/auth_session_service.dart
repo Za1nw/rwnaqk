@@ -1,12 +1,12 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:get/get.dart';
-import 'package:rwnaqk/core/routes/app_routes.dart';
-import 'package:rwnaqk/core/services/auth/customer_auth_api_service.dart';
-import 'package:rwnaqk/models/customer_model.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
+import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
+import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:rwnaqk/core/constants/local_storage_keys.dart';
+import 'package:rwnaqk_frontend/core/constants/local_storage_keys.dart';
 
 class AuthSessionService extends GetxService {
   AuthSessionService({String? initialAccessToken}) {

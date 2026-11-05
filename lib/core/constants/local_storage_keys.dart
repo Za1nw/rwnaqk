@@ -1,4 +1,6 @@
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
+
 abstract class LocalStorageKeys {
-  static const onboardingSeen = 'onboarding_seen';
-  static const authToken = 'auth_token';
+  static String get onboardingSeen => AppEnv.storageOnboardingKey;
+  static String get authToken => AppEnv.storageAuthTokenKey;
 }

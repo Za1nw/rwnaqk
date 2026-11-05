@@ -1,0 +1,40 @@
+﻿import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/modules/wishlist/widgets/wishlist_top_bar.dart';
+import 'package:rwnaqk_frontend/modules/wishlist/widgets/wishlist_tab_animated_body.dart';
+
+class WishlistScreen extends GetView<WishlistController> {
+  const WishlistScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: context.background,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(18, 10, 18, 0),
+          child: Obx(() {
+            final isWishlist = controller.tabIndex.value == 0;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                WishlistTopBar(title: Tk.wishlistTitle.tr),
+                const SizedBox(height: 14),
+                Expanded(
+                  child: WishlistTabAnimatedBody(
+                    controller: controller,
+                    isWishlist: isWishlist,
+                  ),
+                ),
+              ],
+            );
+          }),
+        ),
+      ),
+    );
+  }
+}

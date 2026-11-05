@@ -1,7 +1,7 @@
-import 'package:get/get.dart';
-import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
-import 'package:rwnaqk/models/home_category_item.dart';
-import 'package:rwnaqk/models/product_review.dart';
+﻿import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/translations/app_mock_locale_keys.dart';
+import 'package:rwnaqk_frontend/modules/home/data/models/home_category_item.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
 
 class MockCategorySection {
   final String nameKey;

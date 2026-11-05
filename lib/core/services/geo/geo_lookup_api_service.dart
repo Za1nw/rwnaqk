@@ -1,17 +1,15 @@
 import 'package:get/get.dart';
-import 'package:rwnaqk/models/geo_lookup_item.dart';
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
+import 'package:rwnaqk_frontend/modules/customer/data/models/geo_lookup_item.dart';
 
 class GeoLookupApiService extends GetConnect {
-  static const String _defaultBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://192.168.8.124:8000',
-  );
+  static String get _defaultBaseUrl => AppEnv.apiBaseUrl;
 
   @override
   void onInit() {
     super.onInit();
     httpClient.baseUrl = _defaultBaseUrl;
-    httpClient.timeout = const Duration(seconds: 20);
+    httpClient.timeout = Duration(seconds: AppEnv.apiTimeoutSeconds);
     httpClient.defaultContentType = 'application/json';
     httpClient.addRequestModifier<dynamic>((request) {
       request.headers['Accept'] = 'application/json';
@@ -20,13 +18,13 @@ class GeoLookupApiService extends GetConnect {
   }
 
   Future<List<GeoLookupItem>> countries() async {
-    final response = await get('/api/v1/geo/countries');
+    final response = await get('${AppEnv.geoLookupPrefix}/countries');
     return _parseItems(response.body);
   }
 
   Future<List<GeoLookupItem>> governorates({int? countryId}) async {
     final response = await get(
-      '/api/v1/geo/governorates',
+      '${AppEnv.geoLookupPrefix}/governorates',
       query: <String, dynamic>{if (countryId != null) 'country_id': countryId},
     );
     
@@ -34,7 +32,7 @@ class GeoLookupApiService extends GetConnect {
   }
 
   Future<YemenGovernoratesLookup?> yemenGovernorates() async {
-    final response = await get('/api/v1/geo/yemen/governorates');
+    final response = await get('${AppEnv.geoLookupPrefix}/yemen/governorates');
     print(response.body);
     final body = response.body;
 

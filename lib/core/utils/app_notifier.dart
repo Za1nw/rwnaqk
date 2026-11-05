@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:rwnaqk/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk/core/utils/api_error_utils.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/utils/api_error_utils.dart';
 
 class AppNotifier {
   const AppNotifier._();

@@ -1,8 +1,8 @@
-import 'package:get/get.dart';
-import 'package:rwnaqk/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk/core/utils/app_product_utils.dart';
-import 'package:rwnaqk/models/home_product_item.dart';
-import 'package:rwnaqk/models/shipping_option_model.dart';
+﻿import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/utils/app_product_utils.dart';
+import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
+import 'package:rwnaqk_frontend/modules/checkout/data/models/shipping_option_model.dart';
 
 class AppCheckoutUtils {
   AppCheckoutUtils._();

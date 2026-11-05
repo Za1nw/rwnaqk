@@ -1,7 +1,7 @@
-import 'package:rwnaqk/core/translations/app_mock_locale_keys.dart';
-import 'package:rwnaqk/core/utils/app_mock_content_utils.dart';
-import 'package:rwnaqk/models/home_product_item.dart';
-import 'package:rwnaqk/models/product_color_option.dart';
+﻿import 'package:rwnaqk_frontend/core/translations/app_mock_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
+import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/models/product_color_option.dart';
 
 typedef MockProductIdBuilder = String Function(int seed, int index);
 typedef MockProductImageBuilder = String Function(String id);

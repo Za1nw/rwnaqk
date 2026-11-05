@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 
 class AuthApiException implements Exception {
   const AuthApiException({
@@ -37,18 +38,15 @@ class AuthApiException implements Exception {
 }
 
 class CustomerAuthApiService extends GetConnect {
-  static const String _defaultBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://192.168.8.124:8000',
-  );
+  static String get _defaultBaseUrl => AppEnv.apiBaseUrl;
 
-  static const String _apiPrefix = '/api/v1/customer/auth';
+  static String get _apiPrefix => AppEnv.customerAuthPrefix;
 
   @override
   void onInit() {
     super.onInit();
     httpClient.baseUrl = _defaultBaseUrl;
-    httpClient.timeout = const Duration(seconds: 20);
+    httpClient.timeout = Duration(seconds: AppEnv.apiTimeoutSeconds);
     httpClient.defaultContentType = 'application/json';
     httpClient.addRequestModifier<dynamic>((request) {
       request.headers['Accept'] = 'application/json';

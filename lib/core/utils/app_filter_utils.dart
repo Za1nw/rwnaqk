@@ -1,4 +1,4 @@
-import 'package:rwnaqk/widgets/app_filter_sheet.dart';
+﻿import 'package:rwnaqk_frontend/modules/catalog/widgets/app_filter_sheet.dart';
 
 class AppFilterUtils {
   AppFilterUtils._();

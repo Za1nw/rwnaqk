@@ -1,0 +1,33 @@
+﻿import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
+import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
+import 'package:rwnaqk_frontend/modules/checkout/widgets/product_avatar_row.dart';
+import 'package:rwnaqk_frontend/modules/home/widgets/home_layout.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+
+class HomeTopProductsSection extends GetView<HomeController> {
+  const HomeTopProductsSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppSectionHeader(
+          title: Tk.homeTopProducts.tr,
+        ),
+        const SizedBox(height: HomeLayout.innerGap),
+        Obx(() {
+          final items = controller.topProducts.toList();
+          if (items.isEmpty) return const SizedBox.shrink();
+
+          return ProductAvatarRow(
+            items: items,
+            onTap: controller.openProduct,
+          );
+        }),
+      ],
+    );
+  }
+}

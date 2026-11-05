@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/bindings/initial_binding.dart';
+import 'core/constants/app_env.dart';
 import 'core/constants/local_storage_keys.dart';
-import 'core/routes/app_pages.dart';
-import 'core/routes/app_routes.dart';
+import 'routes/app_pages.dart';
+import 'routes/app_routes.dart';
 import 'core/translations/app_translations.dart';
 
 import 'core/theme/light_theme.dart';
@@ -13,6 +15,12 @@ import 'core/theme/dark_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint('Could not load .env file: $e');
+  }
 
   final prefs = await SharedPreferences.getInstance();
   final hasSeenOnboarding =
@@ -53,6 +61,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      title: AppEnv.appName,
       debugShowCheckedModeBanner: false,
 
       // Bindings عامة

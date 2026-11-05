@@ -1,5 +1,5 @@
-import 'package:get/get.dart';
-import 'package:rwnaqk/models/home_product_item.dart';
+﻿import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 class AppProductUtils {
   AppProductUtils._();

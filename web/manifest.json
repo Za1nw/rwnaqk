@@ -1,6 +1,6 @@
 {
-    "name": "rwnaqk",
-    "short_name": "rwnaqk",
+    "name": "rwnaqk_frontend",
+    "short_name": "rwnaqk_frontend",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

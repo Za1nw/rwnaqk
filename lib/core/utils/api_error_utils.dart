@@ -1,5 +1,5 @@
-import 'package:rwnaqk/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk/core/services/auth/customer_auth_api_service.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 
 class ApiErrorUtils {
   const ApiErrorUtils._();

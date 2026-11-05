@@ -1,0 +1,202 @@
+﻿import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_service.dart';
+import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+
+import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_controller.dart';
+import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
+import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
+import 'package:rwnaqk_frontend/core/widgets/app_input_field.dart';
+import 'package:rwnaqk_frontend/modules/auth/widgets/auth_centered_container.dart';
+
+class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
+  const ForgotPasswordMethodScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: context.background,
+      body: AuthBlobBackground(
+        child: SafeArea(
+          child: AuthCenteredContainer(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Avatar
+                Container(
+                  width: 86,
+                  height: 86,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: context.card.withOpacity(0.95),
+                    border: Border.all(color: context.border.withOpacity(0.5)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: context.shadow.withOpacity(
+                          context.isDark ? 0.35 : 0.16,
+                        ),
+                        blurRadius: 18,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.lock_reset_rounded,
+                    color: context.primary,
+                    size: 40,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                AuthTitleBlock(
+                  title: Tk.fpTitle.tr,
+                  subtitle: Tk.fpSubtitle.tr,
+                ),
+                const SizedBox(height: 18),
+
+                Obx(() {
+                  return _ChoiceCard(
+                    selected: controller.method.value == RecoveryMethod.sms,
+                    title: Tk.fpSms.tr,
+                    icon: Icons.sms_outlined,
+                    onTap: () => controller.selectMethod(RecoveryMethod.sms),
+                  );
+                }),
+                const SizedBox(height: 10),
+                Obx(() {
+                  return _ChoiceCard(
+                    selected: controller.method.value == RecoveryMethod.email,
+                    title: Tk.fpEmail.tr,
+                    icon: Icons.email_outlined,
+                    onTap: () => controller.selectMethod(RecoveryMethod.email),
+                  );
+                }),
+
+                const SizedBox(height: 12),
+                AppInputField(
+                  controller: controller.targetController,
+                  label: Tk.loginEmailLabel.tr,
+                  hint: Tk.loginEmailHint.tr,
+                  prefixIcon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    final email = (value ?? '').trim();
+                    if (email.isEmpty) {
+                      return Tk.loginEmailRequired.tr;
+                    }
+
+                    if (!GetUtils.isEmail(email)) {
+                      return Tk.loginEmailInvalid.tr;
+                    }
+
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 20),
+
+                Obx(() {
+                  return AppButton(
+                    text: controller.isLoading.value ? '...' : Tk.fpNext.tr,
+                    icon: Icons.arrow_forward_rounded,
+                    onPressed: controller.isLoading.value
+                        ? () {}
+                        : controller.goNextFromMethod,
+                    height: 54,
+                  );
+                }),
+                const SizedBox(height: 10),
+
+                TextButton(
+                  onPressed: controller.cancel,
+                  child: Text(
+                    Tk.fpCancel.tr,
+                    style: TextStyle(color: context.mutedForeground),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChoiceCard extends StatelessWidget {
+  final bool selected;
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _ChoiceCard({
+    required this.selected,
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = context.card.withOpacity(context.isDark ? 0.92 : 0.96);
+    final border = selected
+        ? context.primary.withOpacity(0.65)
+        : context.border.withOpacity(0.55);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: border, width: selected ? 1.4 : 1),
+          boxShadow: [
+            BoxShadow(
+              color: context.shadow.withOpacity(context.isDark ? 0.30 : 0.12),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: selected ? context.primary : context.mutedForeground,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: context.foreground,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: border),
+                color: selected ? context.primary : Colors.transparent,
+              ),
+              child: selected
+                  ? Icon(
+                      Icons.check,
+                      size: 14,
+                      color: context.primaryForeground,
+                    )
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

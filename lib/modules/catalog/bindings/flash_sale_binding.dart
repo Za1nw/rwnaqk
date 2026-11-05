@@ -1,0 +1,23 @@
+﻿import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/modules/catalog/controllers/flash_sale_controller.dart';
+import 'package:rwnaqk_frontend/modules/catalog/controllers/flash_sale_service.dart';
+import 'package:rwnaqk_frontend/modules/catalog/controllers/flash_sale_ui_controller.dart';
+
+/// هذا الملف مسؤول عن حقن التبعيات الخاصة بشاشة العروض السريعة.
+///
+/// نستخدم Binding مستقل هنا لأن الشاشة تعمل عبر route مستقل في AppPages.
+class FlashSaleBinding extends Bindings {
+  @override
+  /// هذه الدالة تقوم بتسجيل جميع التبعيات المطلوبة للشاشة.
+  void dependencies() {
+    Get.lazyPut<FlashSaleUiController>(
+      () => FlashSaleUiController(),
+      fenix: true,
+    );
+    Get.lazyPut<FlashSaleService>(() => FlashSaleService(), fenix: true);
+    Get.lazyPut<FlashSaleController>(
+      () => FlashSaleController(Get.find<FlashSaleService>()),
+      fenix: true,
+    );
+  }
+}

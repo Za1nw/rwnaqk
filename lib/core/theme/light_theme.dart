@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:rwnaqk/core/theme/app_theme.dart';
-import 'package:rwnaqk/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/theme/app_theme.dart';
 
-final lightTheme = buildAppTheme(
-  brightness: Brightness.light,
-  colorScheme: AppColorSchemes.light,
-  scaffoldBackgroundColor: AppColorSchemes.light.background,
-);
+final ThemeData lightTheme = AppTheme.lightTheme;

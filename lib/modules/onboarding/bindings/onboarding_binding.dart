@@ -1,0 +1,23 @@
+﻿import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/modules/onboarding/controllers/onboarding_controller.dart';
+import 'package:rwnaqk_frontend/modules/onboarding/controllers/onboarding_service.dart';
+import 'package:rwnaqk_frontend/modules/onboarding/controllers/onboarding_ui_controller.dart';
+
+/// هذا الملف مسؤول عن حقن التبعيات الخاصة بشاشة الـ Onboarding.
+///
+/// نستخدم Binding مستقل هنا لأن الشاشة تعمل عبر route مستقل.
+class OnboardingBinding extends Bindings {
+  @override
+  /// هذه الدالة تقوم بتسجيل جميع التبعيات المطلوبة للشاشة.
+  void dependencies() {
+    Get.lazyPut<OnboardingUiController>(
+      () => OnboardingUiController(),
+      fenix: true,
+    );
+    Get.lazyPut<OnboardingService>(() => OnboardingService(), fenix: true);
+    Get.lazyPut<OnboardingController>(
+      () => OnboardingController(Get.find<OnboardingService>()),
+      fenix: true,
+    );
+  }
+}
