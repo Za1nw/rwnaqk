@@ -1,10 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_action_icon_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/favorite_added_dialog.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
+
 import 'product_discount_ribbon.dart';
 
 class ProductCardImageSection extends StatelessWidget {
@@ -25,10 +26,11 @@ class ProductCardImageSection extends StatelessWidget {
     final hasDiscount = (item.discountPercent ?? 0) > 0;
 
     return AspectRatio(
-      aspectRatio: 1.02,
+      aspectRatio: 1.05,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
+          // Background Image with Luxury Fallback
           Positioned.fill(
             child: ClipRRect(
               borderRadius: BorderRadius.only(
@@ -36,19 +38,48 @@ class ProductCardImageSection extends StatelessWidget {
                 topRight: Radius.circular(radius),
               ),
               child: Container(
-                color: context.input,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      context.primary.withValues(alpha: 0.08),
+                      context.card,
+                    ],
+                  ),
+                ),
                 child: Image.network(
                   imageUrl,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) {
-                    return Container(
-                      color: context.input,
-                      alignment: Alignment.center,
-                      child: Icon(
-                        Icons.image_not_supported_outlined,
-                        color: context.mutedForeground,
-                        size: 24,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return Center(
+                      child: SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            context.primary.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, _, _) {
+                    return Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: context.primary.withValues(alpha: 0.06),
+                        ),
+                        child: Icon(
+                          Icons.shopping_bag_outlined,
+                          color: context.primary.withValues(alpha: 0.45),
+                          size: 32,
+                        ),
                       ),
                     );
                   },
@@ -57,18 +88,18 @@ class ProductCardImageSection extends StatelessWidget {
             ),
           ),
 
+          // Discount Badge (Direction-Safe Top-Start)
           if (hasDiscount)
-            Positioned(
-              top: 12,
-              left: -10,
-              child: ProductDiscountRibbon(
-                text: '${item.discountPercent}% OFF',
-              ),
+            PositionedDirectional(
+              top: 8,
+              start: 8,
+              child: ProductDiscountRibbon(text: '-${item.discountPercent}%'),
             ),
 
-          Positioned(
+          // Wishlist Action Button (Direction-Safe Top-End)
+          PositionedDirectional(
             top: 8,
-            right: 8,
+            end: 8,
             child: Obx(() {
               final isFav = controller.isInWishlist(item.id);
 
@@ -84,37 +115,15 @@ class ProductCardImageSection extends StatelessWidget {
                     FavoriteAddedDialog.show(context);
                   }
                 },
-                size: 30,
-                iconSize: 15,
-                backgroundColor: context.background.withOpacity(.78),
-                borderColor: context.border.withOpacity(.45),
-                iconColor:
-                    isFav ? context.destructive : context.mutedForeground,
+                size: 32,
+                iconSize: 16,
+                backgroundColor: context.background.withValues(alpha: 0.92),
+                borderColor: context.border.withValues(alpha: 0.25),
+                iconColor: isFav
+                    ? context.destructive
+                    : context.mutedForeground,
               );
             }),
-          ),
-
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 8,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                5,
-                (index) => Container(
-                  width: index == 0 ? 6 : 5,
-                  height: index == 0 ? 6 : 5,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  decoration: BoxDecoration(
-                    color: index == 0
-                        ? Colors.white
-                        : Colors.white.withOpacity(.38),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ),
           ),
         ],
       ),

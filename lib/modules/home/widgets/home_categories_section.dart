@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
@@ -24,10 +24,7 @@ class HomeCategoriesSection extends GetView<HomeController> {
           final items = controller.categories.toList();
           if (items.isEmpty) return const SizedBox.shrink();
 
-          return CategoryGrid(
-            items: items,
-            onTap: controller.openCategory,
-          );
+          return CategoryGrid(items: items, onTap: controller.openCategory);
         }),
       ],
     );

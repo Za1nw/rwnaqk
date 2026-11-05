@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
-import 'package:rwnaqk_frontend/core/utils/app_date_utils.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 
 class FlashSaleHeader extends StatelessWidget {
@@ -20,11 +19,25 @@ class FlashSaleHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeText = AppDateUtils.formatTimer(hh: hh, mm: mm, ss: ss);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // ===== Line 1: Title =====
+        // Flame Icon
+        Container(
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: BrandColors.burgundy.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.local_fire_department_rounded,
+            color: BrandColors.burgundy,
+            size: 18,
+          ),
+        ),
+        const SizedBox(width: 6),
+
+        // Title
         Text(
           Tk.homeFlashSale.tr,
           style: TextStyle(
@@ -34,130 +47,121 @@ class FlashSaleHeader extends StatelessWidget {
             letterSpacing: -0.2,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(width: 10),
 
-        // ===== Line 2: Timer (left) + See all (right) =====
-        LayoutBuilder(
-          builder: (_, c) {
-            final narrow = c.maxWidth < 360;
+        // Countdown Boxes
+        _DigitalCountdown(hh: hh, mm: mm, ss: ss),
 
-            return Row(
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: _TimerPill(text: timeText, compact: narrow),
+        const Spacer(),
+
+        // See All action
+        if (onSeeAll != null)
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: onSeeAll,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    Tk.homeSeeAll.tr,
+                    style: TextStyle(
+                      color: context.primary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-                if (onSeeAll != null) ...[
-                  const SizedBox(width: 10),
-                  Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: _SeeAllPill(onTap: onSeeAll!, compact: narrow),
+                  const SizedBox(width: 2),
+                  Icon(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? Icons.chevron_left_rounded
+                        : Icons.chevron_right_rounded,
+                    color: context.primary,
+                    size: 18,
                   ),
                 ],
-              ],
-            );
-          },
-        ),
+              ),
+            ),
+          ),
       ],
     );
   }
 }
 
-class _TimerPill extends StatelessWidget {
-  final String text;
-  final bool compact;
+class _DigitalCountdown extends StatelessWidget {
+  final int hh;
+  final int mm;
+  final int ss;
 
-  const _TimerPill({required this.text, required this.compact});
+  const _DigitalCountdown({
+    required this.hh,
+    required this.mm,
+    required this.ss,
+  });
+
+  String _format(int value) => value.toString().padLeft(2, '0');
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _TimeDigitCard(text: _format(hh)),
+        _ColonSeparator(),
+        _TimeDigitCard(text: _format(mm)),
+        _ColonSeparator(),
+        _TimeDigitCard(text: _format(ss)),
+      ],
+    );
+  }
+}
+
+class _TimeDigitCard extends StatelessWidget {
+  final String text;
+  const _TimeDigitCard({required this.text});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 10 : 12,
-        vertical: compact ? 8 : 9,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
       decoration: BoxDecoration(
-        color: context.input.withOpacity(context.isDark ? 0.65 : 1),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.border.withOpacity(0.55)),
+        color: BrandColors.burgundy,
+        borderRadius: BorderRadius.circular(6),
         boxShadow: [
           BoxShadow(
-            color: context.shadow.withOpacity(context.isDark ? 0.14 : 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 7),
+            color: BrandColors.burgundy.withValues(alpha: 0.22),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.timer_outlined,
-            color: context.primary,
-            size: compact ? 16 : 18,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              color: context.foreground,
-              fontWeight: FontWeight.w900,
-              fontSize: compact ? 12.5 : 13,
-              letterSpacing: 0.6,
-            ),
-          ),
-        ],
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          fontFamily: 'Cairo',
+          height: 1.0,
+        ),
       ),
     );
   }
 }
 
-class _SeeAllPill extends StatelessWidget {
-  final VoidCallback onTap;
-  final bool compact;
-
-  const _SeeAllPill({required this.onTap, required this.compact});
-
+class _ColonSeparator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Ink(
-        decoration: BoxDecoration(
-          color: context.primary.withOpacity(context.isDark ? 0.16 : 0.12),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: context.primary.withOpacity(0.32)),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: compact ? 10 : 12,
-              vertical: compact ? 8 : 9,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  Tk.homeSeeAll.tr,
-                  style: TextStyle(
-                    color: context.primary,
-                    fontWeight: FontWeight.w900,
-                    fontSize: compact ? 12.5 : 13,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  size: compact ? 16 : 18,
-                  color: context.primary,
-                ),
-              ],
-            ),
-          ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Text(
+        ':',
+        style: TextStyle(
+          color: context.foreground,
+          fontWeight: FontWeight.w900,
+          fontSize: 12,
+          height: 1.0,
         ),
       ),
     );

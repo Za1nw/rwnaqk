@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/utils/app_breakpoints.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
@@ -20,6 +21,10 @@ class HomeScreen extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
+    final cartController = Get.isRegistered<CartController>()
+        ? Get.find<CartController>()
+        : null;
+
     return Scaffold(
       backgroundColor: context.background,
       body: SafeArea(
@@ -27,69 +32,95 @@ class HomeScreen extends GetView<HomeController> {
           builder: (context, c) {
             final w = c.maxWidth;
 
-            final productW = AppBreakpoints.isCompact(w) ? 150.0 : 170.0;
-            final horizontalListH = AppBreakpoints.isCompact(w) ? 240.0 : 250.0;
+            final productW = AppBreakpoints.isCompact(w) ? 154.0 : 172.0;
+            final horizontalListH = AppBreakpoints.isCompact(w) ? 262.0 : 275.0;
 
-            final flashCols = AppBreakpoints.productGridColumns(w);
             final justCols = AppBreakpoints.productGridColumns(w);
 
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(
-                horizontal: HomeLayout.pageHPadding,
-                vertical: HomeLayout.pageVPadding,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ShopTopBar(
-                    title: Tk.homeTitle.tr,
-                    searchHint: Tk.homeSearchHint.tr,
-                    controller: controller.searchC,
-                    onTapField: () => Get.toNamed(AppRoutes.search),
-                    onCamera: controller.openCamera,
-                  ),
+            return RefreshIndicator(
+              color: context.primary,
+              backgroundColor: context.card,
+              onRefresh: () async {
+                controller.onInit();
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                // 110 bottom padding ensures floating bottom nav bar never obscures content
+                padding: const EdgeInsets.fromLTRB(
+                  HomeLayout.pageHPadding,
+                  10,
+                  HomeLayout.pageHPadding,
+                  110,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Prestigious Top Header (Brand, Location, Search, Actions)
+                    Obx(() {
+                      final cartCount = cartController?.cartItems.length ?? 0;
 
-                  const SizedBox(height: HomeLayout.innerGap),
+                      return ShopTopBar(
+                        title: Tk.homeTitle.tr,
+                        searchHint: 'ابحث عن منتجات، ماركات، عطور...',
+                        controller: controller.searchC,
+                        onTapField: () => Get.toNamed(AppRoutes.search),
+                        onCamera: controller.openCamera,
+                        showBrandHeader: true,
+                        locationText: 'التوصيل إلى: صنعاء / عدن',
+                        onLocationTap: () => Get.toNamed(AppRoutes.addresses),
+                        onNotifications: () => Get.toNamed(AppRoutes.settings),
+                        onCart: () => Get.toNamed(AppRoutes.cart),
+                        cartCount: cartCount,
+                      );
+                    }),
 
-                  const HomeBannerSection(),
+                    const SizedBox(height: 14),
 
-                  const SizedBox(height: HomeLayout.sectionGap),
+                    // 2. Promotional Banners Carousel
+                    const HomeBannerSection(),
 
-                  const HomeCategoriesSection(),
+                    const SizedBox(height: 18),
 
-                  const SizedBox(height: HomeLayout.sectionGap),
+                    // 3. Categories Strip (Horizontal story pills, takes minimal space)
+                    const HomeCategoriesSection(),
 
-                  const HomeTopProductsSection(),
+                    const SizedBox(height: 18),
 
-                  const SizedBox(height: HomeLayout.sectionGap),
+                    // 4. Flash Sale (Placed prominently near the top for high-impact deals)
+                    HomeFlashSaleSection(
+                      itemWidth: productW,
+                      height: horizontalListH,
+                    ),
 
-                  HomeNewItemsSection(
-                    itemWidth: productW,
-                    height: horizontalListH,
-                  ),
+                    const SizedBox(height: 22),
 
-                  const SizedBox(height: HomeLayout.sectionGap),
+                    // 5. Featured Highlights / Top Products
+                    const HomeTopProductsSection(),
 
-                  HomeFlashSaleSection(
-                    crossAxisCount: flashCols,
-                  ),
+                    const SizedBox(height: 22),
 
-                  const SizedBox(height: HomeLayout.sectionGap),
+                    // 6. New Arrivals
+                    HomeNewItemsSection(
+                      itemWidth: productW,
+                      height: horizontalListH,
+                    ),
 
-                  HomeMostPopularSection(
-                    itemWidth: productW,
-                    height: horizontalListH,
-                  ),
+                    const SizedBox(height: 22),
 
-                  const SizedBox(height: HomeLayout.sectionGap),
+                    // 7. Most Popular Items
+                    HomeMostPopularSection(
+                      itemWidth: productW,
+                      height: horizontalListH,
+                    ),
 
-                  HomeJustForYouSection(
-                    crossAxisCount: justCols,
-                  ),
+                    const SizedBox(height: 22),
 
-                  const SizedBox(height: HomeLayout.sectionGap),
-                ],
+                    // 8. Personalized Recommendations Grid
+                    HomeJustForYouSection(crossAxisCount: justCols),
+                  ],
+                ),
               ),
             );
           },

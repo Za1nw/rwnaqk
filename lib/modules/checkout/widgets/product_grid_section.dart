@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_card.dart';
 
@@ -9,6 +9,7 @@ class ProductGridSection extends StatelessWidget {
   final double mainAxisSpacing;
   final double childAspectRatio;
   final ValueChanged<HomeProductItem> onTap;
+
   const ProductGridSection({
     super.key,
     required this.items,
@@ -30,11 +31,11 @@ class ProductGridSection extends StatelessWidget {
         double tileH;
 
         if (tileW <= 150) {
-          tileH = tileW * 1.82;
+          tileH = tileW * 1.88;
         } else if (tileW <= 180) {
-          tileH = tileW * 1.58;
+          tileH = tileW * 1.64;
         } else {
-          tileH = tileW * 1.52;
+          tileH = tileW * 1.56;
         }
 
         return GridView.builder(
@@ -47,10 +48,7 @@ class ProductGridSection extends StatelessWidget {
             mainAxisSpacing: mainAxisSpacing,
             mainAxisExtent: tileH,
           ),
-          itemBuilder: (_, i) => ProductCard(
-            item: items[i],
-            onTap: onTap,
-          ),
+          itemBuilder: (_, i) => ProductCard(item: items[i], onTap: onTap),
         );
       },
     );

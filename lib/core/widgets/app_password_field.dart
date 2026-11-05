@@ -92,7 +92,9 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
           suffixIcon: IconButton(
             onPressed: () => setState(() => _hidden = !_hidden),
             icon: Icon(
-              _hidden ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              _hidden
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
               color: context.mutedForeground.withValues(alpha: 0.85),
               size: 20,
             ),
@@ -138,8 +140,10 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
             fontSize: 11.5,
           ),
 
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 15,
+          ),
         ),
       ),
     );

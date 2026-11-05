@@ -1,54 +1,28 @@
-﻿import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/controllers/login_service.dart';
-import 'package:rwnaqk_frontend/modules/auth/controllers/login_ui_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_route_args.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_notifier.dart';
 
-/// هذا الملف هو الكنترولر الرئيسي لشاشة تسجيل الدخول.
-///
-/// نستخدمه لإدارة:
-/// - تنفيذ تسجيل الدخول
-/// - تسجيل الدخول الاجتماعي
-/// - التنقل إلى شاشة إنشاء الحساب
-/// - التنقل إلى شاشة استعادة كلمة المرور
-///
-/// كما أنه يعمل كحلقة ربط بين:
-/// - LoginUiController الخاص بحقول الواجهة
-/// - LoginService الخاص بالمنطق المساعد
+/// الكنترولر الرئيسي لشاشة تسجيل الدخول.
 class LoginController extends GetxController {
   LoginController(this._service);
 
   final LoginService _service;
   final isLoading = false.obs;
 
-  late final LoginUiController ui;
+  /// مفتاح الفورم ومتحكمات الحقول
+  final formKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get formKey => ui.formKey;
+  /// للتوافق مع أي استدعاءات سابقة لـ ui
+  LoginController get ui => this;
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get emailController => ui.emailController;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get passwordController => ui.passwordController;
-
-  @override
-  /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
-  /// نستخدمها لتهيئة الـ UI controller.
-  void onInit() {
-    super.onInit();
-    ui = Get.find<LoginUiController>();
-  }
-
-  /// هذه الدالة تنفذ عملية تسجيل الدخول الحالية.
-  ///
-  /// حاليًا:
-  /// - تتحقق من صحة الفورم
-  /// - ثم تنقل المستخدم مباشرة إلى الصفحة الرئيسية
-  ///
-  /// لاحقًا يتم استبدال هذا السلوك باستدعاء API حقيقي.
+  /// تنفيذ عملية تسجيل الدخول
   Future<void> login() async {
     final isValid = formKey.currentState?.validate() ?? false;
     if (!isValid || isLoading.value) {
@@ -94,28 +68,22 @@ class LoginController extends GetxController {
     }
   }
 
-  /// هذه الدالة تمثل تسجيل الدخول عبر Google.
-  ///
-  /// حاليًا هي mock فقط، ولاحقًا تُربط بـ Google Sign-In الحقيقي.
+  /// تسجيل الدخول عبر Google (Mock)
   void loginWithGoogle() {
     Get.snackbar(Tk.commonSocial.tr, Tk.loginWithGoogle.tr);
   }
 
-  /// هذه الدالة تمثل تسجيل الدخول عبر Apple.
-  ///
-  /// حاليًا هي mock فقط، ولاحقًا تُربط بالتكامل الحقيقي.
+  /// تسجيل الدخول عبر Apple (Mock)
   void loginWithApple() {
     Get.snackbar(Tk.commonSocial.tr, Tk.loginWithApple.tr);
   }
 
-  /// هذه الدالة تمثل تسجيل الدخول عبر Facebook.
-  ///
-  /// حاليًا هي mock فقط، ولاحقًا تُربط بالتكامل الحقيقي.
+  /// تسجيل الدخول عبر Facebook (Mock)
   void loginWithFacebook() {
     Get.snackbar(Tk.commonSocial.tr, Tk.loginWithFacebook.tr);
   }
 
-  /// هذه الدالة تنقل المستخدم إلى شاشة استعادة كلمة المرور.
+  /// الانتقال إلى شاشة استعادة كلمة المرور
   void goToForgotPassword() {
     Get.toNamed(
       AppRoutes.forgot,
@@ -125,8 +93,23 @@ class LoginController extends GetxController {
     );
   }
 
-  /// هذه الدالة تنقل المستخدم إلى شاشة إنشاء حساب جديد.
+  /// الانتقال إلى شاشة إنشاء حساب جديد
   void goToRegister() {
     Get.toNamed(AppRoutes.register);
+  }
+
+  /// تجاوز شاشة تسجيل الدخول والمتابعة كزائر (وضع التصميم)
+  void continueAsGuest() {
+    if (Get.isRegistered<AuthSessionService>()) {
+      Get.find<AuthSessionService>().enterGuestMode();
+    }
+    Get.offAllNamed(AppRoutes.main);
+  }
+
+  @override
+  void onClose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.onClose();
   }
 }

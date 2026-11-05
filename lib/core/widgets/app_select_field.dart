@@ -57,7 +57,7 @@ class AppSelectField<T> extends StatelessWidget {
         ],
       ),
       child: DropdownButtonFormField<T>(
-        value: value,
+        initialValue: value,
         isExpanded: true,
         onChanged: onChanged,
         validator: validator,
@@ -146,8 +146,10 @@ class AppSelectField<T> extends StatelessWidget {
             fontSize: 11.5,
           ),
 
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 15,
+          ),
         ),
         items: items
             .map(

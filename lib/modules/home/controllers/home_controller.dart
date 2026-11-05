@@ -1,4 +1,6 @@
-﻿import 'dart:async';
+import 'dart:async';
+
+import 'package:flutter/widgets.dart';
 
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/home_service.dart';
@@ -36,7 +38,7 @@ class HomeController extends GetxController {
   Timer? _timer;
 
   RxInt get bannerIndex => ui.bannerIndex;
-  get searchC => ui.searchC;
+  TextEditingController get searchC => ui.searchC;
   RxString get query => ui.query;
 
   @override

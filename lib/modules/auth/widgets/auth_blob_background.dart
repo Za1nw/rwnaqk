@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 
@@ -15,9 +16,7 @@ class AuthBlobBackground extends StatelessWidget {
 
     // في الوضع الليلي: الألوان الأساسية للخلفية هي العنابي الملكي المخملي مع لمسة ذهبية ناعمة
     // في الوضع النهاري: العنابي الخفيف اللطيف
-    final dominantBlobColor = isDark
-        ? AppColors.burgundy
-        : AppColors.burgundy;
+    final dominantBlobColor = isDark ? AppColors.burgundy : AppColors.burgundy;
 
     final dominantOpacity = isDark ? 0.38 : 0.08;
 
@@ -27,9 +26,7 @@ class AuthBlobBackground extends StatelessWidget {
     return Stack(
       children: [
         // الخلفية الأساسية
-        Positioned.fill(
-          child: Container(color: base),
-        ),
+        Positioned.fill(child: Container(color: base)),
 
         // تدرج عام ناعم للعمق
         Positioned.fill(
@@ -217,22 +214,15 @@ class _BlobPainter extends CustomPainter {
             AppColors.burgundy500.withValues(alpha: 0.35),
             baseColor,
           )
-        : Color.alphaBlend(
-            Colors.white.withValues(alpha: 0.4),
-            baseColor,
-          );
+        : Color.alphaBlend(Colors.white.withValues(alpha: 0.4), baseColor);
 
-    final outerFadeColor = baseColor.withValues(alpha: baseColor.opacity * 0.2);
+    final outerFadeColor = baseColor.withValues(alpha: baseColor.a * 0.2);
 
     final fillPaint = Paint()
       ..shader = ui.Gradient.radial(
         rect.center,
         size.shortestSide * 0.55,
-        [
-          innerLightColor,
-          baseColor,
-          outerFadeColor,
-        ],
+        [innerLightColor, baseColor, outerFadeColor],
         const [0.0, 0.65, 1.0],
       )
       ..maskFilter = MaskFilter.blur(BlurStyle.normal, isDark ? 28 : 16);

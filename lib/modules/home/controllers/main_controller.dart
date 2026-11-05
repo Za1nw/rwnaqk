@@ -1,4 +1,4 @@
-﻿import 'package:get/get.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/main_service.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/main_ui_controller.dart';
 

@@ -40,8 +40,7 @@ class HomeProductItem {
     this.availableSizes = const [],
   });
 
-  bool get hasDiscount =>
-      discountPercent != null && discountPercent! > 0;
+  bool get hasDiscount => discountPercent != null && discountPercent! > 0;
 
   double get salePrice {
     if (!hasDiscount) return price;
@@ -119,16 +118,16 @@ class HomeProductItem {
       isNew: map['isNew'] == true,
       tagKey: (map['tagKey'] ?? '').toString(),
       description: (map['description'] ?? '').toString(),
-      material: map['material'] == null ? null : map['material'].toString(),
+      material: map['material']?.toString(),
       brand: (map['brand'] ?? '').toString(),
       sku: (map['sku'] ?? '').toString(),
       stockText: (map['stockText'] ?? '').toString(),
       soldText: (map['soldText'] ?? '').toString(),
-      images: (map['images'] as List?)
-              ?.map((e) => e.toString())
-              .toList() ??
+      images:
+          (map['images'] as List?)?.map((e) => e.toString()).toList() ??
           const [],
-      availableColors: (map['availableColors'] as List?)
+      availableColors:
+          (map['availableColors'] as List?)
               ?.map(
                 (e) => ProductColorOption.fromMap(
                   Map<String, dynamic>.from(e as Map),
@@ -136,9 +135,8 @@ class HomeProductItem {
               )
               .toList() ??
           const [],
-      availableSizes: (map['availableSizes'] as List?)
-              ?.map((e) => e.toString())
-              .toList() ??
+      availableSizes:
+          (map['availableSizes'] as List?)?.map((e) => e.toString()).toList() ??
           const [],
     );
   }

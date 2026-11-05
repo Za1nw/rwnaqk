@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';

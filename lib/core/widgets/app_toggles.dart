@@ -60,8 +60,7 @@ class AppToggles extends GetView<AppSettingsController> {
             /// زر الثيم
             if (showTheme)
               Obx(() {
-                final isDarkMode =
-                    controller.themeMode.value == ThemeMode.dark;
+                final isDarkMode = controller.themeMode.value == ThemeMode.dark;
 
                 return _ToggleButton(
                   icon: isDarkMode
@@ -81,10 +80,7 @@ class _ToggleButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _ToggleButton({
-    required this.icon,
-    required this.onTap,
-  });
+  const _ToggleButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -97,9 +93,7 @@ class _ToggleButton extends StatelessWidget {
         width: 38,
         height: 38,
         decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xFF190C18)
-              : const Color(0xFFFAF7F9),
+          color: isDark ? const Color(0xFF190C18) : const Color(0xFFFAF7F9),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isDark
@@ -115,11 +109,7 @@ class _ToggleButton extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(
-          icon,
-          size: 19,
-          color: context.primary,
-        ),
+        child: Icon(icon, size: 19, color: context.primary),
       ),
     );
   }

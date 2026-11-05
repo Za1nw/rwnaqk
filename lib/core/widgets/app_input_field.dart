@@ -132,8 +132,10 @@ class AppInputField extends StatelessWidget {
             fontSize: 11.5,
           ),
 
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 15,
+          ),
         ),
       ),
     );

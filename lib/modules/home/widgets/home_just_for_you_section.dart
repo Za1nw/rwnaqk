@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
@@ -9,10 +9,7 @@ import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 class HomeJustForYouSection extends GetView<HomeController> {
   final int crossAxisCount;
 
-  const HomeJustForYouSection({
-    super.key,
-    required this.crossAxisCount,
-  });
+  const HomeJustForYouSection({super.key, required this.crossAxisCount});
 
   @override
   Widget build(BuildContext context) {

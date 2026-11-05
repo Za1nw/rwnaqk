@@ -10,12 +10,17 @@ class ShopTopBar extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
 
   final VoidCallback? onCamera;
-
-  /// لو تبي الضغط يفتح شاشة بحث بدل الكتابة هنا
   final VoidCallback? onTapField;
-
-  /// مهم: إذا الصفحة عندها padding عام، خلّ هذا = EdgeInsets.zero
   final EdgeInsetsGeometry padding;
+
+  /// Enable full store brand header (Logo + Location + Notifications/Cart)
+  final bool showBrandHeader;
+  final String? locationText;
+  final VoidCallback? onLocationTap;
+  final VoidCallback? onNotifications;
+  final int unreadNotificationsCount;
+  final VoidCallback? onCart;
+  final int cartCount;
 
   const ShopTopBar({
     super.key,
@@ -26,47 +31,230 @@ class ShopTopBar extends StatelessWidget {
     this.onSubmitted,
     this.onCamera,
     this.onTapField,
-    this.padding = const EdgeInsetsDirectional.fromSTEB(1, 10, 10, 1),
+    this.padding = EdgeInsets.zero,
+    this.showBrandHeader = false,
+    this.locationText,
+    this.onLocationTap,
+    this.onNotifications,
+    this.unreadNotificationsCount = 0,
+    this.onCart,
+    this.cartCount = 0,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (!showBrandHeader) {
+      return Padding(
+        padding: padding,
+        child: SizedBox(
+          height: 44,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.start,
+                style: TextStyle(
+                  color: context.foreground,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'Cairo',
+                  height: 1.0,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _SearchPill(
+                  controller: controller,
+                  hint: searchHint,
+                  onChanged: onChanged,
+                  onSubmitted: onSubmitted,
+                  onCamera: onCamera,
+                  onTapField: onTapField,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Full Standard E-Commerce Store Top Header
     return Padding(
       padding: padding,
-      child: SizedBox(
-        height: 44,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // ✅ Title: لا تقصّه بقوة — خلّه ياخذ حجمه الطبيعي
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.start,
-              style: TextStyle(
-                color: context.foreground,
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                height: 1.0,
-                letterSpacing: -0.4,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Row 1: Brand & Actions
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Store Brand Identity & Location
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'رَوْنَقُك',
+                        style: TextStyle(
+                          color: context.primary,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'Cairo',
+                          height: 1.0,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: BrandColors.gold.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: BrandColors.gold.withValues(alpha: 0.45),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: const Text(
+                          'PREMIUM',
+                          style: TextStyle(
+                            color: BrandColors.gold,
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (locationText != null && locationText!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    InkWell(
+                      onTap: onLocationTap,
+                      borderRadius: BorderRadius.circular(4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 13,
+                            color: context.mutedForeground,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            locationText!,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: context.mutedForeground,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 14,
+                            color: context.mutedForeground,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ),
 
-            const SizedBox(width: 12),
+              const Spacer(),
 
-            // ✅ Search: هو الـ primary CTA → لازم يكون Expanded
-            Expanded(
-              child: _SearchPill(
-                controller: controller,
-                hint: searchHint,
-                onChanged: onChanged,
-                onSubmitted: onSubmitted,
-                onCamera: onCamera,
-                onTapField: onTapField,
-              ),
-            ),
-          ],
+              // Notifications Action
+              if (onNotifications != null)
+                _HeaderIconButton(
+                  icon: Icons.notifications_none_rounded,
+                  onTap: onNotifications!,
+                  badgeCount: unreadNotificationsCount,
+                ),
+
+              if (onCart != null) ...[
+                const SizedBox(width: 8),
+                _HeaderIconButton(
+                  icon: Icons.shopping_bag_outlined,
+                  onTap: onCart!,
+                  badgeCount: cartCount,
+                ),
+              ],
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Row 2: Search Pill (Sleek full pill design)
+          _SearchPill(
+            controller: controller,
+            hint: searchHint,
+            onChanged: onChanged,
+            onSubmitted: onSubmitted,
+            onCamera: onCamera,
+            onTapField: onTapField,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeaderIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final int badgeCount;
+
+  const _HeaderIconButton({
+    required this.icon,
+    required this.onTap,
+    this.badgeCount = 0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: context.card,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: context.border.withValues(alpha: 0.40)),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(icon, size: 20, color: context.foreground),
+              if (badgeCount > 0)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: BrandColors.burgundy,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -94,32 +282,31 @@ class _SearchPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ ألوان “متجر” نظيفة مثل المرجع:
-    // Light: رمادي فاتح جداً
-    // Dark: سطح داكن خفيف
     final fieldColor = context.isDark
-        ? context.card.withOpacity(0.45)
-        : const Color(0xFFF3F4F6);
-
-    final borderColor = context.isDark
-        ? context.border.withOpacity(0.35)
-        : Colors.transparent; // المرجع غالباً بدون border في light
+        ? context.card.withValues(alpha: 0.6)
+        : const Color(0xFFF6F7F9);
 
     return Container(
-      height: 36, // ✅ مهم: مثل المرجع، الحقل أصغر من البار
+      height: 44,
       decoration: BoxDecoration(
         color: fieldColor,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(999),
         border: Border.all(
           color: context.isDark
-              ? context.primary.withOpacity(0.75)
-              : context.primary.withOpacity(0.65),
+              ? context.border.withValues(alpha: 0.35)
+              : context.border.withValues(alpha: 0.45),
           width: 1.0,
         ),
       ),
-      padding: const EdgeInsetsDirectional.only(start: 14, end: 6),
+      padding: const EdgeInsetsDirectional.only(start: 14, end: 8),
       child: Row(
         children: [
+          Icon(
+            Icons.search_rounded,
+            size: 20,
+            color: context.primary.withValues(alpha: 0.85),
+          ),
+          const SizedBox(width: 8),
           Expanded(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -130,21 +317,22 @@ class _SearchPill extends StatelessWidget {
                   controller: controller,
                   onChanged: onChanged,
                   onSubmitted: onSubmitted,
-                  textAlign: TextAlign.start, // ✅ Direction-safe
+                  textAlign: TextAlign.start,
                   cursorColor: context.primary,
                   textInputAction: TextInputAction.search,
                   style: TextStyle(
                     color: context.foreground,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
+                    fontFamily: 'Cairo',
                   ),
                   decoration: InputDecoration(
                     hintText: hint,
-
                     hintStyle: TextStyle(
-                      color: context.mutedForeground.withOpacity(0.55),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      color: context.mutedForeground.withValues(alpha: 0.65),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Cairo',
                     ),
                     border: InputBorder.none,
                     isDense: true,
@@ -154,45 +342,23 @@ class _SearchPill extends StatelessWidget {
               ),
             ),
           ),
-
-          const SizedBox(width: 8),
-
-          _CameraButton(onTap: onCamera),
+          if (onCamera != null)
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(999),
+                onTap: onCamera,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(
+                    Icons.photo_camera_outlined,
+                    size: 19,
+                    color: context.primary,
+                  ),
+                ),
+              ),
+            ),
         ],
-      ),
-    );
-  }
-}
-
-class _CameraButton extends StatelessWidget {
-  final VoidCallback? onTap;
-  const _CameraButton({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    // ✅ زر صغير داخل الحقل مثل المرجع
-    return Material(
-      color: Colors.transparent,
-      child: Ink(
-        width: 25,
-        height: 25,
-        decoration: BoxDecoration(
-          color: context.background, // أبيض/خلفية
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: context.primary.withOpacity(0.75),
-            width: 1.2,
-          ),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: onTap,
-          child: Icon(
-            Icons.photo_camera_outlined,
-            size: 16,
-            color: context.primary,
-          ),
-        ),
       ),
     );
   }

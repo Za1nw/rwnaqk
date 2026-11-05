@@ -1,5 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
+import 'package:rwnaqk_frontend/core/utils/app_validators.dart';
 import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_service.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
@@ -15,6 +17,8 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
+
     return Scaffold(
       backgroundColor: context.background,
       body: AuthBlobBackground(
@@ -29,15 +33,21 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                   height: 86,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: context.card.withOpacity(0.95),
-                    border: Border.all(color: context.border.withOpacity(0.5)),
+                    color: isDark
+                        ? AppColors.surfaceDark.withValues(alpha: 0.95)
+                        : Colors.white,
+                    border: Border.all(
+                      color: isDark
+                          ? AppColors.borderDark.withValues(alpha: 0.6)
+                          : AppColors.borderLight,
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: context.shadow.withOpacity(
-                          context.isDark ? 0.35 : 0.16,
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.35 : 0.08,
                         ),
                         blurRadius: 18,
-                        offset: const Offset(0, 10),
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
@@ -73,25 +83,14 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                   );
                 }),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 AppInputField(
                   controller: controller.targetController,
                   label: Tk.loginEmailLabel.tr,
                   hint: Tk.loginEmailHint.tr,
                   prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    final email = (value ?? '').trim();
-                    if (email.isEmpty) {
-                      return Tk.loginEmailRequired.tr;
-                    }
-
-                    if (!GetUtils.isEmail(email)) {
-                      return Tk.loginEmailInvalid.tr;
-                    }
-
-                    return null;
-                  },
+                  validator: AppValidators.email,
                 ),
 
                 const SizedBox(height: 20),
@@ -100,10 +99,11 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                   return AppButton(
                     text: controller.isLoading.value ? '...' : Tk.fpNext.tr,
                     icon: Icons.arrow_forward_rounded,
+                    isLoading: controller.isLoading.value,
                     onPressed: controller.isLoading.value
-                        ? () {}
+                        ? null
                         : controller.goNextFromMethod,
-                    height: 54,
+                    height: 52,
                   );
                 }),
                 const SizedBox(height: 10),
@@ -112,7 +112,11 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                   onPressed: controller.cancel,
                   child: Text(
                     Tk.fpCancel.tr,
-                    style: TextStyle(color: context.mutedForeground),
+                    style: TextStyle(
+                      fontFamily: AppTextTheme.fontFamily,
+                      color: context.mutedForeground,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],
@@ -139,26 +143,32 @@ class _ChoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = context.card.withOpacity(context.isDark ? 0.92 : 0.96);
+    final isDark = context.isDark;
+    final bg = isDark
+        ? AppColors.surfaceDark.withValues(alpha: 0.94)
+        : Colors.white;
+
     final border = selected
-        ? context.primary.withOpacity(0.65)
-        : context.border.withOpacity(0.55);
+        ? context.primary
+        : (isDark
+              ? AppColors.borderDark.withValues(alpha: 0.6)
+              : AppColors.borderLight);
 
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Container(
         height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: bg,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: border, width: selected ? 1.4 : 1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: border, width: selected ? 1.5 : 1),
           boxShadow: [
             BoxShadow(
-              color: context.shadow.withOpacity(context.isDark ? 0.30 : 0.12),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
+              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -167,14 +177,17 @@ class _ChoiceCard extends StatelessWidget {
             Icon(
               icon,
               color: selected ? context.primary : context.mutedForeground,
+              size: 22,
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 title,
                 style: TextStyle(
+                  fontFamily: AppTextTheme.fontFamily,
                   color: context.foreground,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14.5,
                 ),
               ),
             ),
@@ -183,7 +196,12 @@ class _ChoiceCard extends StatelessWidget {
               height: 22,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: border),
+                border: Border.all(
+                  color: selected
+                      ? context.primary
+                      : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                  width: 1.5,
+                ),
                 color: selected ? context.primary : Colors.transparent,
               ),
               child: selected

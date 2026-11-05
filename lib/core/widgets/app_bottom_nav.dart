@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
@@ -10,6 +10,8 @@ class AppBottomNav extends StatelessWidget {
   final String profileName;
   final String profileAvatarPath;
   final String profileAvatarUrl;
+  final int cartBadgeCount;
+  final int wishlistBadgeCount;
 
   const AppBottomNav({
     super.key,
@@ -18,15 +20,25 @@ class AppBottomNav extends StatelessWidget {
     this.profileName = '',
     this.profileAvatarPath = '',
     this.profileAvatarUrl = '',
+    this.cartBadgeCount = 0,
+    this.wishlistBadgeCount = 0,
   });
 
   @override
   Widget build(BuildContext context) {
     final items = <_NavSpec>[
       _NavSpec(icon: Icons.home_rounded, label: Tk.navHome.tr),
-      _NavSpec(icon: Icons.favorite_rounded, label: Tk.navWishlist.tr),
+      _NavSpec(
+        icon: Icons.favorite_rounded,
+        label: Tk.navWishlist.tr,
+        badgeCount: wishlistBadgeCount,
+      ),
       _NavSpec(icon: Icons.receipt_rounded, label: Tk.navOrders.tr),
-      _NavSpec(icon: Icons.shopping_bag_rounded, label: Tk.navShop.tr),
+      _NavSpec(
+        icon: Icons.shopping_bag_rounded,
+        label: Tk.navShop.tr,
+        badgeCount: cartBadgeCount,
+      ),
       _NavSpec(
         icon: Icons.person_rounded,
         label: Tk.navAccount.tr,
@@ -43,7 +55,7 @@ class AppBottomNav extends StatelessWidget {
             borderRadius: BorderRadius.circular(999),
             boxShadow: [
               BoxShadow(
-                color: context.shadow.withOpacity(.10),
+                color: context.shadow.withValues(alpha: 0.10),
                 blurRadius: 28,
                 offset: const Offset(0, 14),
               ),
@@ -56,7 +68,9 @@ class AppBottomNav extends StatelessWidget {
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: context.card,
-                border: Border.all(color: context.border.withOpacity(.28)),
+                border: Border.all(
+                  color: context.border.withValues(alpha: 0.28),
+                ),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -91,16 +105,20 @@ class AppBottomNav extends StatelessWidget {
                               width: segmentWidth - 4,
                               height: double.infinity,
                               decoration: BoxDecoration(
-                                color: context.primary.withOpacity(.14),
+                                color: context.primary.withValues(alpha: 0.14),
                                 borderRadius: BorderRadius.circular(999),
                                 border: Border.all(
-                                  color: context.primary.withOpacity(.16),
+                                  color: context.primary.withValues(
+                                    alpha: 0.16,
+                                  ),
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: context.primary.withOpacity(.10),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
+                                    color: context.primary.withValues(
+                                      alpha: context.isDark ? 0.20 : 0.08,
+                                    ),
+                                    blurRadius: 18,
+                                    offset: const Offset(0, 6),
                                   ),
                                 ],
                               ),
@@ -108,16 +126,19 @@ class AppBottomNav extends StatelessWidget {
                           ),
                         ),
                       ),
+
+                      // Segments
                       Row(
                         children: [
-                          for (var i = 0; i < items.length; i++)
+                          for (int i = 0; i < items.length; i++)
                             Expanded(
                               child: _NavSegment(
                                 icon: items[i].icon,
                                 label: items[i].label,
-                                selected: currentIndex == i,
-                                showLabel: showActiveLabel,
+                                selected: i == currentIndex,
+                                showLabel: showActiveLabel && i == currentIndex,
                                 useAvatar: items[i].useAvatar,
+                                badgeCount: items[i].badgeCount,
                                 profileName: profileName,
                                 profileAvatarPath: profileAvatarPath,
                                 profileAvatarUrl: profileAvatarUrl,
@@ -145,7 +166,6 @@ class AppBottomNav extends StatelessWidget {
     if (count <= 1) return 0;
 
     final safeIndex = index.clamp(0, count - 1);
-
     final step = 2 / (count - 1);
     final textDirection = Directionality.of(context);
 
@@ -161,11 +181,13 @@ class _NavSpec {
   final IconData icon;
   final String label;
   final bool useAvatar;
+  final int badgeCount;
 
   const _NavSpec({
     required this.icon,
     required this.label,
     this.useAvatar = false,
+    this.badgeCount = 0,
   });
 }
 
@@ -175,6 +197,7 @@ class _NavSegment extends StatelessWidget {
   final bool selected;
   final bool showLabel;
   final bool useAvatar;
+  final int badgeCount;
   final String profileName;
   final String profileAvatarPath;
   final String profileAvatarUrl;
@@ -186,6 +209,7 @@ class _NavSegment extends StatelessWidget {
     required this.selected,
     required this.showLabel,
     required this.useAvatar,
+    this.badgeCount = 0,
     required this.profileName,
     required this.profileAvatarPath,
     required this.profileAvatarUrl,
@@ -203,7 +227,7 @@ class _NavSegment extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
-        splashColor: context.primary.withOpacity(.08),
+        splashColor: context.primary.withValues(alpha: 0.08),
         highlightColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
@@ -234,8 +258,8 @@ class _NavSegment extends StatelessWidget {
                                     shape: BoxShape.circle,
                                     border: Border.all(
                                       color: Color.lerp(
-                                        context.border.withOpacity(.32),
-                                        context.primary.withOpacity(.50),
+                                        context.border.withValues(alpha: 0.32),
+                                        context.primary.withValues(alpha: 0.50),
                                         t > 0.3 ? t : 0.3,
                                       )!,
                                       width: 1,
@@ -253,10 +277,23 @@ class _NavSegment extends StatelessWidget {
                                   ),
                                 ),
                               )
-                            : Icon(
-                                icon,
-                                size: 20,
-                                color: Color.lerp(inactiveFg, activeFg, t),
+                            : Badge(
+                                isLabelVisible: badgeCount > 0,
+                                label: Text(
+                                  badgeCount > 99 ? '99+' : '$badgeCount',
+                                  style: const TextStyle(
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    fontFamily: 'Cairo',
+                                  ),
+                                ),
+                                backgroundColor: context.primary,
+                                child: Icon(
+                                  icon,
+                                  size: 20,
+                                  color: Color.lerp(inactiveFg, activeFg, t),
+                                ),
                               ),
                       ),
                       if (showLabel)
@@ -269,19 +306,15 @@ class _NavSegment extends StatelessWidget {
                                 padding: const EdgeInsetsDirectional.only(
                                   start: 6,
                                 ),
-                                child: SizedBox(
-                                  width: 44,
-                                  child: Text(
-                                    label,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.fade,
-                                    softWrap: false,
-                                    style: TextStyle(
-                                      color: activeFg,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -.1,
-                                    ),
+                                child: Text(
+                                  label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: activeFg,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: .1,
                                   ),
                                 ),
                               ),

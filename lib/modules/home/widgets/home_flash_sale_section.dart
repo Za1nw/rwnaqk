@@ -1,16 +1,17 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/flash_sale_header.dart';
-import 'package:rwnaqk_frontend/modules/home/widgets/home_layout.dart';
-import 'package:rwnaqk_frontend/modules/checkout/widgets/product_grid_section.dart';
+import 'package:rwnaqk_frontend/modules/checkout/widgets/product_horizontal_list.dart';
 
 class HomeFlashSaleSection extends GetView<HomeController> {
-  final int crossAxisCount;
+  final double itemWidth;
+  final double height;
 
   const HomeFlashSaleSection({
     super.key,
-    required this.crossAxisCount,
+    this.itemWidth = 165,
+    this.height = 275,
   });
 
   @override
@@ -26,18 +27,16 @@ class HomeFlashSaleSection extends GetView<HomeController> {
             onSeeAll: controller.openFlashSaleScreen,
           ),
         ),
-        const SizedBox(height: HomeLayout.innerGap),
+        const SizedBox(height: 12),
         Obx(() {
           final items = controller.flashSale.toList();
           if (items.isEmpty) return const SizedBox.shrink();
 
-          return ProductGridSection(
+          return ProductHorizontalList(
             items: items,
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: HomeLayout.gridSpacing,
-            mainAxisSpacing: HomeLayout.gridSpacing,
+            itemWidth: itemWidth,
+            height: height,
             onTap: controller.openProduct,
-            childAspectRatio: 1.0,
           );
         }),
       ],

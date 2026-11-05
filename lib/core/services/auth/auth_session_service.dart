@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
@@ -19,8 +19,24 @@ class AuthSessionService extends GetxService {
   final token = RxnString();
   final requiresEmailVerification = false.obs;
   final customer = Rxn<CustomerModel>();
+  final isGuestMode = false.obs;
 
-  bool get isAuthenticated => (token.value ?? '').isNotEmpty;
+  bool get isAuthenticated =>
+      (token.value ?? '').isNotEmpty || isGuestMode.value;
+
+  /// تمكين وضع الضيف لتجاوز تسجيل الدخول لأغراض التصميم والتطوير
+  void enterGuestMode() {
+    isGuestMode.value = true;
+    token.value = 'guest_dev_mode';
+    customer.value = const CustomerModel(
+      id: 1,
+      firstName: 'مستخدم',
+      lastName: 'تجريبي',
+      fullName: 'مستخدم تجريبي',
+      email: 'guest@rawnaqk.com',
+      mobile: '777000000',
+    );
+  }
 
   Future<void> bootstrapSession(CustomerAuthApiService api) async {
     final currentToken = (token.value ?? '').trim();
@@ -82,6 +98,7 @@ class AuthSessionService extends GetxService {
   }
 
   void clearSession() {
+    isGuestMode.value = false;
     token.value = null;
     customer.value = null;
     requiresEmailVerification.value = false;
@@ -98,7 +115,9 @@ class AuthSessionService extends GetxService {
 
     final currentCustomer = customer.value;
     if (currentCustomer != null && currentCustomer.emailVerifiedAt == null) {
-      customer.value = currentCustomer.copyWith(emailVerifiedAt: DateTime.now());
+      customer.value = currentCustomer.copyWith(
+        emailVerifiedAt: DateTime.now(),
+      );
     }
 
     _setEmailVerificationRequired(false);

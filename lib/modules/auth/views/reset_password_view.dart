@@ -1,7 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/utils/app_validators.dart';
 
 import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_controller.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
@@ -15,28 +17,31 @@ class ResetPasswordScreen extends GetView<ForgotPasswordController> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
+
     return Scaffold(
       backgroundColor: context.background,
       body: AuthBlobBackground(
         child: SafeArea(
           child: AuthCenteredContainer(
             child: Container(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
               decoration: BoxDecoration(
-                color: context.card.withOpacity(context.isDark ? 0.92 : 0.96),
-                borderRadius: BorderRadius.circular(22),
+                color: isDark
+                    ? AppColors.surfaceDark.withValues(alpha: 0.94)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: context.border.withOpacity(
-                    context.isDark ? 0.45 : 0.70,
-                  ),
+                  color: isDark
+                      ? AppColors.borderDark.withValues(alpha: 0.6)
+                      : AppColors.borderLight,
+                  width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: context.shadow.withOpacity(
-                      context.isDark ? 0.45 : 0.22,
-                    ),
-                    blurRadius: 18,
-                    offset: const Offset(0, 10),
+                    color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
@@ -49,78 +54,63 @@ class ResetPasswordScreen extends GetView<ForgotPasswordController> {
                       title: Tk.fpNewTitle.tr,
                       subtitle: Tk.fpNewSubtitle.tr,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
                     AppInputField(
                       controller: controller.targetController,
                       label: Tk.loginEmailLabel.tr,
                       hint: Tk.loginEmailHint.tr,
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (v) {
-                        final value = (v ?? '').trim();
-                        if (value.isEmpty) {
-                          return Tk.loginEmailRequired.tr;
-                        }
-                        if (!GetUtils.isEmail(value)) {
-                          return Tk.loginEmailInvalid.tr;
-                        }
-
-                        return null;
-                      },
+                      validator: AppValidators.email,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     AppInputField(
                       controller: controller.resetTokenController,
                       label: 'Reset Token',
                       hint: 'Paste token from reset link',
                       prefixIcon: Icons.key_outlined,
-                      validator: (v) {
-                        final value = (v ?? '').trim();
-                        if (value.isEmpty) {
-                          return 'Reset token is required';
-                        }
-
-                        return null;
-                      },
+                      validator: (v) =>
+                          AppValidators.required(v, Tk.fpResetTokenRequired.tr),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     AppPasswordField(
                       controller: controller.passwordController,
                       label: Tk.fpNewPassword.tr,
                       hint: Tk.fpNewPassword.tr,
                       prefixIcon: Icons.lock_outline_rounded,
-                      validator: (v) {
-                        final value = (v ?? '');
-                        if (value.isEmpty) return Tk.fpNewShort.tr;
-                        if (value.length < 6) return Tk.fpNewShort.tr;
-                        return null;
-                      },
+                      textInputAction: TextInputAction.next,
+                      validator: (v) => AppValidators.password(
+                        v,
+                        requiredMsg: Tk.loginPasswordRequired.tr,
+                        shortMsg: Tk.fpNewShort.tr,
+                      ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     AppPasswordField(
                       controller: controller.confirmController,
                       label: Tk.fpNewConfirm.tr,
                       hint: Tk.fpNewConfirm.tr,
                       prefixIcon: Icons.lock_reset_rounded,
                       textInputAction: TextInputAction.done,
-                      validator: (v) {
-                        final value = (v ?? '');
-                        if (value.isEmpty) return Tk.fpNewShort.tr;
-                        if (value.length < 6) return Tk.fpNewShort.tr;
-                        return null;
-                      },
+                      validator: (v) => AppValidators.confirmPassword(
+                        v,
+                        controller.passwordController.text,
+                        requiredMsg: Tk.fpNewShort.tr,
+                        mismatchMsg: Tk.fpNewMismatch.tr,
+                      ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 20),
                     Obx(() {
                       return AppButton(
                         text: controller.isLoading.value
                             ? '...'
                             : Tk.fpNewSave.tr,
                         icon: Icons.save_rounded,
+                        isLoading: controller.isLoading.value,
                         onPressed: controller.isLoading.value
-                            ? () {}
+                            ? null
                             : controller.saveNewPassword,
-                        height: 54,
+                        height: 52,
                       );
                     }),
                     const SizedBox(height: 8),
@@ -128,7 +118,11 @@ class ResetPasswordScreen extends GetView<ForgotPasswordController> {
                       onPressed: controller.cancel,
                       child: Text(
                         Tk.fpCancel.tr,
-                        style: TextStyle(color: context.mutedForeground),
+                        style: TextStyle(
+                          fontFamily: AppTextTheme.fontFamily,
+                          color: context.mutedForeground,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ],

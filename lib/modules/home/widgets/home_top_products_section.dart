@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
@@ -14,18 +14,13 @@ class HomeTopProductsSection extends GetView<HomeController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppSectionHeader(
-          title: Tk.homeTopProducts.tr,
-        ),
+        AppSectionHeader(title: Tk.homeTopProducts.tr),
         const SizedBox(height: HomeLayout.innerGap),
         Obx(() {
           final items = controller.topProducts.toList();
           if (items.isEmpty) return const SizedBox.shrink();
 
-          return ProductAvatarRow(
-            items: items,
-            onTap: controller.openProduct,
-          );
+          return ProductAvatarRow(items: items, onTap: controller.openProduct);
         }),
       ],
     );

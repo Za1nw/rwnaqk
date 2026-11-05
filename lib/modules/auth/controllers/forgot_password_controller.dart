@@ -1,33 +1,23 @@
-﻿import 'package:get/get.dart';
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_service.dart';
 import 'package:rwnaqk_frontend/routes/app_route_args.dart';
-import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_ui_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_notifier.dart';
 
-/// هذا الملف هو الكنترولر الرئيسي لمنظومة استعادة كلمة المرور.
-///
-/// نستخدمه لإدارة:
-/// - تحديد الهدف الحالي للإرسال
-/// - الانتقال بين خطوات الاستعادة
-/// - التحقق من OTP
-/// - حفظ كلمة المرور الجديدة
-///
-/// كما أنه يعمل كحلقة ربط بين:
-/// - ForgotPasswordUiController الخاص بحالات الواجهة
-/// - ForgotPasswordService الخاص بالمنطق المساعد
+/// الكنترولر الرئيسي لمنظومة استعادة كلمة المرور والتحقق.
 class ForgotPasswordController extends GetxController {
   ForgotPasswordController(this._service);
 
   final ForgotPasswordService _service;
 
-  late final ForgotPasswordUiController ui;
-
-  /// الهدف الحقيقي الحالي الذي سيتم إرسال الرمز إليه.
+  /// الهدف الحقيقي الحالي الذي سيتم إرسال الرمز إليه
   final target = ''.obs;
 
-  /// الهدف الحالي بعد إخفائه للعرض في الواجهة.
+  /// الهدف الحالي بعد إخفائه للعرض في الواجهة
   final maskedTarget = ''.obs;
 
   final otpFlow = OtpFlow.forgotPassword.obs;
@@ -36,44 +26,35 @@ class ForgotPasswordController extends GetxController {
 
   bool get isTwoFactorFlow => otpFlow.value == OtpFlow.twoFactorLogin;
 
-  // =========================
-  // UI BRIDGES
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  Rx<RecoveryMethod> get method => ui.method;
+  /// طريقة الاستعادة
+  final method = RecoveryMethod.email.obs;
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  RxString get otp => ui.otp;
+  /// رمز التحقق
+  final otp = ''.obs;
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  RxBool get canResend => ui.canResend;
+  /// حالة إعادة الإرسال
+  final canResend = false.obs;
+  final resendSeconds = 30.obs;
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  RxInt get resendSeconds => ui.resendSeconds;
+  /// مفاتيح ومتحكمات الحقول
+  final formKey = GlobalKey<FormState>();
+  final targetController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmController = TextEditingController();
+  final resetTokenController = TextEditingController();
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get formKey => ui.formKey;
+  /// حالة التحميل
+  final isLoading = false.obs;
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get targetController => ui.targetController;
+  /// مؤقت إعادة الإرسال
+  Timer? _timer;
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get passwordController => ui.passwordController;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get confirmController => ui.confirmController;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get resetTokenController => ui.resetTokenController;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  RxBool get isLoading => ui.isLoading;
+  /// للتوافق مع أي استدعاءات سابقة لـ ui
+  ForgotPasswordController get ui => this;
 
   @override
-  /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
-  /// نستخدمها لتهيئة الـ UI controller.
   void onInit() {
     super.onInit();
-    ui = Get.find<ForgotPasswordUiController>();
 
     final args = Get.arguments;
     if (args is Map) {
@@ -99,18 +80,38 @@ class ForgotPasswordController extends GetxController {
     }
   }
 
-  /// هذه الدالة تغيّر وسيلة استعادة كلمة المرور الحالية.
   void selectMethod(RecoveryMethod value) {
-    ui.selectMethod(value);
+    method.value = value;
   }
 
-  /// هذه الدالة تنتقل من شاشة اختيار الوسيلة إلى شاشة التحقق.
-  ///
-  /// عند التنفيذ:
-  /// - نحدد الهدف الحقيقي
-  /// - نبني النص المخفي المناسب
-  /// - نبدأ مؤقت إعادة الإرسال
-  /// - ننتقل إلى شاشة OTP
+  void setOtp(String value) {
+    otp.value = value;
+  }
+
+  void setLoading(bool value) {
+    isLoading.value = value;
+  }
+
+  void startResendTimer() {
+    _timer?.cancel();
+    canResend.value = false;
+    resendSeconds.value = 30;
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      resendSeconds.value -= 1;
+
+      if (resendSeconds.value <= 0) {
+        t.cancel();
+        canResend.value = true;
+      }
+    });
+  }
+
+  void stopTimer() {
+    _timer?.cancel();
+  }
+
+  /// الانتقال من شاشة اختيار الوسيلة إلى شاشة التحقق
   Future<void> goNextFromMethod() async {
     if (isLoading.value) {
       return;
@@ -127,7 +128,7 @@ class ForgotPasswordController extends GetxController {
       return;
     }
 
-    ui.setLoading(true);
+    setLoading(true);
     try {
       await _service.sendPasswordResetLink(email: email);
 
@@ -142,18 +143,11 @@ class ForgotPasswordController extends GetxController {
     } catch (error) {
       AppNotifier.errorFrom(error);
     } finally {
-      ui.setLoading(false);
+      setLoading(false);
     }
   }
 
-  /// هذه الدالة تحدّث رمز التحقق الحالي.
-  void setOtp(String value) {
-    ui.setOtp(value);
-  }
-
-  /// هذه الدالة تتحقق من صحة رمز التحقق الحالي.
-  ///
-  /// إذا كان صحيحًا ننتقل إلى شاشة إعادة تعيين كلمة المرور.
+  /// التحقق من صحة رمز التحقق
   Future<void> verifyOtp() async {
     if (!_service.isValidOtp(otp.value)) {
       AppNotifier.error(Tk.fpVerifyInvalid);
@@ -161,7 +155,7 @@ class ForgotPasswordController extends GetxController {
     }
 
     if (otpFlow.value == OtpFlow.twoFactorLogin) {
-      ui.setLoading(true);
+      setLoading(true);
       try {
         final result = await _service.verifyTwoFactorLogin(
           email: loginEmail.value,
@@ -182,7 +176,7 @@ class ForgotPasswordController extends GetxController {
       } catch (error) {
         AppNotifier.errorFrom(error);
       } finally {
-        ui.setLoading(false);
+        setLoading(false);
       }
 
       return;
@@ -191,7 +185,7 @@ class ForgotPasswordController extends GetxController {
     Get.toNamed(AppRoutes.reset);
   }
 
-  /// هذه الدالة تعيد إرسال رمز التحقق إذا أصبح مسموحًا بذلك.
+  /// إعادة إرسال رمز التحقق
   void resendCode() {
     if (otpFlow.value == OtpFlow.twoFactorLogin) {
       AppNotifier.error(Tk.fpUseAuthenticator);
@@ -200,19 +194,11 @@ class ForgotPasswordController extends GetxController {
 
     if (!canResend.value) return;
 
-    ui.startResendTimer();
+    startResendTimer();
     AppNotifier.success(Tk.fpVerifySent);
   }
 
-  /// هذه الدالة تحفظ كلمة المرور الجديدة بعد التحقق من صحة البيانات.
-  ///
-  /// حاليًا:
-  /// - نتحقق من صحة الفورم
-  /// - نتحقق من تطابق كلمة المرور
-  /// - نعرض نجاحًا تجريبيًا
-  /// - ثم نعيد المستخدم إلى شاشة الدخول
-  ///
-  /// لاحقًا يتم استبدال هذا السلوك باستدعاء API حقيقي.
+  /// حفظ كلمة المرور الجديدة
   Future<void> saveNewPassword() async {
     final isValid = formKey.currentState?.validate() ?? false;
     final p1 = passwordController.text;
@@ -242,7 +228,7 @@ class ForgotPasswordController extends GetxController {
       return;
     }
 
-    ui.setLoading(true);
+    setLoading(true);
 
     try {
       await _service.resetPassword(token: token, email: email, password: p1);
@@ -252,20 +238,21 @@ class ForgotPasswordController extends GetxController {
     } catch (error) {
       AppNotifier.errorFrom(error);
     } finally {
-      ui.setLoading(false);
+      setLoading(false);
     }
   }
 
-  /// هذه الدالة تعيد المستخدم إلى الشاشة السابقة.
   void cancel() {
     Get.back();
   }
 
   @override
-  /// هذه الدالة تُستدعى عند التخلص من الكنترولر.
-  /// نستخدمها لإيقاف المؤقت الحالي إن وجد.
   void onClose() {
-    ui.stopTimer();
+    stopTimer();
+    targetController.dispose();
+    passwordController.dispose();
+    confirmController.dispose();
+    resetTokenController.dispose();
     super.onClose();
   }
 }

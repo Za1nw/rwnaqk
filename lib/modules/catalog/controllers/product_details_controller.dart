@@ -1,5 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/favorite_added_dialog.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
@@ -60,9 +62,7 @@ class ProductDetailsController extends GetxController {
 
   String get description {
     final value = product?.description.trim() ?? '';
-    return value.isEmpty
-        ? Mk.productDefaultDescription.tr
-        : value.tr;
+    return value.isEmpty ? Mk.productDefaultDescription.tr : value.tr;
   }
 
   String get imageUrl => product?.imageUrl ?? '';
@@ -133,7 +133,6 @@ class ProductDetailsController extends GetxController {
     return raw
         .where(
           (e) =>
-              e != null &&
               e.id.trim().isNotEmpty &&
               e.name.trim().isNotEmpty &&
               e.imageUrl.trim().isNotEmpty,
@@ -231,8 +230,9 @@ class ProductDetailsController extends GetxController {
 
     final current = item.value;
     if (current != null && Get.isRegistered<WishlistController>()) {
-      ui.isFavorite.value =
-          Get.find<WishlistController>().isInWishlist(current.id);
+      ui.isFavorite.value = Get.find<WishlistController>().isInWishlist(
+        current.id,
+      );
     }
   }
 
@@ -240,24 +240,29 @@ class ProductDetailsController extends GetxController {
   // Actions
   // =========================================================
   void selectThumb(int index) {
-    ui.selectThumb(
-      index: index,
-      maxLength: variationImages.length,
-    );
+    ui.selectThumb(index: index, maxLength: variationImages.length);
   }
 
   void toggleFavorite() {
     final current = item.value;
     if (current == null) return;
 
+    final wasFavorite = ui.isFavorite.value;
+
     if (Get.isRegistered<WishlistController>()) {
       final wishlist = Get.find<WishlistController>();
       wishlist.toggleWishlist(current);
       ui.isFavorite.value = wishlist.isInWishlist(current.id);
-      return;
+    } else {
+      ui.toggleFavorite();
     }
 
-    ui.toggleFavorite();
+    if (!wasFavorite && ui.isFavorite.value) {
+      final context = Get.context;
+      if (context != null) {
+        FavoriteAddedDialog.show(context);
+      }
+    }
   }
 
   void setDelivery(String id) {
@@ -286,7 +291,10 @@ class ProductDetailsController extends GetxController {
       );
     }
 
-    Get.snackbar(Tk.cartTitle.tr, Tk.productDetailsAddedToCart.tr);
+    final context = Get.context;
+    if (context != null) {
+      CartAddedDialog.show(context);
+    }
   }
 
   void buyNow() {
@@ -326,9 +334,7 @@ class ProductDetailsController extends GetxController {
     ].join('\n');
 
     try {
-      await SharePlus.instance.share(
-        ShareParams(text: shareText),
-      );
+      await SharePlus.instance.share(ShareParams(text: shareText));
     } on MissingPluginException {
       await Clipboard.setData(ClipboardData(text: shareText));
       Get.snackbar(

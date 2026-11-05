@@ -1,9 +1,9 @@
-﻿import 'package:get/get.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_service.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_ui_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
-import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة المفضلة.
@@ -99,25 +99,20 @@ class WishlistController extends GetxController {
 
     Get.toNamed(
       AppRoutes.product,
-      arguments: {
-        'item': item,
-        'forceSale': isSale,
-      },
+      arguments: {'item': item, 'forceSale': isSale},
     );
   }
 
-  /// هذه الدالة تضيف المنتج إلى السلة بشكل تجريبي حاليًا.
+  /// هذه الدالة تضيف المنتج إلى السلة
   void addToCart(HomeProductItem item) {
     if (Get.isRegistered<CartController>()) {
       Get.find<CartController>().addToCart(item);
     }
 
-    Get.snackbar(
-      Tk.cartTitle.tr,
-      Tk.wishlistAddedToCartMessage.trParams({'title': item.title.tr}),
-      snackPosition: SnackPosition.BOTTOM,
-      duration: const Duration(seconds: 1),
-    );
+    final context = Get.context;
+    if (context != null) {
+      CartAddedDialog.show(context);
+    }
   }
 
   /// هذه الدالة تهيئ البيانات التجريبية الخاصة بشاشة المفضلة.

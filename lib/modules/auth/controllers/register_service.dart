@@ -1,4 +1,4 @@
-﻿import 'package:get/get.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 import 'package:rwnaqk_frontend/core/services/geo/geo_lookup_api_service.dart';
@@ -37,7 +37,6 @@ class RegisterService {
 
   Future<void> loadGovernorates() async {
     final yemenLookup = await _geoLookupApiService.yemenGovernorates();
-    print(yemenLookup);
     if (yemenLookup == null) {
       governorates.clear();
       return;

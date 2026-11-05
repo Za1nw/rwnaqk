@@ -29,10 +29,11 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = context.isDark;
 
-    final bg = backgroundColor ??
-        (outlined ? Colors.transparent : context.primary);
+    final bg =
+        backgroundColor ?? (outlined ? Colors.transparent : context.primary);
 
-    final fg = foregroundColor ??
+    final fg =
+        foregroundColor ??
         (outlined ? context.primary : context.primaryForeground);
 
     final bool showGlow = !outlined && backgroundColor == null && isDark;

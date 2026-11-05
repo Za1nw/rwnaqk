@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_action_icon_button.dart';
 
@@ -28,19 +28,19 @@ class AppSectionHeader extends StatelessWidget {
     this.actionText,
     this.actionIcon,
     this.onActionTap,
-    this.titleFontSize = 16,
+    this.titleFontSize = 17,
     this.titleFontWeight = FontWeight.w900,
     this.titleColor,
-    this.actionFontSize = 12.5,
+    this.actionFontSize = 13,
     this.actionFontWeight = FontWeight.w800,
     this.actionColor,
     this.showArrowWithTextAction = true,
     this.reserveActionSpace = false,
     this.padding,
   }) : assert(
-          !(actionText != null && actionIcon != null),
-          'Use either actionText or actionIcon, not both.',
-        );
+         !(actionText != null && actionIcon != null),
+         'Use either actionText or actionIcon, not both.',
+       );
 
   bool get _hasTextAction =>
       actionText != null &&
@@ -51,7 +51,10 @@ class AppSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveActionColor = actionColor ?? context.primary;
+
     final child = Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
           child: Text(
@@ -62,68 +65,51 @@ class AppSectionHeader extends StatelessWidget {
               color: titleColor ?? context.foreground,
               fontSize: titleFontSize,
               fontWeight: titleFontWeight,
+              letterSpacing: -0.2,
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         if (_hasTextAction)
           InkWell(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(8),
             onTap: onActionTap,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  actionText!,
-                  style: TextStyle(
-                    color: actionColor ?? context.mutedForeground,
-                    fontSize: actionFontSize,
-                    fontWeight: actionFontWeight,
-                  ),
-                ),
-                if (showArrowWithTextAction) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      color: context.primary,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: context.shadow.withOpacity(
-                            context.isDark ? 0.20 : 0.10,
-                          ),
-                          blurRadius: 10,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.arrow_forward_rounded,
-                      color: context.primaryForeground,
-                      size: 16,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    actionText!,
+                    style: TextStyle(
+                      color: effectiveActionColor,
+                      fontSize: actionFontSize,
+                      fontWeight: actionFontWeight,
                     ),
                   ),
+                  if (showArrowWithTextAction) ...[
+                    const SizedBox(width: 2),
+                    Icon(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? Icons.chevron_left_rounded
+                          : Icons.chevron_right_rounded,
+                      color: effectiveActionColor,
+                      size: 18,
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           )
         else if (_hasIconAction)
-          AppActionIconButton(
-            icon: actionIcon!,
-            onTap: onActionTap!,
-          )
+          AppActionIconButton(icon: actionIcon!, onTap: onActionTap!)
         else if (reserveActionSpace)
           const SizedBox(width: 34, height: 34),
       ],
     );
 
     if (padding != null) {
-      return Padding(
-        padding: padding!,
-        child: child,
-      );
+      return Padding(padding: padding!, child: child);
     }
 
     return child;

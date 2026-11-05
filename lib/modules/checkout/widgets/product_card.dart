@@ -1,11 +1,13 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_action_icon_button.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
+
 import 'product_card_image_section.dart';
-import 'product_rating_badge.dart';
 
 class ProductCard extends StatelessWidget {
   final HomeProductItem item;
@@ -17,13 +19,16 @@ class ProductCard extends StatelessWidget {
     super.key,
     required this.item,
     required this.onTap,
-    this.radius = 22,
+    this.radius = 16,
     this.showAddToCart = true,
   });
 
-  void _addToCart() {
-    final cartController = Get.find<CartController>();
-    cartController.addToCart(item);
+  void _addToCart(BuildContext context) {
+    if (Get.isRegistered<CartController>()) {
+      final cartController = Get.find<CartController>();
+      cartController.addToCart(item);
+    }
+    CartAddedDialog.show(context);
   }
 
   @override
@@ -34,15 +39,20 @@ class ProductCard extends StatelessWidget {
         ? originalPrice * (1 - (item.discountPercent! / 100))
         : originalPrice;
 
+    final brandName = item.brand.trim().isNotEmpty
+        ? item.brand.tr
+        : (item.material != null && item.material!.trim().isNotEmpty
+              ? item.material!.tr
+              : '');
+
     return LayoutBuilder(
       builder: (context, c) {
         final w = c.maxWidth;
 
-        final titleSize = w < 165 ? 13.0 : 14.5;
-        final subtitleSize = w < 165 ? 9.8 : 10.8;
-        final priceSize = w < 165 ? 12.5 : 13.8;
-        final oldPriceSize = w < 165 ? 9.5 : 10.5;
-        final ratingSize = w < 165 ? 9.8 : 10.8;
+        final titleSize = w < 165 ? 12.5 : 13.5;
+        final brandSize = w < 165 ? 10.0 : 11.0;
+        final priceSize = w < 165 ? 13.0 : 14.0;
+        final oldPriceSize = w < 165 ? 10.0 : 10.5;
         final cardPadding = w < 165 ? 8.0 : 10.0;
 
         return Material(
@@ -54,12 +64,17 @@ class ProductCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: context.card,
                 borderRadius: BorderRadius.circular(radius),
-                border: Border.all(color: context.border.withOpacity(.45)),
+                border: Border.all(
+                  color: context.border.withValues(alpha: 0.35),
+                  width: 1.0,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: context.shadow.withOpacity(.08),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
+                    color: context.shadow.withValues(
+                      alpha: context.isDark ? 0.16 : 0.05,
+                    ),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
@@ -76,85 +91,128 @@ class ProductCard extends StatelessWidget {
                       cardPadding,
                       8,
                       cardPadding,
-                      10,
+                      8,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                item.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: titleSize,
-                                  fontWeight: FontWeight.w800,
-                                  color: context.foreground,
-                                  height: 1.1,
-                                ),
-                              ),
+                        // Brand Name
+                        if (brandName.isNotEmpty) ...[
+                          Text(
+                            brandName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: brandSize,
+                              fontWeight: FontWeight.w700,
+                              color: context.primary.withValues(alpha: 0.85),
+                              fontFamily: 'Cairo',
+                              height: 1.0,
                             ),
-                            const SizedBox(width: 6),
-                            ProductRatingBadge(fontSize: ratingSize),
-                          ],
-                        ),
-                        const SizedBox(height: 3),
+                          ),
+                          const SizedBox(height: 3),
+                        ],
+
+                        // Title
                         Text(
-                          'Men Slim Fit Opaque Casual Shirt',
+                          item.title.tr,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: subtitleSize,
-                            fontWeight: FontWeight.w500,
-                            color: context.mutedForeground,
-                            height: 1.1,
+                            fontSize: titleSize,
+                            fontWeight: FontWeight.w800,
+                            color: context.foreground,
+                            fontFamily: 'Cairo',
+                            height: 1.2,
                           ),
                         ),
-                        const SizedBox(height: 8),
+
+                        const SizedBox(height: 4),
+
+                        // Rating row (clean, no awkward yellow box)
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 14,
+                              color: BrandColors.gold,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              '4.8',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: context.foreground,
+                                fontFamily: 'Cairo',
+                              ),
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              '(120+)',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: context.mutedForeground,
+                                fontFamily: 'Cairo',
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 6),
+
+                        // Price and Add to Cart Row
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Expanded(
-                              child: Wrap(
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                spacing: 6,
-                                runSpacing: 4,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  _PriceBadge(
-                                    text:
-                                        '₹${discountedPrice.toStringAsFixed(0)}',
-                                    fontSize: priceSize,
+                                  Text(
+                                    '${discountedPrice.toStringAsFixed(0)} ${Tk.homeCurrency.tr}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: priceSize,
+                                      fontWeight: FontWeight.w900,
+                                      color: context.foreground,
+                                      fontFamily: 'Cairo',
+                                      height: 1.0,
+                                    ),
                                   ),
-                                  if (hasDiscount)
+                                  if (hasDiscount) ...[
+                                    const SizedBox(height: 2),
                                     Text(
-                                      '₹${originalPrice.toStringAsFixed(0)}',
+                                      '${originalPrice.toStringAsFixed(0)} ${Tk.homeCurrency.tr}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontSize: oldPriceSize,
-                                        fontWeight: FontWeight.w700,
+                                        fontWeight: FontWeight.w600,
                                         color: context.mutedForeground,
                                         decoration: TextDecoration.lineThrough,
+                                        fontFamily: 'Cairo',
+                                        height: 1.0,
                                       ),
                                     ),
+                                  ],
                                 ],
                               ),
                             ),
-                            if (showAddToCart) ...[
-                              const SizedBox(width: 8),
+                            if (showAddToCart)
                               AppActionIconButton(
-                                icon: Icons.shopping_cart_outlined,
-                                onTap: _addToCart,
+                                icon: Icons.shopping_bag_outlined,
+                                onTap: () => _addToCart(context),
                                 size: 30,
                                 iconSize: 15,
-                                backgroundColor: context.primary.withOpacity(
-                                  .10,
-                                ),
-                                iconColor: context.primary,
-                                borderColor: context.primary.withOpacity(.14),
+                                backgroundColor: context.primary,
+                                iconColor: Colors.white,
+                                borderColor: Colors.transparent,
+                                radius: 8,
                               ),
-                            ],
                           ],
                         ),
                       ],
@@ -166,34 +224,6 @@ class ProductCard extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _PriceBadge extends StatelessWidget {
-  final String text;
-  final double fontSize;
-
-  const _PriceBadge({required this.text, required this.fontSize});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-      decoration: BoxDecoration(
-        color: context.primary.withOpacity(.10),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: context.primary.withOpacity(.12)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.w900,
-          color: context.primary,
-          height: 1,
-        ),
-      ),
     );
   }
 }

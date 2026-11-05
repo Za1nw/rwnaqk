@@ -1,93 +1,108 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 class ProductAvatarRow extends StatelessWidget {
   final List<HomeProductItem> items;
   final ValueChanged<HomeProductItem> onTap;
-
-  /// ✅ هنا تحدد ألوان الإطار يدويًا حسب الـ index
-  /// مثال: {0: Colors.red, 3: Colors.green}
-  /// إذا ما حطيت شيء -> يطلع لون تلقائي من chart1..chart5
   final Map<int, Color> customRingByIndex;
-
-  /// مقاسات
-  final double outerSize; // حجم الدائرة كاملة
-  final double ringThickness; // سماكة الإطار
-  final double spacing; // المسافة بين الدوائر
+  final double outerSize;
+  final double ringThickness;
+  final double spacing;
 
   const ProductAvatarRow({
     super.key,
     required this.items,
     required this.onTap,
     this.customRingByIndex = const {},
-    this.outerSize = 54,
-    this.ringThickness = 3,
-    this.spacing = 10,
+    this.outerSize = 62,
+    this.ringThickness = 2.2,
+    this.spacing = 14,
   });
-
-  /// ✅ لون تلقائي من ثيمك (يتغير تلقائي Light/Dark)
-  Color _autoRingColor(BuildContext context, int index) {
-    final palette = <Color>[
-      context.chart1,
-      context.chart2,
-      context.chart3,
-      context.chart4,
-      context.chart5,
-      context.ring,
-      context.primary,
-    ];
-    return palette[index % palette.length];
-  }
 
   @override
   Widget build(BuildContext context) {
     final innerSize = outerSize - (ringThickness * 2);
 
     return SizedBox(
-      height: outerSize,
+      height: outerSize + 30,
       child: ListView.separated(
+        clipBehavior: Clip.none,
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         itemCount: items.length,
-        separatorBuilder: (_, __) => SizedBox(width: spacing),
+        separatorBuilder: (_, _) => SizedBox(width: spacing),
         itemBuilder: (_, i) {
           final p = items[i];
 
-          // ✅ إذا أنت محدد لون لهذا الـ index استخدمه، غير كذا تلقائي
-          final ringColor = customRingByIndex[i] ?? _autoRingColor(context, i);
-
           return InkWell(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(16),
             onTap: () => onTap(p),
-            child: Container(
-              width: outerSize,
-              height: outerSize,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: ringColor, // ✅ الإطار الملون
-                boxShadow: [
-                  BoxShadow(
-                    color: context.shadow.withOpacity(context.isDark ? 0.16 : 0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 6),
+            child: SizedBox(
+              width: outerSize + 8,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: outerSize,
+                    height: outerSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: BrandGradients.royalBurgundy,
+                      boxShadow: [
+                        BoxShadow(
+                          color: BrandColors.burgundy.withValues(
+                            alpha: context.isDark ? 0.28 : 0.14,
+                          ),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    padding: EdgeInsets.all(ringThickness),
+                    child: Container(
+                      width: innerSize,
+                      height: innerSize,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: context.card,
+                        border: Border.all(
+                          color: context.background,
+                          width: 1.5,
+                        ),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Image.network(
+                        p.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) {
+                          return Center(
+                            child: Icon(
+                              Icons.star_rounded,
+                              size: 20,
+                              color: BrandColors.gold,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    p.title.tr,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: context.foreground,
+                      fontFamily: 'Cairo',
+                      height: 1.1,
+                    ),
                   ),
                 ],
-              ),
-              padding: EdgeInsets.all(ringThickness), // ✅ سماكة الإطار
-              child: Container(
-                width: innerSize,
-                height: innerSize,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: context.border.withOpacity(0.65),
-                    width: 1,
-                  ),
-                  image: DecorationImage(
-                    image: NetworkImage(p.imageUrl),
-                    fit: BoxFit.cover,
-                  ),
-                ),
               ),
             ),
           );

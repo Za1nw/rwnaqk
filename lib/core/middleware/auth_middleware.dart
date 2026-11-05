@@ -2,7 +2,6 @@ import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
-
 import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 
 /// Route guard middleware ensuring user authentication.
@@ -34,7 +33,18 @@ class GuestMiddleware extends GetMiddleware {
 
   @override
   RouteSettings? redirect(String? route) {
-    if (_hasAuthenticatedSession()) {
+    if (!Get.isRegistered<AuthSessionService>()) {
+      return null;
+    }
+
+    final session = Get.find<AuthSessionService>();
+
+    // في وضع الضيف (وضع التصميم والمعاينة)، نسمح بزيارة شاشات الدخول والتسجيل لمعاينتها
+    if (session.isGuestMode.value) {
+      return null;
+    }
+
+    if (session.isAuthenticated) {
       return const RouteSettings(name: AppRoutes.main);
     }
 
@@ -47,5 +57,6 @@ bool _hasAuthenticatedSession() {
     return false;
   }
 
-  return Get.find<AuthSessionService>().isAuthenticated;
+  final session = Get.find<AuthSessionService>();
+  return session.isAuthenticated || session.isGuestMode.value;
 }

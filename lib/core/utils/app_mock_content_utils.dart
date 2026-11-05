@@ -1,4 +1,5 @@
-﻿import 'package:get/get.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_category_item.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
@@ -61,34 +62,22 @@ class AppMockContentUtils {
     MockCategorySection(
       nameKey: Mk.categoryShoes,
       imageUrl: 'https://picsum.photos/120?2',
-      subKeys: [
-        Mk.subcategorySneakers,
-        Mk.subcategoryBoots,
-      ],
+      subKeys: [Mk.subcategorySneakers, Mk.subcategoryBoots],
     ),
     MockCategorySection(
       nameKey: Mk.categoryBags,
       imageUrl: 'https://picsum.photos/120?3',
-      subKeys: [
-        Mk.subcategoryHandbags,
-        Mk.subcategoryBackpacks,
-      ],
+      subKeys: [Mk.subcategoryHandbags, Mk.subcategoryBackpacks],
     ),
     MockCategorySection(
       nameKey: Mk.categoryLingerie,
       imageUrl: 'https://picsum.photos/120?4',
-      subKeys: [
-        Mk.subcategoryBras,
-        Mk.subcategoryPanties,
-      ],
+      subKeys: [Mk.subcategoryBras, Mk.subcategoryPanties],
     ),
     MockCategorySection(
       nameKey: Mk.categoryAccessories,
       imageUrl: 'https://picsum.photos/120?5',
-      subKeys: [
-        Mk.subcategoryJewelry,
-        Mk.subcategoryHats,
-      ],
+      subKeys: [Mk.subcategoryJewelry, Mk.subcategoryHats],
     ),
     MockCategorySection(
       nameKey: Mk.categoryJustForYou,
@@ -133,14 +122,21 @@ class AppMockContentUtils {
     ),
     HomeCategoryItem(
       id: 'c4',
+      name: Tk.mainCategoriesPerfumeTitle,
+      count: 145,
+      imageUrls: [],
+    ),
+    HomeCategoryItem(
+      id: 'c5',
+      name: Mk.categoryAccessories,
+      count: 312,
+      imageUrls: [],
+    ),
+    HomeCategoryItem(
+      id: 'c6',
       name: Mk.categoryLingerie,
       count: 218,
-      imageUrls: [
-        'https://picsum.photos/120?41',
-        'https://picsum.photos/120?42',
-        'https://picsum.photos/120?43',
-        'https://picsum.photos/120?44',
-      ],
+      imageUrls: [],
     ),
   ];
 

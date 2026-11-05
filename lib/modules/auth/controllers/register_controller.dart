@@ -1,76 +1,55 @@
-﻿import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/controllers/register_service.dart';
-import 'package:rwnaqk_frontend/modules/auth/controllers/register_ui_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_notifier.dart';
 
-/// هذا الملف هو الكنترولر الرئيسي لشاشة إنشاء الحساب.
+/// الكنترولر الرئيسي لشاشة إنشاء الحساب.
 ///
-/// نستخدمه لإدارة:
-/// - تنفيذ عملية التسجيل
-/// - التحقق النهائي قبل الإرسال
-/// - التنقل إلى شاشة تسجيل الدخول
-///
-/// كما أنه يعمل كحلقة ربط بين:
-/// - RegisterUiController الخاص بحقول الواجهة
-/// - RegisterService الخاص بالمنطق المساعد
+/// يدير حالات حقول الواجهة، والتحقق، والاتصال بخدمة التسجيل والتنقل.
 class RegisterController extends GetxController {
   RegisterController(this._service);
 
   final RegisterService _service;
   final isLoading = false.obs;
 
-  late final RegisterUiController ui;
+  /// مفتاح الفورم للتحقق من صحة المدخلات
+  final formKey = GlobalKey<FormState>();
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get formKey => ui.formKey;
+  /// متحكمات حقول الإدخال
+  final firstNameController = TextEditingController();
+  final lastNameController = TextEditingController();
+  final phoneController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get firstNameController => ui.firstNameController;
+  /// المحافظة المختارة حالياً
+  final governorate = RxnString();
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get lastNameController => ui.lastNameController;
+  /// حالة الموافقة على الشروط وسياسة الخصوصية
+  final agreed = false.obs;
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get phoneController => ui.phoneController;
+  /// للتوافق مع أي استدعاءات سابقة لـ ui
+  RegisterController get ui => this;
 
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get emailController => ui.emailController;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get passwordController => ui.passwordController;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get confirmPasswordController => ui.confirmPasswordController;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  RxnString get governorate => ui.governorate;
-
-  /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  RxBool get agreed => ui.agreed;
-
-  /// هذا getter يعيد قائمة المحافظات من الخدمة.
+  /// قائمة المحافظات من الخدمة
   List<String> get governorates => _service.governorates;
 
   @override
-  /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
-  /// نستخدمها لتهيئة الـ UI controller.
   void onInit() {
     super.onInit();
-    ui = Get.find<RegisterUiController>();
-     _loadGovernorates();
+    _loadGovernorates();
   }
 
-  /// هذه الدالة تبدّل حالة الموافقة على الشروط.
+  /// تبديل حالة الموافقة على الشروط
   void toggleAgreed() {
-    ui.toggleAgreed();
+    agreed.value = !agreed.value;
   }
 
   Future<void> _loadGovernorates() async {
-
-   
-
     try {
       await _service.loadGovernorates();
 
@@ -84,15 +63,7 @@ class RegisterController extends GetxController {
     }
   }
 
-  /// هذه الدالة تنفذ عملية إنشاء الحساب الحالية.
-  ///
-  /// حاليًا:
-  /// - تتحقق من صحة الفورم
-  /// - تتحقق من اختيار المحافظة
-  /// - تتحقق من الموافقة على الشروط
-  /// - ثم تعرض رسالة نجاح تجريبية
-  ///
-  /// لاحقًا يتم استبدال هذا السلوك باستدعاء API حقيقي.
+  /// تنفيذ عملية إنشاء الحساب
   Future<void> register() async {
     final isValid = formKey.currentState?.validate() ?? false;
 
@@ -145,9 +116,7 @@ class RegisterController extends GetxController {
         AppNotifier.success(Tk.registerVerifyEmailHint);
         Get.offAllNamed(
           AppRoutes.emailVerify,
-          arguments: <String, dynamic>{
-            'email': emailController.text.trim(),
-          },
+          arguments: <String, dynamic>{'email': emailController.text.trim()},
         );
         return;
       }
@@ -160,8 +129,27 @@ class RegisterController extends GetxController {
     }
   }
 
-  /// هذه الدالة تنقل المستخدم إلى شاشة تسجيل الدخول.
+  /// الانتقال إلى شاشة تسجيل الدخول
   void goToLogin() {
     Get.back();
+  }
+
+  /// تجاوز شاشة التسجيل والمتابعة كزائر (وضع التصميم)
+  void continueAsGuest() {
+    if (Get.isRegistered<AuthSessionService>()) {
+      Get.find<AuthSessionService>().enterGuestMode();
+    }
+    Get.offAllNamed(AppRoutes.main);
+  }
+
+  @override
+  void onClose() {
+    firstNameController.dispose();
+    lastNameController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.onClose();
   }
 }

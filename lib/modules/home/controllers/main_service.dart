@@ -11,10 +11,7 @@ class MainService {
   /// هذه الدالة تتأكد أن رقم التبويب المطلوب صالح.
   ///
   /// إذا خرج الرقم عن النطاق المسموح، نعيد أول تبويب.
-  int sanitizeTabIndex({
-    required int index,
-    required int maxTabs,
-  }) {
+  int sanitizeTabIndex({required int index, required int maxTabs}) {
     if (maxTabs <= 0) return 0;
     if (index < 0) return 0;
     if (index >= maxTabs) return 0;
