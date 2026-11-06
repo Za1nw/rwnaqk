@@ -57,7 +57,7 @@ class ProductDetailsHeaderVariants extends StatelessWidget {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: availableColors.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
               itemBuilder: (_, index) {
                 final option = availableColors[index];
                 final selected = option.id == selectedColorId;
@@ -77,13 +77,13 @@ class ProductDetailsHeaderVariants extends StatelessWidget {
                       border: Border.all(
                         color: selected
                             ? context.primary
-                            : context.border.withOpacity(.35),
+                            : context.border.withValues(alpha: .35),
                         width: selected ? 1.8 : 1,
                       ),
                       boxShadow: selected
                           ? [
                               BoxShadow(
-                                color: context.primary.withOpacity(.16),
+                                color: context.primary.withValues(alpha: .16),
                                 blurRadius: 14,
                                 offset: const Offset(0, 8),
                               ),
@@ -108,7 +108,7 @@ class ProductDetailsHeaderVariants extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(.45),
+                              color: Colors.black.withValues(alpha: .45),
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
@@ -153,15 +153,15 @@ class ProductDetailsHeaderVariants extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: selected
-                        ? context.primary.withOpacity(.12)
-                        : context.background.withOpacity(
-                            context.isDark ? .18 : .75,
+                        ? context.primary.withValues(alpha: .12)
+                        : context.background.withValues(
+                            alpha: context.isDark ? .18 : .75,
                           ),
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(
                       color: selected
                           ? context.primary
-                          : context.border.withOpacity(.35),
+                          : context.border.withValues(alpha: .35),
                       width: selected ? 1.4 : 1,
                     ),
                   ),
@@ -218,7 +218,7 @@ class ProductDetailsHeaderVariants extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               itemCount: variationImages.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
               itemBuilder: (_, index) {
                 final selected = index == selectedVariationImageIndex;
 
@@ -234,13 +234,13 @@ class ProductDetailsHeaderVariants extends StatelessWidget {
                       border: Border.all(
                         color: selected
                             ? context.primary
-                            : context.border.withOpacity(0.25),
+                            : context.border.withValues(alpha: 0.25),
                         width: selected ? 2 : 1,
                       ),
                       boxShadow: selected
                           ? [
                               BoxShadow(
-                                color: context.primary.withOpacity(0.16),
+                                color: context.primary.withValues(alpha: 0.16),
                                 blurRadius: 14,
                                 offset: const Offset(0, 8),
                               ),
@@ -302,7 +302,7 @@ class _ArrowButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: context.primary.withOpacity(context.isDark ? 0.22 : 0.18),
+              color: context.primary.withValues(alpha: context.isDark ? 0.22 : 0.18),
               blurRadius: 14,
               offset: const Offset(0, 8),
             ),
@@ -328,9 +328,9 @@ class _SmallChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: context.background.withOpacity(context.isDark ? 0.18 : 0.75),
+        color: context.background.withValues(alpha: context.isDark ? 0.18 : 0.75),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: context.border.withOpacity(0.35)),
+        border: Border.all(color: context.border.withValues(alpha: 0.35)),
       ),
       child: Text(
         text,

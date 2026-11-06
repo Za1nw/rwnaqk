@@ -21,14 +21,14 @@ class AppShareButton extends StatelessWidget {
     return Material(
       color: filled
           ? context.primary
-          : context.primary.withOpacity(.10),
+          : context.primary.withValues(alpha: .10),
 
       shape: RoundedRectangleBorder(
         borderRadius: radius,
         side: filled
             ? BorderSide.none
             : BorderSide(
-                color: context.primary.withOpacity(.35),
+                color: context.primary.withValues(alpha: .35),
               ),
       ),
 

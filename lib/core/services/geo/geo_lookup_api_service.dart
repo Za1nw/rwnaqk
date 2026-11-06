@@ -25,7 +25,7 @@ class GeoLookupApiService extends GetConnect {
   Future<List<GeoLookupItem>> governorates({int? countryId}) async {
     final response = await get(
       '${AppEnv.geoLookupPrefix}/governorates',
-      query: <String, dynamic>{if (countryId != null) 'country_id': countryId},
+      query: <String, dynamic>{'country_id': ?countryId},
     );
     
     return _parseItems(response.body);

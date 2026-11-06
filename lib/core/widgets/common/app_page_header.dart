@@ -52,10 +52,10 @@ class AppPageHeader extends StatelessWidget {
                         vertical: compact ? 3 : 4,
                       ),
                       decoration: BoxDecoration(
-                        color: context.primary.withOpacity(.12),
+                        color: context.primary.withValues(alpha: .12),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: context.primary.withOpacity(.22),
+                          color: context.primary.withValues(alpha: .22),
                         ),
                       ),
                       child: Text(
@@ -102,7 +102,7 @@ class _HeaderIconButton extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(14),
-          splashColor: context.primary.withOpacity(.08),
+          splashColor: context.primary.withValues(alpha: .08),
           highlightColor: Colors.transparent,
           child: Ink(
             width: 42,
@@ -111,7 +111,7 @@ class _HeaderIconButton extends StatelessWidget {
               color: context.card,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: context.border.withOpacity(.35),
+                color: context.border.withValues(alpha: .35),
               ),
             ),
             child: Icon(

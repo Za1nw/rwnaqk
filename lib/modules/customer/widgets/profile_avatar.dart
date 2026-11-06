@@ -40,15 +40,15 @@ class ProfileAvatar extends StatelessWidget {
             ? null
             : LinearGradient(
                 colors: [
-                  context.primary.withOpacity(.22),
-                  context.primary.withOpacity(.10),
+                  context.primary.withValues(alpha: .22),
+                  context.primary.withValues(alpha: .10),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
         color: hasImage ? context.input : null,
         border: showBorder
-            ? Border.all(color: context.border.withOpacity(.35))
+            ? Border.all(color: context.border.withValues(alpha: .35))
             : null,
       ),
       clipBehavior: Clip.antiAlias,
@@ -56,7 +56,7 @@ class ProfileAvatar extends StatelessWidget {
           ? Image.file(
               File(safePath),
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => _AvatarFallback(
+              errorBuilder: (_, _, _) => _AvatarFallback(
                 initial: initial,
                 fontSize: fontSize,
               ),
@@ -65,7 +65,7 @@ class ProfileAvatar extends StatelessWidget {
               ? Image.network(
                   safeUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _AvatarFallback(
+                  errorBuilder: (_, _, _) => _AvatarFallback(
                     initial: initial,
                     fontSize: fontSize,
                   ),

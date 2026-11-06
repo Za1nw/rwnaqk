@@ -207,14 +207,14 @@ class _AvatarCircle extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: context.input,
-        border: Border.all(color: context.primary.withOpacity(.25)),
+        border: Border.all(color: context.primary.withValues(alpha: .25)),
       ),
       clipBehavior: Clip.antiAlias,
       child: hasAvatar
           ? Image.network(
               avatarUrl!,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
+              errorBuilder: (_, _, _) =>
                   Icon(Icons.person_rounded, color: context.muted, size: 20),
             )
           : Icon(Icons.person_rounded, color: context.muted, size: 20),

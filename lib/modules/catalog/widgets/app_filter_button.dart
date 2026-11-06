@@ -21,10 +21,10 @@ class AppFilterButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.background,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: context.border.withOpacity(0.45)),
+          border: Border.all(color: context.border.withValues(alpha: 0.45)),
           boxShadow: [
             BoxShadow(
-              color: context.shadow.withOpacity(context.isDark ? 0.14 : 0.06),
+              color: context.shadow.withValues(alpha: context.isDark ? 0.14 : 0.06),
               blurRadius: 10,
               offset: const Offset(0, 6),
             ),

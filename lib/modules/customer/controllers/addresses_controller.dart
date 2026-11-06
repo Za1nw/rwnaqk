@@ -1,4 +1,5 @@
-﻿import 'package:get/get.dart';
+﻿import 'package:flutter/src/widgets/editable_text.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/addresses_service.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/addresses_ui_controller.dart';
@@ -32,13 +33,13 @@ class AddressesController extends GetxController {
   List<String> get countries => _service.countries;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get addressCtrl => ui.addressCtrl;
+  TextEditingController get addressCtrl => ui.addressCtrl;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get cityCtrl => ui.cityCtrl;
+  TextEditingController get cityCtrl => ui.cityCtrl;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
-  get postcodeCtrl => ui.postcodeCtrl;
+  TextEditingController get postcodeCtrl => ui.postcodeCtrl;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
   RxnString get country => ui.country;

@@ -1,14 +1,9 @@
-﻿import 'package:rwnaqk_frontend/core/utils/app_mock_product_utils.dart';
+import 'package:rwnaqk_frontend/core/utils/app_mock_product_utils.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 class WishlistService {
   List<HomeProductItem> seedWishlist() {
-    return sampleProducts(
-      4,
-      seed: 900,
-      discount: 20,
-      tagKey: 'Pink',
-    );
+    return sampleProducts(4, seed: 900, discount: 20, tagKey: 'Pink');
   }
 
   List<HomeProductItem> seedRecentlyViewed() {

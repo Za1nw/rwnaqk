@@ -1,4 +1,5 @@
-﻿import 'package:get/get.dart';
+﻿import 'package:flutter/src/widgets/editable_text.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/edit_profile_service.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/edit_profile_ui_controller.dart';
@@ -17,10 +18,10 @@ class EditProfileController extends GetxController {
 
   late final EditProfileUiController ui;
 
-  get nameCtrl => ui.nameCtrl;
-  get emailCtrl => ui.emailCtrl;
-  get mobileCtrl => ui.mobileCtrl;
-  get passwordPreviewCtrl => ui.passwordPreviewCtrl;
+  TextEditingController get nameCtrl => ui.nameCtrl;
+  TextEditingController get emailCtrl => ui.emailCtrl;
+  TextEditingController get mobileCtrl => ui.mobileCtrl;
+  TextEditingController get passwordPreviewCtrl => ui.passwordPreviewCtrl;
 
   String get avatarPath => _avatarPath.value;
   String get avatarUrl => _avatarUrl.value;

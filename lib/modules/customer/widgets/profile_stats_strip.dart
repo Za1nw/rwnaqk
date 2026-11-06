@@ -25,7 +25,7 @@ class ProfileStatsStrip extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: context.card,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: context.border.withOpacity(.35)),
+                  border: Border.all(color: context.border.withValues(alpha: .35)),
                 ),
                 child: Column(
                   children: [

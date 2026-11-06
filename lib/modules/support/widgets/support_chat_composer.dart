@@ -24,7 +24,7 @@ class SupportChatComposer extends StatelessWidget {
       padding: const EdgeInsetsDirectional.fromSTEB(18, 12, 18, 18),
       decoration: BoxDecoration(
         color: context.card,
-        border: Border(top: BorderSide(color: context.border.withOpacity(.3))),
+        border: Border(top: BorderSide(color: context.border.withValues(alpha: .3))),
       ),
       child: Column(
         children: [
@@ -39,7 +39,7 @@ class SupportChatComposer extends StatelessWidget {
             decoration: BoxDecoration(
               color: context.background,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: context.border.withOpacity(.35)),
+              border: Border.all(color: context.border.withValues(alpha: .35)),
             ),
             child: Row(
               children: [

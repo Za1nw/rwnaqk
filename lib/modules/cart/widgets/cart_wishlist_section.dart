@@ -1,7 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
-import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_product_utils.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
@@ -12,11 +11,7 @@ class CartWishlistSection extends StatelessWidget {
   final ValueChanged<HomeProductItem> onAdd;
   final ValueChanged<HomeProductItem>? onTap;
 
-  const CartWishlistSection({
-    super.key,
-    required this.onAdd,
-    this.onTap,
-  });
+  const CartWishlistSection({super.key, required this.onAdd, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -32,16 +27,13 @@ class CartWishlistSection extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppSectionHeader(
-            title: Tk.cartFromWishlist.tr,
-            titleFontSize: 16,
-          ),
+          AppSectionHeader(title: Tk.cartFromWishlist.tr, titleFontSize: 16),
           const SizedBox(height: 12),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (_, i) {
               final item = items[i];
 

@@ -107,12 +107,12 @@ class _SortTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           decoration: BoxDecoration(
-            color: context.background.withOpacity(context.isDark ? 0.18 : 0.7),
+            color: context.background.withValues(alpha: context.isDark ? 0.18 : 0.7),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: selected
                   ? context.primary
-                  : context.border.withOpacity(0.35),
+                  : context.border.withValues(alpha: 0.35),
               width: selected ? 1.4 : 1,
             ),
           ),

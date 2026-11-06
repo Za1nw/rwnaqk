@@ -23,10 +23,10 @@ class SearchChipGroup extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
             decoration: BoxDecoration(
-              color: context.input.withOpacity(context.isDark ? 0.65 : 1.0),
+              color: context.input.withValues(alpha: context.isDark ? 0.65 : 1.0),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: context.border.withOpacity(0.35),
+                color: context.border.withValues(alpha: 0.35),
               ),
             ),
             child: Text(

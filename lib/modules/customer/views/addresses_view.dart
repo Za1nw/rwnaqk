@@ -26,7 +26,7 @@ class AddressesScreen extends GetView<AddressesController> {
                   onTap: Get.back,
                   backgroundColor: context.card,
                   iconColor: context.foreground,
-                  borderColor: context.border.withOpacity(.35),
+                  borderColor: context.border.withValues(alpha: .35),
                   size: 40,
                   radius: 14,
                 ),
@@ -152,7 +152,7 @@ class _AddressCard extends StatelessWidget {
       color: context.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: context.border.withOpacity(.35)),
+        side: BorderSide(color: context.border.withValues(alpha: .35)),
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -178,10 +178,10 @@ class _AddressCard extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: context.primary.withOpacity(.10),
+                      color: context.primary.withValues(alpha: .10),
                       borderRadius: BorderRadius.circular(999),
                       border: Border.all(
-                        color: context.primary.withOpacity(.25),
+                        color: context.primary.withValues(alpha: .25),
                       ),
                     ),
                     child: Text(

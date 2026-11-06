@@ -115,7 +115,7 @@ class HelpCenterScreen extends GetView<HelpCenterController> {
           decoration: BoxDecoration(
             color: context.card,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: context.border.withOpacity(.35)),
+            border: Border.all(color: context.border.withValues(alpha: .35)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,17 +159,17 @@ class _HeroCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            context.primary.withOpacity(.12),
+            context.primary.withValues(alpha: .12),
             context.card,
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: context.primary.withOpacity(.16)),
+        border: Border.all(color: context.primary.withValues(alpha: .16)),
         boxShadow: [
           BoxShadow(
-            color: context.shadow.withOpacity(.05),
+            color: context.shadow.withValues(alpha: .05),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),

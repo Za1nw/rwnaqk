@@ -47,10 +47,10 @@ class SupportFrequentQuestions extends StatelessWidget {
                         padding:
                             const EdgeInsetsDirectional.fromSTEB(12, 10, 12, 10),
                         decoration: BoxDecoration(
-                          color: context.primary.withOpacity(.08),
+                          color: context.primary.withValues(alpha: .08),
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
-                            color: context.primary.withOpacity(.18),
+                            color: context.primary.withValues(alpha: .18),
                           ),
                         ),
                         child: Text(

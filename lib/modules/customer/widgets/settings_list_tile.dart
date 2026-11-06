@@ -78,15 +78,15 @@ class SettingsListTile extends StatelessWidget {
     final showArrow = showChevron ?? (trailing == null);
 
     // ✅ هوية التطبيق
-    final primarySoft = context.primary.withOpacity(.08);
-    final primaryBorder = context.primary.withOpacity(.18);
+    final primarySoft = context.primary.withValues(alpha: .08);
+    final primaryBorder = context.primary.withValues(alpha: .18);
 
     final tile = Material(
       color: context.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(radius),
         side: BorderSide(
-          color: canTap ? primaryBorder : context.border.withOpacity(.35),
+          color: canTap ? primaryBorder : context.border.withValues(alpha: .35),
         ),
       ),
       child: Padding(
@@ -134,7 +134,7 @@ class SettingsListTile extends StatelessWidget {
               if (trailing != null) const SizedBox(width: 8),
               Icon(
                 Icons.chevron_right_rounded,
-                color: context.primary.withOpacity(.6),
+                color: context.primary.withValues(alpha: .6),
                 size: 22,
               ),
             ],
@@ -152,8 +152,8 @@ class SettingsListTile extends StatelessWidget {
     if (canTap) {
       return InkWell(
         borderRadius: BorderRadius.circular(radius),
-        splashColor: context.primary.withOpacity(.08),
-        highlightColor: context.primary.withOpacity(.05),
+        splashColor: context.primary.withValues(alpha: .08),
+        highlightColor: context.primary.withValues(alpha: .05),
         onTap: _handleTap,
         child: tile,
       );

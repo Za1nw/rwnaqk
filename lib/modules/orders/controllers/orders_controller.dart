@@ -1,8 +1,10 @@
-﻿import 'package:get/get.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/modules/home/controllers/main_controller.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_service.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_ui_controller.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_details_model.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة الطلبات.
 ///
@@ -50,10 +52,7 @@ class OrdersController extends GetxController {
 
   /// هذه الدالة تعيد الطلبات بعد تطبيق الفلتر الحالي.
   List<OrderModel> get filteredOrders {
-    return _service.filterOrders(
-      orders: orders,
-      filter: filter.value,
-    );
+    return _service.filterOrders(orders: orders, filter: filter.value);
   }
 
   /// هذه الدالة تبني خطوات تتبع الطلب حسب حالته الحالية.
@@ -63,6 +62,24 @@ class OrdersController extends GetxController {
 
   OrderDetailsModel buildOrderDetails(OrderModel order) {
     return _service.buildOrderDetails(order);
+  }
+
+  /// الانتقال إلى الصفحة الرئيسية للتسوق
+  void goToHome() {
+    if (Get.isRegistered<MainController>()) {
+      Get.find<MainController>().changeTab(0);
+    } else {
+      Get.offAllNamed(AppRoutes.main);
+    }
+  }
+
+  /// فتح السلة
+  void openCart() {
+    if (Get.isRegistered<MainController>()) {
+      Get.find<MainController>().changeTab(3);
+    } else {
+      Get.toNamed(AppRoutes.cart);
+    }
   }
 
   /// هذه الدالة تهيئ البيانات التجريبية الحالية للطلبات.

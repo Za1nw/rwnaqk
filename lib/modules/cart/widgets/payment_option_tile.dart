@@ -24,12 +24,12 @@ class PaymentOptionTile extends StatelessWidget {
         final compact = c.maxWidth < 360;
 
         final bg = selected
-            ? context.primary.withOpacity(context.isDark ? .18 : .12)
+            ? context.primary.withValues(alpha: context.isDark ? .18 : .12)
             : context.card;
 
         final borderColor = selected
-            ? context.primary.withOpacity(.35)
-            : context.border.withOpacity(.35);
+            ? context.primary.withValues(alpha: .35)
+            : context.border.withValues(alpha: .35);
 
         return InkWell(
           onTap: onTap,
@@ -47,7 +47,9 @@ class PaymentOptionTile extends StatelessWidget {
               border: Border.all(color: borderColor),
               boxShadow: [
                 BoxShadow(
-                  color: context.shadow.withOpacity(context.isDark ? .08 : .05),
+                  color: context.shadow.withValues(
+                    alpha: context.isDark ? .08 : .05,
+                  ),
                   blurRadius: 16,
                   offset: const Offset(0, 10),
                 ),
@@ -62,10 +64,12 @@ class PaymentOptionTile extends StatelessWidget {
                   height: compact ? 32 : 34,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: context.muted.withOpacity(
-                      context.isDark ? .22 : .45,
+                    color: context.muted.withValues(
+                      alpha: context.isDark ? .22 : .45,
                     ),
-                    border: Border.all(color: context.border.withOpacity(.35)),
+                    border: Border.all(
+                      color: context.border.withValues(alpha: .35),
+                    ),
                   ),
                   child: Icon(
                     leadingIcon,
@@ -117,10 +121,7 @@ class _RadioLike extends StatelessWidget {
   final bool selected;
   final double size;
 
-  const _RadioLike({
-    required this.selected,
-    required this.size,
-  });
+  const _RadioLike({required this.selected, required this.size});
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +131,9 @@ class _RadioLike extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: selected ? context.primary : context.border.withOpacity(.55),
+          color: selected
+              ? context.primary
+              : context.border.withValues(alpha: .55),
           width: 2,
         ),
       ),

@@ -42,9 +42,9 @@ class AppSavedDialog extends StatelessWidget {
             height: 78,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: context.primary.withOpacity(.10),
+              color: context.primary.withValues(alpha: .10),
               border: Border.all(
-                color: context.primary.withOpacity(.18),
+                color: context.primary.withValues(alpha: .18),
               ),
             ),
             child: Icon(

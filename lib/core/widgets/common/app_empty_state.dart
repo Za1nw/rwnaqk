@@ -23,9 +23,9 @@ class AppEmptyState extends StatelessWidget {
       child: Container(
         padding: padding,
         decoration: BoxDecoration(
-          color: context.card.withOpacity(context.isDark ? 0.7 : 1.0),
+          color: context.card.withValues(alpha: context.isDark ? 0.7 : 1.0),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: context.border.withOpacity(0.4)),
+          border: Border.all(color: context.border.withValues(alpha: 0.4)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,

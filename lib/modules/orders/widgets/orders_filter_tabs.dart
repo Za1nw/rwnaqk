@@ -1,8 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/orders/controllers/orders_ui_controller.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/modules/orders/controllers/orders_ui_controller.dart';
 
 class OrdersFilterTabs extends StatelessWidget {
   final OrdersFilter value;
@@ -16,7 +16,7 @@ class OrdersFilterTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isRtl = Directionality.of(context) == TextDirection.rtl;
+    final isDark = context.isDark;
 
     Widget chip({
       required String text,
@@ -24,12 +24,8 @@ class OrdersFilterTabs extends StatelessWidget {
       required IconData icon,
     }) {
       final active = value == v;
-
-      final bg = active ? context.primary.withOpacity(.12) : context.card;
-      final bd = active
-          ? context.primary.withOpacity(.28)
-          : context.border.withOpacity(.35);
-      final fg = active ? context.primary : context.foreground;
+      final activeColor = isDark ? BrandColors.gold : BrandColors.burgundy;
+      final activeTextColor = isDark ? const Color(0xFF1E0A17) : Colors.white;
 
       return Semantics(
         button: true,
@@ -38,40 +34,60 @@ class OrdersFilterTabs extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(12),
             onTap: () => onChanged(v),
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              curve: Curves.easeOut,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: bg,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: bd),
+                color: active
+                    ? activeColor
+                    : (isDark ? const Color(0xFF261422) : Colors.white),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: active
+                      ? activeColor
+                      : (isDark
+                            ? Colors.white.withValues(alpha: 0.08)
+                            : BrandColors.burgundy.withValues(alpha: 0.10)),
+                  width: 1.2,
+                ),
                 boxShadow: active
                     ? [
                         BoxShadow(
-                          color: context.primary.withOpacity(.10),
-                          offset: const Offset(0, 6),
-                          blurRadius: 14,
+                          color: activeColor.withValues(
+                            alpha: isDark ? 0.35 : 0.22,
+                          ),
+                          offset: const Offset(0, 3),
+                          blurRadius: 8,
                         ),
                       ]
-                    : [],
+                    : null,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(icon, size: 16, color: fg),
-                  const SizedBox(width: 8),
+                  Icon(
+                    icon,
+                    size: 15,
+                    color: active
+                        ? activeTextColor
+                        : (isDark ? Colors.white60 : const Color(0xFF6E5664)),
+                  ),
+                  const SizedBox(width: 6),
                   Text(
                     text,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: fg,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12.5,
-                      height: 1.0,
+                      color: active
+                          ? activeTextColor
+                          : (isDark ? Colors.white70 : const Color(0xFF6E5664)),
+                      fontWeight: active ? FontWeight.w900 : FontWeight.w700,
+                      fontSize: 12,
+                      fontFamily: 'Cairo',
+                      height: 1.1,
                     ),
                   ),
                 ],
@@ -83,42 +99,44 @@ class OrdersFilterTabs extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: context.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: context.border.withOpacity(.35)),
+        color: isDark ? const Color(0xFF200F1E) : const Color(0xFFF7F1F5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : BrandColors.burgundy.withValues(alpha: 0.06),
+        ),
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: Row(
           children: [
-            if (isRtl) const SizedBox(width: 2),
             chip(
               text: Tk.ordersFilterAll.tr,
               v: OrdersFilter.all,
               icon: Icons.grid_view_rounded,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             chip(
               text: Tk.ordersFilterActive.tr,
               v: OrdersFilter.active,
-              icon: Icons.timelapse_rounded,
+              icon: Icons.local_shipping_outlined,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             chip(
               text: Tk.ordersFilterDelivered.tr,
               v: OrdersFilter.delivered,
-              icon: Icons.check_circle_rounded,
+              icon: Icons.check_circle_outline_rounded,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 6),
             chip(
               text: Tk.ordersFilterCanceled.tr,
               v: OrdersFilter.canceled,
-              icon: Icons.cancel_rounded,
+              icon: Icons.cancel_outlined,
             ),
-            if (!isRtl) const SizedBox(width: 2),
           ],
         ),
       ),

@@ -21,7 +21,7 @@ class ProfileTwoFactorSection extends GetView<TwoFactorSettingsController> {
         decoration: BoxDecoration(
           color: context.card,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: context.border.withOpacity(.35)),
+          border: Border.all(color: context.border.withValues(alpha: .35)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,9 +32,9 @@ class ProfileTwoFactorSection extends GetView<TwoFactorSettingsController> {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: context.primary.withOpacity(.08),
+                    color: context.primary.withValues(alpha: .08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: context.primary.withOpacity(.18)),
+                    border: Border.all(color: context.primary.withValues(alpha: .18)),
                   ),
                   child: Icon(
                     Icons.verified_user_outlined,
@@ -73,8 +73,8 @@ class ProfileTwoFactorSection extends GetView<TwoFactorSettingsController> {
                   ),
                   decoration: BoxDecoration(
                     color: enabled
-                        ? context.success.withOpacity(.12)
-                        : context.destructive.withOpacity(.1),
+                        ? context.success.withValues(alpha: .12)
+                        : context.destructive.withValues(alpha: .1),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
@@ -98,7 +98,7 @@ class ProfileTwoFactorSection extends GetView<TwoFactorSettingsController> {
                 decoration: BoxDecoration(
                   color: context.input,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: context.border.withOpacity(.45)),
+                  border: Border.all(color: context.border.withValues(alpha: .45)),
                 ),
                 child: Text(
                   Tk.profileTwoFactorSetupPending.tr,
@@ -273,7 +273,7 @@ class ProfileTwoFactorSection extends GetView<TwoFactorSettingsController> {
                         color: context.input,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: context.border.withOpacity(.45),
+                          color: context.border.withValues(alpha: .45),
                         ),
                       ),
                       child: Row(

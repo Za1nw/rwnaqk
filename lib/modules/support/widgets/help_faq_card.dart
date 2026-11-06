@@ -26,7 +26,7 @@ class _HelpFaqCardState extends State<HelpFaqCard> {
         color: context.card,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: (_expanded ? context.primary : context.border).withOpacity(.35),
+          color: (_expanded ? context.primary : context.border).withValues(alpha: .35),
         ),
       ),
       child: InkWell(

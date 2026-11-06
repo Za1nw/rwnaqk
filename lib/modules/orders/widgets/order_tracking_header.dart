@@ -8,23 +8,41 @@ class OrderTrackingHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
+
     return Row(
       children: [
-        IconButton(
-          onPressed: Get.back,
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: context.foreground,
+        InkWell(
+          onTap: Get.back,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF261422) : const Color(0xFFF7F1F5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark
+                    ? BrandColors.gold.withValues(alpha: 0.25)
+                    : BrandColors.burgundy.withValues(alpha: 0.12),
+              ),
+            ),
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 16,
+              color: isDark ? Colors.white : const Color(0xFF1E0A17),
+            ),
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: 12),
         Expanded(
           child: Text(
             Tk.ordersTrackingTitle.tr,
             style: TextStyle(
-              color: context.foreground,
+              color: isDark ? Colors.white : const Color(0xFF1E0A17),
               fontWeight: FontWeight.w900,
               fontSize: 18,
+              fontFamily: 'Cairo',
             ),
           ),
         ),

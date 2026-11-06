@@ -47,7 +47,7 @@ class OrderTrackingActions extends StatelessWidget {
           ],
         ),
         if (showReview) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           _ActionButton(
             text: Tk.ordersActionReview.tr,
             outlined: true,
@@ -72,9 +72,11 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = outlined ? Colors.transparent : context.primary;
-    final foregroundColor =
-        outlined ? context.primary : context.primaryForeground;
+    final isDark = context.isDark;
+    final primaryColor = isDark ? BrandColors.gold : BrandColors.burgundy;
+    final foregroundColor = outlined
+        ? primaryColor
+        : (isDark ? const Color(0xFF1E0A17) : Colors.white);
 
     return SizedBox(
       height: 48,
@@ -83,11 +85,14 @@ class _ActionButton extends StatelessWidget {
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           elevation: 0,
-          backgroundColor: backgroundColor,
+          backgroundColor: outlined ? Colors.transparent : primaryColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
             side: outlined
-                ? BorderSide(color: foregroundColor)
+                ? BorderSide(
+                    color: primaryColor.withValues(alpha: isDark ? 0.6 : 0.4),
+                    width: 1.5,
+                  )
                 : BorderSide.none,
           ),
         ),
@@ -98,7 +103,8 @@ class _ActionButton extends StatelessWidget {
           style: TextStyle(
             color: foregroundColor,
             fontWeight: FontWeight.w900,
-            fontSize: 13.5,
+            fontSize: 13,
+            fontFamily: 'Cairo',
           ),
         ),
       ),

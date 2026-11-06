@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
+import 'package:rwnaqk_frontend/modules/home/controllers/main_controller.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_service.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_ui_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
@@ -112,6 +113,46 @@ class WishlistController extends GetxController {
     final context = Get.context;
     if (context != null) {
       CartAddedDialog.show(context);
+    }
+  }
+
+  /// هذه الدالة تضيف جميع عناصر المفضلة إلى السلة دفعة واحدة
+  void addAllToCart() {
+    if (wishlist.isEmpty) return;
+
+    if (Get.isRegistered<CartController>()) {
+      final cart = Get.find<CartController>();
+      for (final item in wishlist) {
+        cart.addToCart(item);
+      }
+    }
+
+    final context = Get.context;
+    if (context != null) {
+      CartAddedDialog.show(context);
+    }
+  }
+
+  /// هذه الدالة تفرغ عناصر المفضلة
+  void clearWishlist() {
+    wishlist.clear();
+  }
+
+  /// فتح السلة مباشرة
+  void openCart() {
+    if (Get.isRegistered<MainController>()) {
+      Get.find<MainController>().changeTab(3);
+    } else {
+      Get.toNamed(AppRoutes.cart);
+    }
+  }
+
+  /// الانتقال إلى الصفحة الرئيسية للتسوق
+  void goToHome() {
+    if (Get.isRegistered<MainController>()) {
+      Get.find<MainController>().changeTab(0);
+    } else {
+      Get.offAllNamed(AppRoutes.main);
     }
   }
 

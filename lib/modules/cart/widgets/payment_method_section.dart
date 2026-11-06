@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/modules/checkout/data/models/wallet_transfer_account.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/payment_option_tile.dart';
@@ -40,25 +42,26 @@ class PaymentMethodSection extends StatelessWidget {
     required this.walletAccounts,
     required this.selectedId,
     required this.onChanged,
-    required this.selectedWalletAccountIndex,
+    this.selectedWalletAccountIndex = 0,
     required this.onWalletAccountChanged,
     this.infoMessage,
-    this.infoIcon = Icons.info_outline_rounded,
+    this.infoIcon = Icons.info_outline,
   });
+
+  bool get isWallet => selectedId == 'wallet';
+  bool get hasAccounts => walletAccounts.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
-    final isWallet = selectedId == 'wallet';
     final showInfo = infoMessage != null && infoMessage!.trim().isNotEmpty;
 
-    final hasAccounts = walletAccounts.isNotEmpty;
-    final safeIndex = !hasAccounts
+    final safeIndex = walletAccounts.isEmpty
         ? 0
         : (selectedWalletAccountIndex < 0
-            ? 0
-            : (selectedWalletAccountIndex >= walletAccounts.length
-                ? walletAccounts.length - 1
-                : selectedWalletAccountIndex));
+              ? 0
+              : (selectedWalletAccountIndex >= walletAccounts.length
+                    ? walletAccounts.length - 1
+                    : selectedWalletAccountIndex));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,6 +72,7 @@ class PaymentMethodSection extends StatelessWidget {
             color: context.foreground,
             fontWeight: FontWeight.w900,
             fontSize: 16,
+            fontFamily: 'Cairo',
           ),
         ),
         const SizedBox(height: 10),
@@ -76,7 +80,7 @@ class PaymentMethodSection extends StatelessWidget {
           color: context.card,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
-            side: BorderSide(color: context.border.withOpacity(.35)),
+            side: BorderSide(color: context.border.withValues(alpha: .35)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -99,10 +103,7 @@ class PaymentMethodSection extends StatelessWidget {
                 ),
                 if (showInfo) ...[
                   const SizedBox(height: 10),
-                  WalletInfoMessage(
-                    icon: infoIcon,
-                    text: infoMessage!,
-                  ),
+                  WalletInfoMessage(icon: infoIcon, text: infoMessage!),
                 ],
                 if (isWallet && hasAccounts) ...[
                   const SizedBox(height: 16),
@@ -150,9 +151,9 @@ class _WalletDetailsCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: context.input.withOpacity(context.isDark ? .35 : .55),
+        color: context.input.withValues(alpha: context.isDark ? .35 : .55),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.border.withOpacity(.35)),
+        border: Border.all(color: context.border.withValues(alpha: .35)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,9 +165,10 @@ class _WalletDetailsCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _DetailRow(
-            icon: Icons.phone_outlined,
+            icon: Icons.account_balance_wallet_outlined,
             label: walletNumberLabel,
             value: walletNumberValue,
+            isCopyable: true,
           ),
         ],
       ),
@@ -178,17 +180,19 @@ class _DetailRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final bool isCopyable;
 
   const _DetailRow({
     required this.icon,
     required this.label,
     required this.value,
+    this.isCopyable = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Icon(icon, size: 18, color: context.primary),
         const SizedBox(width: 8),
@@ -200,24 +204,73 @@ class _DetailRow extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: context.mutedForeground,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   fontSize: 11.5,
+                  fontFamily: 'Cairo',
                   height: 1.0,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 value,
                 style: TextStyle(
                   color: context.foreground,
                   fontWeight: FontWeight.w900,
                   fontSize: 13.5,
+                  fontFamily: 'Cairo',
                   height: 1.1,
                 ),
               ),
             ],
           ),
         ),
+        if (isCopyable) ...[
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: value));
+              Get.snackbar(
+                'تم النسخ',
+                'تم نسخ رقم الحساب ($value) إلى الحافظة بنجاح',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: context.isDark
+                    ? const Color(0xFF24111F)
+                    : const Color(0xFF6E0131),
+                colorText: Colors.white,
+                margin: const EdgeInsets.all(16),
+                borderRadius: 12,
+                duration: const Duration(seconds: 2),
+              );
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: context.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: context.primary.withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.copy_rounded, size: 14, color: context.primary),
+                  const SizedBox(width: 4),
+                  Text(
+                    'نسخ',
+                    style: TextStyle(
+                      color: context.primary,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

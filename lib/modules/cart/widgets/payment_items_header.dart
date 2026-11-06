@@ -26,8 +26,7 @@ class PaymentItemsHeader extends StatelessWidget {
   bool get _showDiscount =>
       discountText != null && discountText!.trim().isNotEmpty;
 
-  bool get _showVoucher =>
-      !_showDiscount && onAddVoucher != null; // نفس منطقك
+  bool get _showVoucher => !_showDiscount && onAddVoucher != null; // نفس منطقك
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +54,9 @@ class PaymentItemsHeader extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: context.muted.withOpacity(context.isDark ? .25 : .55),
+                color: context.muted.withValues(
+                  alpha: context.isDark ? .25 : .55,
+                ),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
@@ -72,10 +73,7 @@ class PaymentItemsHeader extends StatelessWidget {
             const Spacer(),
 
             if (_showDiscount)
-              _DiscountChip(
-                text: discountText!,
-                onClose: onRemoveDiscount,
-              )
+              _DiscountChip(text: discountText!, onClose: onRemoveDiscount)
             else if (_showVoucher)
               _VoucherButton(
                 text: voucherText ?? "Add Voucher",

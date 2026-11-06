@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/modules/home/controllers/main_controller.dart';
 
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_service.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_ui_controller.dart';
@@ -275,6 +276,28 @@ class CartController extends GetxController {
 
     if (cartItems.isEmpty && isPayment) {
       backToCart();
+    }
+  }
+
+  /// هذه الدالة تفرغ السلة بالكامل
+  void clearCart() {
+    cartItems.clear();
+    itemQuantities.clear();
+    itemVariantTexts.clear();
+    itemRatings.clear();
+    itemReviewsCounts.clear();
+
+    if (isPayment) {
+      backToCart();
+    }
+  }
+
+  /// الانتقال إلى الصفحة الرئيسية للتسوق
+  void goToHome() {
+    if (Get.isRegistered<MainController>()) {
+      Get.find<MainController>().changeTab(0);
+    } else {
+      Get.offAllNamed(AppRoutes.main);
     }
   }
 

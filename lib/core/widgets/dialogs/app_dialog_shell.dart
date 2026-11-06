@@ -35,10 +35,10 @@ class AppDialogShell extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.card,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: context.border.withOpacity(.22)),
+            border: Border.all(color: context.border.withValues(alpha: .22)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(.18),
+                color: Colors.black.withValues(alpha: .18),
                 offset: const Offset(0, 16),
                 blurRadius: 32,
               ),

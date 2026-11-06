@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/modules/checkout/data/models/wallet_company.dart';
@@ -23,7 +23,7 @@ class WalletCompaniesRow extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: companies.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           return _CompanyAvatar(
             company: companies[i],
@@ -53,14 +53,14 @@ class _CompanyAvatar extends StatelessWidget {
         company.assetPath != null && company.assetPath!.trim().isNotEmpty;
 
     final border = selected
-        ? context.primary.withOpacity(.95)
-        : context.border.withOpacity(.30);
+        ? context.primary.withValues(alpha: .95)
+        : context.border.withValues(alpha: .30);
     final bg = selected
-        ? context.primary.withOpacity(.16)
-        : context.muted.withOpacity(context.isDark ? .16 : .24);
+        ? context.primary.withValues(alpha: .16)
+        : context.muted.withValues(alpha: context.isDark ? .16 : .24);
     final shadow = selected
-        ? context.primary.withOpacity(.14)
-        : context.shadow.withOpacity(context.isDark ? .18 : .06);
+        ? context.primary.withValues(alpha: .14)
+        : context.shadow.withValues(alpha: context.isDark ? .18 : .06);
 
     return Tooltip(
       message: company.name,
@@ -102,8 +102,8 @@ class _CompanyAvatar extends StatelessWidget {
                   color: context.card,
                   border: Border.all(
                     color: selected
-                        ? context.primary.withOpacity(.22)
-                        : context.border.withOpacity(.35),
+                        ? context.primary.withValues(alpha: .22)
+                        : context.border.withValues(alpha: .35),
                   ),
                 ),
                 child: Center(

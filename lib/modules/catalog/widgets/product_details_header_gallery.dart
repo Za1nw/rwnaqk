@@ -82,9 +82,9 @@ class _ProductDetailsHeaderGalleryState
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.00),
-                        Colors.black.withOpacity(0.06),
-                        Colors.black.withOpacity(0.18),
+                        Colors.black.withValues(alpha: 0.00),
+                        Colors.black.withValues(alpha: 0.06),
+                        Colors.black.withValues(alpha: 0.18),
                       ],
                     ),
                   ),
@@ -113,7 +113,7 @@ class _ProductDetailsHeaderGalleryState
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.32),
+                  color: Colors.black.withValues(alpha: 0.32),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
@@ -147,7 +147,7 @@ class _ProductDetailsHeaderGalleryState
                       decoration: BoxDecoration(
                         color: active
                             ? context.primary
-                            : Colors.white.withOpacity(0.55),
+                            : Colors.white.withValues(alpha: 0.55),
                         borderRadius: BorderRadius.circular(99),
                       ),
                     );
@@ -233,9 +233,9 @@ class _TopCircleAction extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: context.background.withOpacity(.90),
+          color: context.background.withValues(alpha: .90),
           shape: BoxShape.circle,
-          border: Border.all(color: context.border.withOpacity(.22)),
+          border: Border.all(color: context.border.withValues(alpha: .22)),
         ),
         child: Icon(icon, size: 18, color: iconColor),
       ),

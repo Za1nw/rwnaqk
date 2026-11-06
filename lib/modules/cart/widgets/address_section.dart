@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/editable_info_card.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/add_info_card.dart';
 
@@ -45,15 +45,18 @@ class AddressSection extends StatelessWidget {
     this.allowAddWhenEmpty = true,
     this.emptyHint = 'اضف عنوان الشحن',
   }) : assert(
-          (address != null) ^ (lines != null),
-          'لازم تمرر واحد فقط: address أو lines',
-        );
+         (address != null) ^ (lines != null),
+         'لازم تمرر واحد فقط: address أو lines',
+       );
 
   @override
   Widget build(BuildContext context) {
     // حوّل المدخلات لقائمة أسطر موحّدة
-    final normalizedLines = lines ??
-        (address != null && address!.trim().isNotEmpty ? [address!] : <String>[]);
+    final normalizedLines =
+        lines ??
+        (address != null && address!.trim().isNotEmpty
+            ? [address!]
+            : <String>[]);
 
     final hasData = normalizedLines.any((e) => e.trim().isNotEmpty);
 
@@ -69,11 +72,7 @@ class AddressSection extends StatelessWidget {
 
     // عند عدم وجود بيانات
     if (allowAddWhenEmpty) {
-      return AddInfoCard(
-        title: title,
-        hint: emptyHint,
-        onAdd: onEdit,
-      );
+      return AddInfoCard(title: title, hint: emptyHint, onAdd: onEdit);
     }
 
     // لا نريد Add (Edit فقط حتى لو فاضي)

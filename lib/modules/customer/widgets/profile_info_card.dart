@@ -20,7 +20,7 @@ class ProfileInfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: context.border.withOpacity(.35)),
+        border: Border.all(color: context.border.withValues(alpha: .35)),
       ),
       child: Row(
         children: [
@@ -28,9 +28,9 @@ class ProfileInfoCard extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: context.primary.withOpacity(.08),
+              color: context.primary.withValues(alpha: .08),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: context.primary.withOpacity(.18)),
+              border: Border.all(color: context.primary.withValues(alpha: .18)),
             ),
             child: Icon(icon, color: context.primary, size: 20),
           ),

@@ -2,56 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 
 class ShippingMethodSelector extends StatelessWidget {
-  final String headerTitle;
-
-  /// required keys:
-  /// - id, title, eta, price
-  /// optional:
-  /// - note (النص اللي يتغير تحت حسب الاختيار)
+  final String? titleText;
+  final String? headerTitle;
+  final String selectedId;
   final List<Map<String, dynamic>> options;
-
-  final String? selectedId;
   final ValueChanged<String> onChanged;
 
   const ShippingMethodSelector({
     super.key,
-    required this.headerTitle,
-    required this.options,
+    this.titleText,
+    this.headerTitle,
     required this.selectedId,
+    required this.options,
     required this.onChanged,
   });
 
-  Map<String, dynamic>? _findSelected() {
-    if (selectedId == null) return null;
-    for (final o in options) {
-      if ((o['id'] as String?) == selectedId) return o;
+  String get effectiveTitle => headerTitle ?? titleText ?? '';
+
+  Map<String, dynamic>? get _selectedOption {
+    for (final op in options) {
+      if ((op['id'] as String?) == selectedId) return op;
     }
-    return null;
+    return options.isNotEmpty ? options.first : null;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (options.isEmpty) return const SizedBox.shrink();
-
-    // ✅ الرسالة تتبع المحدد
-    final selected = _findSelected();
-    final note = (selected?['note'] as String?)?.trim() ?? '';
-
-    // ✅ لو ما فيه note نخلي مكان ثابت (عشان ما يهتز التصميم)
-    final displayNote = note.isNotEmpty ? note : ' '; // مساحة فقط
+    final note = (_selectedOption?['note'] ?? '') as String;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          headerTitle,
-          style: TextStyle(
-            color: context.foreground,
-            fontWeight: FontWeight.w900,
-            fontSize: 16,
+        if (effectiveTitle.isNotEmpty) ...[
+          Text(
+            effectiveTitle,
+            style: TextStyle(
+              color: context.foreground,
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+              fontFamily: 'Cairo',
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
+          const SizedBox(height: 10),
+        ],
 
         Container(
           width: double.infinity,
@@ -59,10 +52,12 @@ class ShippingMethodSelector extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.card,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: context.border.withOpacity(.35)),
+            border: Border.all(color: context.border.withValues(alpha: .35)),
             boxShadow: [
               BoxShadow(
-                color: context.shadow.withOpacity(context.isDark ? .10 : .06),
+                color: context.shadow.withValues(
+                  alpha: context.isDark ? .10 : .06,
+                ),
                 blurRadius: 18,
                 offset: const Offset(0, 10),
               ),
@@ -70,7 +65,6 @@ class ShippingMethodSelector extends StatelessWidget {
           ),
           child: Column(
             children: [
-              /// ✅ الخيارين داخل نفس البطاقة
               for (int i = 0; i < options.length && i < 2; i++) ...[
                 _ShippingTile(
                   data: options[i],
@@ -84,35 +78,27 @@ class ShippingMethodSelector extends StatelessWidget {
                   Divider(
                     height: 1,
                     thickness: 1,
-                    color: context.border.withOpacity(.25),
+                    color: context.border.withValues(alpha: .25),
                   ),
               ],
 
-              /// ✅ قسم الرسالة ثابت داخل نفس البطاقة (يتغير حسب الاختيار)
               Divider(
                 height: 1,
                 thickness: 1,
-                color: context.border.withOpacity(.25),
+                color: context.border.withValues(alpha: .25),
               ),
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(44, 8, 12, 10),
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 160),
-                    switchInCurve: Curves.easeOut,
-                    switchOutCurve: Curves.easeIn,
-                    child: Text(
-                      displayNote,
-                      key: ValueKey(displayNote), // ✅ يبدّل عند تغيّر النص
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: context.mutedForeground,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 11.5,
-                        height: 1.2,
-                      ),
+                  child: Text(
+                    note,
+                    style: TextStyle(
+                      color: context.mutedForeground,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      fontFamily: 'Cairo',
+                      height: 1.15,
                     ),
                   ),
                 ),
@@ -147,7 +133,7 @@ class _ShippingTile extends StatelessWidget {
         final compact = c.maxWidth < 360;
 
         final bg = selected
-            ? context.primary.withOpacity(context.isDark ? .14 : .10)
+            ? context.primary.withValues(alpha: context.isDark ? .14 : .10)
             : Colors.transparent;
 
         final pad = EdgeInsetsDirectional.fromSTEB(
@@ -179,6 +165,7 @@ class _ShippingTile extends StatelessWidget {
                             color: context.foreground,
                             fontWeight: FontWeight.w900,
                             fontSize: compact ? 13.5 : 14,
+                            fontFamily: 'Cairo',
                             height: 1.0,
                           ),
                         ),
@@ -197,6 +184,7 @@ class _ShippingTile extends StatelessWidget {
                     color: context.foreground,
                     fontWeight: FontWeight.w900,
                     fontSize: compact ? 13.5 : 14,
+                    fontFamily: 'Cairo',
                     height: 1.0,
                   ),
                 ),
@@ -223,9 +211,9 @@ class _EtaPill extends StatelessWidget {
         vertical: compact ? 3 : 4,
       ),
       decoration: BoxDecoration(
-        color: context.primary.withOpacity(.12),
+        color: context.primary.withValues(alpha: .12),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: context.primary.withOpacity(.22)),
+        border: Border.all(color: context.primary.withValues(alpha: .22)),
       ),
       child: Text(
         text,
@@ -233,6 +221,7 @@ class _EtaPill extends StatelessWidget {
           color: context.primary,
           fontWeight: FontWeight.w900,
           fontSize: compact ? 10.5 : 11,
+          fontFamily: 'Cairo',
           height: 1.0,
         ),
       ),
@@ -254,7 +243,9 @@ class _RadioLike extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: selected ? context.primary : context.border.withOpacity(.55),
+          color: selected
+              ? context.primary
+              : context.border.withValues(alpha: .55),
           width: 2,
         ),
       ),

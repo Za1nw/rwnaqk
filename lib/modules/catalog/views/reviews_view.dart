@@ -44,7 +44,7 @@ class ReviewsScreen extends GetView<ReviewsController> {
                   return ListView.separated(
                     physics: const BouncingScrollPhysics(),
                     itemCount: reviews.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 14),
+                    separatorBuilder: (_, _) => const SizedBox(height: 14),
                     itemBuilder: (_, i) => _ReviewTile(
                       name: reviews[i].name,
                       rating: reviews[i].rating,
@@ -85,10 +85,10 @@ class _ReviewTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.border.withOpacity(0.35)),
+        border: Border.all(color: context.border.withValues(alpha: 0.35)),
         boxShadow: [
           BoxShadow(
-            color: context.shadow.withOpacity(context.isDark ? 0.14 : 0.06),
+            color: context.shadow.withValues(alpha: context.isDark ? 0.14 : 0.06),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -198,7 +198,7 @@ class _StarsRow extends StatelessWidget {
         if (i == full && hasHalf) {
           return const Icon(Icons.star_half_rounded, size: 18, color: Color(0xFFF59E0B));
         }
-        return Icon(Icons.star_rounded, size: 18, color: context.border.withOpacity(0.8));
+        return Icon(Icons.star_rounded, size: 18, color: context.border.withValues(alpha: 0.8));
       }),
     );
   }

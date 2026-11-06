@@ -63,7 +63,7 @@ class AppNetworkImage extends StatelessWidget {
             Icon(
               Icons.image_not_supported_outlined,
               size: 22,
-              color: context.mutedForeground.withOpacity(0.8),
+              color: context.mutedForeground.withValues(alpha: 0.8),
             ),
       );
     }
@@ -77,7 +77,7 @@ class AppNetworkImage extends StatelessWidget {
       color: color,
       colorBlendMode: colorBlendMode,
       filterQuality: filterQuality,
-      errorBuilder: (_, __, ___) => buildError(),
+      errorBuilder: (_, _, _) => buildError(),
       loadingBuilder: (_, child, progress) {
         if (progress == null) return child;
         return buildPlaceholder();

@@ -19,7 +19,7 @@ class SupportChatHeaderCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: context.border.withOpacity(.35)),
+        border: Border.all(color: context.border.withValues(alpha: .35)),
       ),
       child: Row(
         children: [
@@ -27,7 +27,7 @@ class SupportChatHeaderCard extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: context.primary.withOpacity(.12),
+              color: context.primary.withValues(alpha: .12),
               borderRadius: BorderRadius.circular(15),
             ),
             child: Icon(

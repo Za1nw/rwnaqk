@@ -28,12 +28,12 @@ class SettingsProfileCard extends StatelessWidget {
       color: context.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: context.border.withOpacity(.35)),
+        side: BorderSide(color: context.border.withValues(alpha: .35)),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        splashColor: context.primary.withOpacity(.06),
+        splashColor: context.primary.withValues(alpha: .06),
         highlightColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -86,7 +86,7 @@ class SettingsProfileCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: context.input,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: context.border.withOpacity(.35)),
+                    border: Border.all(color: context.border.withValues(alpha: .35)),
                   ),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(14),

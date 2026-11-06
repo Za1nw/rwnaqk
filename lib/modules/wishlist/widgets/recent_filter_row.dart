@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_ui_controller.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
@@ -12,124 +12,123 @@ class RecentFilterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = Get.find<WishlistController>();
+    final isDark = context.isDark;
 
     return Obx(() {
-
       final label = c.recentFilterLabel();
       final isDate = c.recentFilter.value == RecentFilter.date;
 
       final w = MediaQuery.sizeOf(context).width;
+      final scale = (w / 390).clamp(.85, 1.0);
 
-      /// scale between 0.82 → 1
-      final scale = (w / 390).clamp(.82, 1.0);
-
-      final font = 12.8 * scale;
+      final font = 12.0 * scale;
       final hp = 14.0 * scale;
-      final vp = 10.0 * scale;
-      final gap = 10.0 * scale;
-      final iconSize = 20.0 * scale;
+      final vp = 8.0 * scale;
+      final gap = 8.0 * scale;
+      final iconSize = 18.0 * scale;
 
-      return Row(
-        children: [
-
-          _Pill(
-            text: Tk.wishlistFilterToday.tr,
-            selected: c.recentFilter.value == RecentFilter.today,
-            onTap: () => c.setRecentFilter(RecentFilter.today),
-            fontSize: font,
-            hp: hp,
-            vp: vp,
-          ),
-
-          SizedBox(width: gap),
-
-          _Pill(
-            text: Tk.wishlistFilterYesterday.tr,
-            selected: c.recentFilter.value == RecentFilter.yesterday,
-            onTap: () => c.setRecentFilter(RecentFilter.yesterday),
-            fontSize: font,
-            hp: hp,
-            vp: vp,
-          ),
-
-
-          InkWell(
-            onTap: () {
-              Get.bottomSheet(
-                RecentCalendarSheet(
-                  initialDate: c.selectedDate.value,
-                  onPick: (d) => c.chooseDate(d),
-                ),
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-              );
-            },
-            borderRadius: BorderRadius.circular(999),
-            child: Ink(
-              padding: EdgeInsets.symmetric(
-                horizontal: hp,
-                vertical: vp,
-              ),
-              decoration: BoxDecoration(
-                color: isDate
-                    ? context.primary.withOpacity(0.12)
-                    : context.card,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            _Pill(
+              text: Tk.wishlistFilterToday.tr,
+              selected: c.recentFilter.value == RecentFilter.today,
+              onTap: () => c.setRecentFilter(RecentFilter.today),
+              fontSize: font,
+              hp: hp,
+              vp: vp,
+              isDark: isDark,
+            ),
+            SizedBox(width: gap),
+            _Pill(
+              text: Tk.wishlistFilterYesterday.tr,
+              selected: c.recentFilter.value == RecentFilter.yesterday,
+              onTap: () => c.setRecentFilter(RecentFilter.yesterday),
+              fontSize: font,
+              hp: hp,
+              vp: vp,
+              isDark: isDark,
+            ),
+            SizedBox(width: gap),
+            InkWell(
+              onTap: () {
+                Get.bottomSheet(
+                  RecentCalendarSheet(
+                    initialDate: c.selectedDate.value,
+                    onPick: (d) => c.chooseDate(d),
+                  ),
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                );
+              },
+              borderRadius: BorderRadius.circular(999),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: hp, vertical: vp),
+                decoration: BoxDecoration(
                   color: isDate
-                      ? context.primary.withOpacity(0.35)
-                      : context.border.withOpacity(0.35),
+                      ? (isDark ? BrandColors.gold : BrandColors.burgundy)
+                            .withValues(alpha: isDark ? 0.22 : 0.12)
+                      : (isDark ? const Color(0xFF24111F) : Colors.white),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: isDate
+                        ? (isDark ? BrandColors.gold : BrandColors.burgundy)
+                        : (isDark
+                              ? Colors.white.withValues(alpha: 0.12)
+                              : BrandColors.burgundy.withValues(alpha: 0.10)),
+                  ),
                 ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: 110 * scale,
-                    ),
-                    child: Text(
-                      label,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: isDate
-                            ? context.primary
-                            : context.mutedForeground,
-                        fontWeight: FontWeight.w900,
-                        fontSize: font,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 110 * scale),
+                      child: Text(
+                        label,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isDate
+                              ? (isDark
+                                    ? BrandColors.gold
+                                    : BrandColors.burgundy)
+                              : (isDark
+                                    ? Colors.white70
+                                    : const Color(0xFF6E5664)),
+                          fontWeight: FontWeight.w800,
+                          fontSize: font,
+                          fontFamily: 'Cairo',
+                        ),
                       ),
                     ),
-                  ),
-
-                  SizedBox(width: 6 * scale),
-
-                  Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    size: iconSize,
-                    color: isDate
-                        ? context.primary
-                        : context.mutedForeground,
-                  ),
-                ],
+                    SizedBox(width: 4 * scale),
+                    Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: iconSize,
+                      color: isDate
+                          ? (isDark ? BrandColors.gold : BrandColors.burgundy)
+                          : (isDark ? Colors.white70 : const Color(0xFF6E5664)),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     });
   }
 }
 
 class _Pill extends StatelessWidget {
-
   final String text;
   final bool selected;
   final VoidCallback onTap;
-
   final double fontSize;
   final double hp;
   final double vp;
+  final bool isDark;
 
   const _Pill({
     required this.text,
@@ -138,38 +137,40 @@ class _Pill extends StatelessWidget {
     required this.fontSize,
     required this.hp,
     required this.vp,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
-      child: Ink(
-        padding: EdgeInsets.symmetric(
-          horizontal: hp,
-          vertical: vp,
-        ),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: hp, vertical: vp),
         decoration: BoxDecoration(
           color: selected
-              ? context.primary.withOpacity(0.12)
-              : context.card,
+              ? (isDark ? BrandColors.gold : BrandColors.burgundy).withValues(
+                  alpha: isDark ? 0.22 : 0.12,
+                )
+              : (isDark ? const Color(0xFF24111F) : Colors.white),
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
             color: selected
-                ? context.primary.withOpacity(0.35)
-                : context.border.withOpacity(0.35),
+                ? (isDark ? BrandColors.gold : BrandColors.burgundy)
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.12)
+                      : BrandColors.burgundy.withValues(alpha: 0.10)),
           ),
         ),
         child: Text(
           text,
           style: TextStyle(
             color: selected
-                ? context.primary
-                : context.mutedForeground,
-            fontWeight: FontWeight.w900,
+                ? (isDark ? BrandColors.gold : BrandColors.burgundy)
+                : (isDark ? Colors.white70 : const Color(0xFF6E5664)),
+            fontWeight: selected ? FontWeight.w900 : FontWeight.w700,
             fontSize: fontSize,
+            fontFamily: 'Cairo',
           ),
         ),
       ),

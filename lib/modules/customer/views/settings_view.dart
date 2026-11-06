@@ -93,10 +93,10 @@ class SettingsScreen extends GetView<AppSettingsController> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: context.primary.withOpacity(.08),
+                        color: context.primary.withValues(alpha: .08),
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(
-                          color: context.primary.withOpacity(.18),
+                          color: context.primary.withValues(alpha: .18),
                         ),
                       ),
                       child: Text(
@@ -137,7 +137,7 @@ class SettingsScreen extends GetView<AppSettingsController> {
                   subtitle: Tk.settingsLogoutSubtitle.tr,
                   trailing: Icon(
                     Icons.logout_rounded,
-                    color: Colors.redAccent.withOpacity(.95),
+                    color: Colors.redAccent.withValues(alpha: .95),
                     size: 20,
                   ),
                   trailingMaxWidth: 60,

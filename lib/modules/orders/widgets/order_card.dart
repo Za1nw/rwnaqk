@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
@@ -6,6 +6,7 @@ import 'package:rwnaqk_frontend/core/utils/app_date_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_order_utils.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 class OrderCard extends StatelessWidget {
   final OrderModel order;
@@ -15,6 +16,7 @@ class OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
     final id = order.id;
     final status = order.status;
     final total = order.total;
@@ -22,43 +24,62 @@ class OrderCard extends StatelessWidget {
     final createdAt = order.createdAt;
     final address = order.addressLine;
 
-    final statusColor = AppOrderUtils.statusColor(context, status);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(22),
-        onTap: onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            color: context.card,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: context.border.withOpacity(.40)),
-            boxShadow: [
-              BoxShadow(
-                color: context.shadow.withOpacity(.06),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
+    // First item title preview
+    final firstItemTitle =
+        (order.details != null && order.details!.items.isNotEmpty)
+        ? order.details!.items.first.title
+        : null;
+
+    final statusColor = _resolveStatusColor(status);
+    final statusLabel = AppOrderUtils.statusLabel(status).tr;
+    final statusIcon = AppOrderUtils.statusIcon(status);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF24111F) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? BrandColors.gold.withValues(alpha: 0.22)
+              : BrandColors.burgundy.withValues(alpha: 0.08),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          splashColor: (isDark ? BrandColors.gold : BrandColors.burgundy)
+              .withValues(alpha: 0.06),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 1. Top Row: Order ID & Status Badge
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
-                      width: 42,
-                      height: 42,
+                      width: 38,
+                      height: 38,
                       decoration: BoxDecoration(
-                        color: context.primary.withOpacity(.10),
-                        shape: BoxShape.circle,
+                        color:
+                            (isDark ? BrandColors.gold : BrandColors.burgundy)
+                                .withValues(alpha: isDark ? 0.20 : 0.10),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         Icons.receipt_long_rounded,
-                        color: context.primary,
+                        color: isDark ? BrandColors.gold : BrandColors.burgundy,
                         size: 20,
                       ),
                     ),
@@ -68,143 +89,269 @@ class OrderCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            Tk.ordersOrderNumber.trParams({'id': id}),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            id,
                             style: TextStyle(
-                              color: context.foreground,
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1E0A17),
                               fontWeight: FontWeight.w900,
-                              fontSize: 14.5,
-                              height: 1.1,
+                              fontSize: 15,
+                              fontFamily: 'Cairo',
+                              letterSpacing: 0.2,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           Text(
-                            Tk.ordersOrderSubtitle.tr,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            AppDateUtils.formatYmd(createdAt),
                             style: TextStyle(
-                              color: context.mutedForeground,
+                              color: isDark
+                                  ? Colors.white60
+                                  : const Color(0xFF7E6674),
                               fontWeight: FontWeight.w600,
                               fontSize: 11.5,
-                              height: 1.1,
+                              fontFamily: 'Cairo',
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
                     _OrderStatusBadge(
-                      label: AppOrderUtils.statusLabel(status).tr,
-                      icon: AppOrderUtils.statusIcon(status),
+                      label: statusLabel,
+                      icon: statusIcon,
                       color: statusColor,
+                      isDark: isDark,
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _InfoChip(
-                        icon: Icons.calendar_month_outlined,
-                        text: AppDateUtils.formatYmd(createdAt),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _InfoChip(
-                        icon: Icons.shopping_bag_outlined,
-                        text: Tk.ordersItemsCount.trParams({
-                          'count': '$itemsCount',
-                        }),
-                      ),
-                    ),
-                  ],
-                ),
+
                 const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.primary.withOpacity(.10),
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: context.primary.withOpacity(.16),
-                        ),
-                      ),
-                      child: Text(
-                        AppMoneyUtils.riyal(total),
-                        style: TextStyle(
-                          color: context.primary,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                          height: 1,
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        color: context.input,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: context.border.withOpacity(.35),
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.chevron_right_rounded,
-                        color: context.mutedForeground,
-                        size: 20,
-                      ),
-                    ),
-                  ],
-                ),
-                if ((address ?? '').trim().isNotEmpty) ...[
-                  const SizedBox(height: 12),
+
+                // 2. Product Items Preview (if present)
+                if (firstItemTitle != null) ...[
                   Container(
+                    width: double.infinity,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
-                      vertical: 10,
+                      vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: context.input.withOpacity(.55),
-                      borderRadius: BorderRadius.circular(14),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.04)
+                          : const Color(0xFFF9F5F8),
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: context.border.withOpacity(.28),
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.06)
+                            : BrandColors.burgundy.withValues(alpha: 0.05),
                       ),
                     ),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
-                          Icons.location_on_outlined,
-                          size: 18,
-                          color: context.mutedForeground,
+                          Icons.inventory_2_outlined,
+                          size: 15,
+                          color: isDark
+                              ? BrandColors.gold
+                              : BrandColors.burgundy,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            address!,
-                            maxLines: 2,
+                            itemsCount > 1
+                                ? '$firstItemTitle + ${itemsCount - 1} منتجات أخرى'
+                                : firstItemTitle,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: context.mutedForeground,
+                              color: isDark
+                                  ? Colors.white70
+                                  : const Color(0xFF4A3442),
                               fontWeight: FontWeight.w700,
-                              fontSize: 12.2,
-                              height: 1.35,
+                              fontSize: 12,
+                              fontFamily: 'Cairo',
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 10),
                 ],
+
+                // 3. Address Info (if available)
+                if ((address ?? '').trim().isNotEmpty) ...[
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 15,
+                        color: isDark
+                            ? BrandColors.gold.withValues(alpha: 0.7)
+                            : BrandColors.burgundy.withValues(alpha: 0.6),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          address!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isDark
+                                ? Colors.white60
+                                : const Color(0xFF6E5664),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11.5,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // Divider line
+                Divider(
+                  height: 1,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : BrandColors.burgundy.withValues(alpha: 0.06),
+                ),
+
+                const SizedBox(height: 12),
+
+                // 4. Bottom Row: Total & Action Buttons
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Total Amount in Yemeni Rial
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'الإجمالي',
+                          style: TextStyle(
+                            color: isDark
+                                ? Colors.white54
+                                : const Color(0xFF8A7682),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                        Text(
+                          AppMoneyUtils.riyal(total),
+                          style: TextStyle(
+                            color: isDark
+                                ? BrandColors.gold
+                                : BrandColors.burgundy,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const Spacer(),
+
+                    // Action: Details Button
+                    InkWell(
+                      onTap: onTap,
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 11,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.06)
+                              : const Color(0xFFF3EDF1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          Tk.ordersDetailsTitle.tr,
+                          style: TextStyle(
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF26141E),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 11.5,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    // Action: Tracking Button (for active/shipped/pending)
+                    if (status != 'canceled')
+                      InkWell(
+                        onTap: () => Get.toNamed(
+                          AppRoutes.orderTracking,
+                          arguments: order,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: isDark
+                                  ? [
+                                      const Color(0xFFFAAD01),
+                                      const Color(0xFFE59C00),
+                                    ]
+                                  : [
+                                      const Color(0xFF8E0542),
+                                      const Color(0xFF6E0131),
+                                    ],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    (isDark
+                                            ? const Color(0xFFFAAD01)
+                                            : const Color(0xFF6E0131))
+                                        .withValues(alpha: 0.30),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.local_shipping_outlined,
+                                size: 14,
+                                color: isDark
+                                    ? const Color(0xFF1E0A17)
+                                    : Colors.white,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'تتبع الطلب',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? const Color(0xFF1E0A17)
+                                      : Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 11.5,
+                                  fontFamily: 'Cairo',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -212,80 +359,60 @@ class OrderCard extends StatelessWidget {
       ),
     );
   }
+
+  Color _resolveStatusColor(String status) {
+    switch (status) {
+      case 'delivered':
+        return const Color(0xFF10B981); // Emerald green
+      case 'shipped':
+        return const Color(0xFF0284C7); // Sky blue
+      case 'pending':
+        return const Color(0xFFF59E0B); // Amber gold
+      case 'canceled':
+        return const Color(0xFFEF4444); // Red
+      default:
+        return const Color(0xFF8B5CF6);
+    }
+  }
 }
 
 class _OrderStatusBadge extends StatelessWidget {
   final String label;
   final IconData icon;
   final Color color;
+  final bool isDark;
 
   const _OrderStatusBadge({
     required this.label,
     required this.icon,
     required this.color,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minHeight: 32),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(.10),
+        color: color.withValues(alpha: isDark ? 0.22 : 0.12),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withOpacity(.22)),
+        border: Border.all(
+          color: color.withValues(alpha: isDark ? 0.50 : 0.30),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 5),
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w900,
-              fontSize: 11.5,
-              height: 1,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoChip extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _InfoChip({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: context.input.withOpacity(.55),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.border.withOpacity(.28)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: context.mutedForeground),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: context.mutedForeground,
-                fontWeight: FontWeight.w800,
-                fontSize: 11.8,
-                height: 1,
-              ),
+              fontSize: 11,
+              fontFamily: 'Cairo',
+              height: 1.1,
             ),
           ),
         ],

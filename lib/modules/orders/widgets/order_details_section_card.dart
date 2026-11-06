@@ -4,23 +4,32 @@ import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 class OrderDetailsSectionCard extends StatelessWidget {
   final Widget child;
 
-  const OrderDetailsSectionCard({
-    super.key,
-    required this.child,
-  });
+  const OrderDetailsSectionCard({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: context.card,
-      shape: RoundedRectangleBorder(
+    final isDark = context.isDark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF24111F) : Colors.white,
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: context.border.withOpacity(.35)),
+        border: Border.all(
+          color: isDark
+              ? BrandColors.gold.withValues(alpha: 0.20)
+              : BrandColors.burgundy.withValues(alpha: 0.08),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: child,
-      ),
+      padding: const EdgeInsets.all(16),
+      child: child,
     );
   }
 }

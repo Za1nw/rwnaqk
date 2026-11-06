@@ -17,7 +17,7 @@ class ListingSkeletonSliver extends StatelessWidget {
           color: context.card,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: context.border.withOpacity(0.35),
+            color: context.border.withValues(alpha: 0.35),
           ),
         ),
       );

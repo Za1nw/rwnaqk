@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/modules/checkout/data/models/wallet_company.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/wallet_companies_row.dart';
@@ -25,9 +25,9 @@ class ReceiverInfoBlock extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsetsDirectional.fromSTEB(12, 12, 12, 12),
       decoration: BoxDecoration(
-        color: context.input.withOpacity(context.isDark ? .35 : .55),
+        color: context.input.withValues(alpha: context.isDark ? .35 : .55),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.border.withOpacity(.35)),
+        border: Border.all(color: context.border.withValues(alpha: .35)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +53,7 @@ class ReceiverInfoBlock extends StatelessWidget {
             Divider(
               height: 1,
               thickness: 1,
-              color: context.border.withOpacity(.25),
+              color: context.border.withValues(alpha: .25),
             ),
             const SizedBox(height: 12),
           ],
@@ -65,7 +65,7 @@ class ReceiverInfoBlock extends StatelessWidget {
           Divider(
             height: 16,
             thickness: 1,
-            color: context.border.withOpacity(.25),
+            color: context.border.withValues(alpha: .25),
           ),
           _InfoRow(
             icon: Icons.phone_outlined,
@@ -77,7 +77,7 @@ class ReceiverInfoBlock extends StatelessWidget {
             Divider(
               height: 1,
               thickness: 1,
-              color: context.border.withOpacity(.25),
+              color: context.border.withValues(alpha: .25),
             ),
             const SizedBox(height: 10),
             Text(
@@ -123,7 +123,7 @@ class _InfoRow extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: context.card,
-            border: Border.all(color: context.border.withOpacity(.35)),
+            border: Border.all(color: context.border.withValues(alpha: .35)),
           ),
           child: Icon(icon, size: 18, color: context.mutedForeground),
         ),

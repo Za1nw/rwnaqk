@@ -1,96 +1,124 @@
-﻿import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_ui_controller.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_details_model.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
 
 /// هذا الملف مسؤول عن منطق البيانات الخاص بمنظومة الطلبات.
-///
-/// نستخدمه لفصل:
-/// - البيانات التجريبية
-/// - منطق الفلترة
-/// - بناء خطوات التتبع
-///
-/// لاحقًا عند ربط API الحقيقي، سيكون هذا الملف هو المكان المناسب
-/// لجلب الطلبات وبناء بيانات التتبع القادمة من السيرفر.
 class OrdersService {
-  /// هذه الدالة تعيد قائمة طلبات تجريبية.
+  /// قائمة طلبات تجريبية بأحدث البيانات والمنتجات
   List<OrderModel> seedMockOrders() {
     return [
       OrderModel(
         id: 'ORD-10241',
-        createdAt: DateTime.now().subtract(const Duration(hours: 6)),
+        createdAt: DateTime.now().subtract(const Duration(hours: 4)),
         total: 24500,
         itemsCount: 3,
         status: 'shipped',
-        addressLine: 'Taiz - Jamal St.',
-        deliveryName: 'Zain',
-        deliveryPhone: '+9677xxxxxxx',
+        addressLine: 'صنعاء - حدة، شارع الستين',
+        deliveryName: 'أحمد الحكيمي',
+        deliveryPhone: '+967 770 245 819',
         details: const OrderDetailsModel(
           items: [
             OrderDetailsItem(
-              title: 'Classic Hoodie',
-              subtitle: 'Black, XL',
+              title: 'هودي كلاسيكي مخملي راقي',
+              subtitle: 'أسود ملكي، XL',
               quantity: 1,
-              unitPrice: 10000,
+              unitPrice: 12000,
             ),
             OrderDetailsItem(
-              title: 'Urban Sneakers',
-              subtitle: 'White, 42',
+              title: 'حذاء سنيكرز جلدي عصري',
+              subtitle: 'أبيض ناصع، 42',
               quantity: 1,
               unitPrice: 8000,
             ),
             OrderDetailsItem(
-              title: 'Daily Cap',
-              subtitle: 'Gray',
+              title: 'قبعة كاجوال مطرزة',
+              subtitle: 'رمادي داكن',
               quantity: 1,
               unitPrice: 4500,
             ),
           ],
-          subtotal: 22500,
-          shippingFee: 2000,
+          subtotal: 24500,
+          shippingFee: 0,
           shippingMethodKey: Tk.cartShippingExpressTitle,
           paymentMethodKey: Tk.cartPaymentCodTitle,
-          deliveryName: 'Zain Al-Hakimi',
+          deliveryName: 'أحمد الحكيمي',
           deliveryPhone: '+967 770 245 819',
-          addressLine: 'Jamal Street, Taiz, Yemen',
+          addressLine: 'صنعاء - حدة، شارع الستين، بالقرب من مركز الكميم',
+        ),
+      ),
+      OrderModel(
+        id: 'ORD-10228',
+        createdAt: DateTime.now().subtract(const Duration(hours: 18)),
+        total: 18000,
+        itemsCount: 2,
+        status: 'pending',
+        addressLine: 'عدن - خور مكسر',
+        deliveryName: 'أحمد الحكيمي',
+        deliveryPhone: '+967 770 245 819',
+        details: const OrderDetailsModel(
+          items: [
+            OrderDetailsItem(
+              title: 'فستان سهرة كريب مطرز',
+              subtitle: 'عنابي ملكي، M',
+              quantity: 1,
+              unitPrice: 15000,
+            ),
+            OrderDetailsItem(
+              title: 'حقيبة كلاتش مخملية',
+              subtitle: 'ذهبي فاخر',
+              quantity: 1,
+              unitPrice: 3000,
+            ),
+          ],
+          subtotal: 18000,
+          shippingFee: 0,
+          shippingMethodKey: Tk.cartShippingStandardTitle,
+          paymentMethodKey: Tk.cartPaymentCodTitle,
+          deliveryName: 'أحمد الحكيمي',
+          deliveryPhone: '+967 770 245 819',
+          addressLine: 'عدن - خور مكسر، حي السفارات',
         ),
       ),
       OrderModel(
         id: 'ORD-10212',
         createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        total: 9800,
+        total: 19500,
         itemsCount: 1,
         status: 'delivered',
-        addressLine: 'Taiz - Al Rawdha',
+        addressLine: 'تعز - شارع جمال',
+        deliveryName: 'أحمد الحكيمي',
+        deliveryPhone: '+967 770 245 819',
         details: const OrderDetailsModel(
           items: [
             OrderDetailsItem(
-              title: 'Minimal Leather Bag',
-              subtitle: 'Brown',
+              title: 'حقيبة يد جلدية فاخرة رَوْنَقُك',
+              subtitle: 'بني عسلي طبيعي',
               quantity: 1,
-              unitPrice: 9800,
+              unitPrice: 19500,
             ),
           ],
-          subtotal: 9800,
+          subtotal: 19500,
           shippingFee: 0,
           shippingMethodKey: Tk.cartShippingStandardTitle,
           paymentMethodKey: Tk.cartPaymentWalletTitle,
-          deliveryName: 'Zain Al-Hakimi',
+          deliveryName: 'أحمد الحكيمي',
           deliveryPhone: '+967 770 245 819',
-          addressLine: 'Al Rawdha District, Taiz, Yemen',
+          addressLine: 'تعز - شارع جمال، مجمع السلام التجاري',
         ),
       ),
       OrderModel(
         id: 'ORD-10188',
-        createdAt: DateTime.now().subtract(const Duration(days: 5)),
+        createdAt: DateTime.now().subtract(const Duration(days: 6)),
         total: 15500,
         itemsCount: 2,
         status: 'canceled',
+        addressLine: 'صنعاء - الصافية',
         details: const OrderDetailsModel(
           items: [
             OrderDetailsItem(
-              title: 'Sport T-Shirt',
-              subtitle: 'Blue, L',
+              title: 'تيشيرت قطن ممشط فاخر',
+              subtitle: 'كحلي داكن، L',
               quantity: 2,
               unitPrice: 7000,
             ),
@@ -99,146 +127,104 @@ class OrdersService {
           shippingFee: 1500,
           shippingMethodKey: Tk.cartShippingStandardTitle,
           paymentMethodKey: Tk.cartPaymentCodTitle,
-          deliveryName: 'Zain Al-Hakimi',
+          deliveryName: 'أحمد الحكيمي',
           deliveryPhone: '+967 770 245 819',
-          addressLine: 'Taiz, Yemen',
+          addressLine: 'صنعاء - الصافية، جوار حديقة السبعين',
         ),
       ),
     ];
   }
 
-  OrderDetailsModel buildOrderDetails(OrderModel order) {
-    if (order.details != null) return order.details!;
-
-    switch (order.id) {
-      case 'ORD-10241':
-        return const OrderDetailsModel(
-          items: [
-            OrderDetailsItem(
-              title: 'Classic Hoodie',
-              subtitle: 'Black, XL',
-              quantity: 1,
-              unitPrice: 10000,
-            ),
-            OrderDetailsItem(
-              title: 'Urban Sneakers',
-              subtitle: 'White, 42',
-              quantity: 1,
-              unitPrice: 8000,
-            ),
-            OrderDetailsItem(
-              title: 'Daily Cap',
-              subtitle: 'Gray',
-              quantity: 1,
-              unitPrice: 4500,
-            ),
-          ],
-          subtotal: 22500,
-          shippingFee: 2000,
-          shippingMethodKey: Tk.cartShippingExpressTitle,
-          paymentMethodKey: Tk.cartPaymentCodTitle,
-          deliveryName: 'Zain Al-Hakimi',
-          deliveryPhone: '+967 770 245 819',
-          addressLine: 'Jamal Street, Taiz, Yemen',
-        );
-      case 'ORD-10212':
-        return const OrderDetailsModel(
-          items: [
-            OrderDetailsItem(
-              title: 'Minimal Leather Bag',
-              subtitle: 'Brown',
-              quantity: 1,
-              unitPrice: 9800,
-            ),
-          ],
-          subtotal: 9800,
-          shippingFee: 0,
-          shippingMethodKey: Tk.cartShippingStandardTitle,
-          paymentMethodKey: Tk.cartPaymentWalletTitle,
-          deliveryName: 'Zain Al-Hakimi',
-          deliveryPhone: '+967 770 245 819',
-          addressLine: 'Al Rawdha District, Taiz, Yemen',
-        );
-      default:
-        return const OrderDetailsModel(
-          items: [
-            OrderDetailsItem(
-              title: 'Sport T-Shirt',
-              subtitle: 'Blue, L',
-              quantity: 2,
-              unitPrice: 7000,
-            ),
-          ],
-          subtotal: 14000,
-          shippingFee: 1500,
-          shippingMethodKey: Tk.cartShippingStandardTitle,
-          paymentMethodKey: Tk.cartPaymentCodTitle,
-          deliveryName: 'Zain Al-Hakimi',
-          deliveryPhone: '+967 770 245 819',
-          addressLine: 'Taiz, Yemen',
-        );
-    }
-  }
-
-  /// هذه الدالة تقوم بفلترة الطلبات بناءً على الفلتر المختار.
+  /// فلترة الطلبات حسب التبويب المختار
   List<OrderModel> filterOrders({
     required List<OrderModel> orders,
     required OrdersFilter filter,
   }) {
-    if (filter == OrdersFilter.all) {
-      return orders;
+    switch (filter) {
+      case OrdersFilter.all:
+        return orders;
+      case OrdersFilter.active:
+        return orders
+            .where((o) => !['delivered', 'canceled'].contains(o.status))
+            .toList();
+      case OrdersFilter.delivered:
+        return orders.where((e) => e.status == 'delivered').toList();
+      case OrdersFilter.canceled:
+        return orders.where((e) => e.status == 'canceled').toList();
     }
-
-    if (filter == OrdersFilter.active) {
-      return orders
-          .where((o) => !['delivered', 'canceled'].contains(o.status))
-          .toList();
-    }
-
-    if (filter == OrdersFilter.delivered) {
-      return orders.where((o) => o.status == 'delivered').toList();
-    }
-
-    return orders.where((o) => o.status == 'canceled').toList();
   }
 
-  /// هذه الدالة تبني خطوات التتبع المناسبة حسب حالة الطلب الحالية.
-  ///
-  /// نستخدمها في شاشة تتبع الطلب لعرض الخط الزمني المناسب.
+  /// بناء خطوات التتبع الزمني للطلب
   List<OrderStatusStep> buildTrackingSteps(OrderModel order) {
-    final steps = <OrderStatusStep>[
-      const OrderStatusStep(
-        key: 'pending',
-        title: Tk.ordersTimelinePending,
-      ),
-      const OrderStatusStep(
-        key: 'confirmed',
-        title: Tk.ordersTimelineConfirmed,
-      ),
-      const OrderStatusStep(
-        key: 'shipped',
-        title: Tk.ordersTimelineShipped,
-      ),
-      const OrderStatusStep(
-        key: 'delivered',
-        title: Tk.ordersTimelineDelivered,
-      ),
-    ];
+    final now = order.createdAt;
 
     if (order.status == 'canceled') {
-      return const [
+      return [
         OrderStatusStep(
           key: 'pending',
           title: Tk.ordersTimelinePending,
+          time: now,
         ),
         OrderStatusStep(
           key: 'canceled',
           title: Tk.ordersTimelineCanceled,
           subtitle: Tk.ordersTimelineCanceledSubtitle,
+          time: now.add(const Duration(minutes: 45)),
         ),
       ];
     }
 
-    return steps;
+    return [
+      OrderStatusStep(
+        key: 'pending',
+        title: Tk.ordersTimelinePending,
+        time: now,
+      ),
+      OrderStatusStep(
+        key: 'confirmed',
+        title: Tk.ordersTimelineConfirmed,
+        time: now.add(const Duration(hours: 1)),
+      ),
+      OrderStatusStep(
+        key: 'shipped',
+        title: Tk.ordersTimelineShipped,
+        time: order.status == 'shipped' || order.status == 'delivered'
+            ? now.add(const Duration(hours: 3))
+            : null,
+      ),
+      OrderStatusStep(
+        key: 'delivered',
+        title: Tk.ordersTimelineDelivered,
+        time: order.status == 'delivered'
+            ? now.add(const Duration(days: 1, hours: 2))
+            : null,
+      ),
+    ];
+  }
+
+  /// بناء تفاصيل الطلب الاحتياطية في حال لم تكن معبأة
+  OrderDetailsModel buildOrderDetails(OrderModel order) {
+    if (order.details != null) {
+      return order.details!;
+    }
+
+    return OrderDetailsModel(
+      items: [
+        OrderDetailsItem(
+          title: 'منتج من رَوْنَقُك',
+          subtitle: 'طلب رقم ${order.id}',
+          quantity: order.itemsCount,
+          unitPrice:
+              order.total / (order.itemsCount <= 0 ? 1 : order.itemsCount),
+        ),
+      ],
+      subtotal: order.total,
+      shippingFee: 0,
+      shippingMethodKey: Tk.cartShippingStandardTitle,
+      paymentMethodKey: Tk.cartPaymentCodTitle,
+      deliveryName: order.deliveryName ?? 'أحمد الحكيمي',
+      deliveryPhone: order.deliveryPhone ?? '+967 770 245 819',
+      addressLine: order.addressLine ?? 'صنعاء، اليمن',
+    );
   }
 }

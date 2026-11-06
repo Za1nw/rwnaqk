@@ -54,7 +54,7 @@ class QuantityStepper extends StatelessWidget {
               height: h,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: context.border.withOpacity(context.isDark ? .22 : .18),
+                color: context.border.withValues(alpha: context.isDark ? .22 : .18),
                 borderRadius: BorderRadius.circular(r),
               ),
               child: Text(
@@ -99,8 +99,8 @@ class _CircleBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = enabled ? context.primary : context.mutedForeground;
     final border = enabled
-        ? context.primary.withOpacity(.90)
-        : context.border.withOpacity(.35);
+        ? context.primary.withValues(alpha: .90)
+        : context.border.withValues(alpha: .35);
 
     return InkWell(
       onTap: onTap,

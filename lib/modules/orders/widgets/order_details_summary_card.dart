@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
@@ -19,22 +19,36 @@ class OrderDetailsSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
+
     return OrderDetailsSectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            Tk.ordersDetailsSummary.tr,
-            style: TextStyle(
-              color: context.foreground,
-              fontWeight: FontWeight.w900,
-              fontSize: 14,
-            ),
+          Row(
+            children: [
+              Icon(
+                Icons.receipt_outlined,
+                size: 18,
+                color: isDark ? BrandColors.gold : BrandColors.burgundy,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                Tk.ordersDetailsSummary.tr,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF1E0A17),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14.5,
+                  fontFamily: 'Cairo',
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           _SummaryRow(
             label: Tk.cartSubtotal.tr,
             value: AppMoneyUtils.riyal(subtotal),
+            isDark: isDark,
           ),
           const SizedBox(height: 10),
           _SummaryRow(
@@ -42,15 +56,22 @@ class OrderDetailsSummaryCard extends StatelessWidget {
             value: shippingFee <= 0
                 ? Tk.cartFree.tr
                 : AppMoneyUtils.riyal(shippingFee),
+            isDark: isDark,
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Divider(
+              height: 1,
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : BrandColors.burgundy.withValues(alpha: 0.06),
+            ),
           ),
           _SummaryRow(
             label: Tk.cartTotal.tr,
             value: AppMoneyUtils.riyal(total),
             emphasize: true,
+            isDark: isDark,
           ),
         ],
       ),
@@ -62,35 +83,41 @@ class _SummaryRow extends StatelessWidget {
   final String label;
   final String value;
   final bool emphasize;
+  final bool isDark;
 
   const _SummaryRow({
     required this.label,
     required this.value,
     this.emphasize = false,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = emphasize ? context.foreground : context.mutedForeground;
-
     return Row(
       children: [
         Expanded(
           child: Text(
             label,
             style: TextStyle(
-              color: color,
+              color: emphasize
+                  ? (isDark ? Colors.white : const Color(0xFF1E0A17))
+                  : (isDark ? Colors.white60 : const Color(0xFF6E5664)),
               fontWeight: emphasize ? FontWeight.w900 : FontWeight.w700,
-              fontSize: emphasize ? 13.5 : 12.5,
+              fontSize: emphasize ? 14 : 12.5,
+              fontFamily: 'Cairo',
             ),
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            color: emphasize ? context.primary : context.foreground,
+            color: emphasize
+                ? (isDark ? BrandColors.gold : BrandColors.burgundy)
+                : (isDark ? Colors.white : const Color(0xFF1E0A17)),
             fontWeight: FontWeight.w900,
-            fontSize: emphasize ? 14 : 12.8,
+            fontSize: emphasize ? 16 : 13,
+            fontFamily: 'Cairo',
           ),
         ),
       ],

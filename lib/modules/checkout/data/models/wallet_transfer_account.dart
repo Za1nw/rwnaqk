@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 /// يمثل حساب محفظة للتحويل (يتم التحكم فيه من الأدمن)
 class WalletTransferAccount {
   final String id;

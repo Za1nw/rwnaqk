@@ -114,7 +114,7 @@ class _AppFilterSheetState extends State<AppFilterSheet> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.10),
+              color: Colors.black.withValues(alpha: 0.10),
               blurRadius: 22,
               offset: const Offset(0, -8),
             ),
@@ -128,7 +128,7 @@ class _AppFilterSheetState extends State<AppFilterSheet> {
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: context.border.withOpacity(0.6),
+                  color: context.border.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(99),
                 ),
               ),
@@ -245,7 +245,7 @@ class _AppFilterSheetState extends State<AppFilterSheet> {
                       max: 150,
                       divisions: 28,
                       activeColor: context.primary,
-                      inactiveColor: context.border.withOpacity(0.35),
+                      inactiveColor: context.border.withValues(alpha: 0.35),
                       labels: RangeLabels(
                         '\$${state.priceRange.start.toInt()}',
                         '\$${state.priceRange.end.toInt()}',
@@ -428,14 +428,14 @@ class _CategoriesGridResponsive extends StatelessWidget {
                         width: avatar,
                         height: avatar,
                         decoration: BoxDecoration(
-                          color: context.input.withOpacity(
-                            context.isDark ? 0.6 : 1,
+                          color: context.input.withValues(
+                            alpha: context.isDark ? 0.6 : 1,
                           ),
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: on
                                 ? context.primary
-                                : context.border.withOpacity(0.35),
+                                : context.border.withValues(alpha: 0.35),
                             width: on ? 2 : 1,
                           ),
                         ),
@@ -513,7 +513,7 @@ class _SegmentedControl extends StatelessWidget {
           curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
-            color: on ? context.primary.withOpacity(0.14) : Colors.transparent,
+            color: on ? context.primary.withValues(alpha: 0.14) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
@@ -531,9 +531,9 @@ class _SegmentedControl extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: context.input.withOpacity(context.isDark ? 0.6 : 1),
+        color: context.input.withValues(alpha: context.isDark ? 0.6 : 1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.border.withOpacity(0.35)),
+        border: Border.all(color: context.border.withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -583,13 +583,13 @@ class _ChoiceWrap extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: on
-                      ? context.primary.withOpacity(0.14)
-                      : context.input.withOpacity(context.isDark ? 0.6 : 1),
+                      ? context.primary.withValues(alpha: 0.14)
+                      : context.input.withValues(alpha: context.isDark ? 0.6 : 1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: on
                         ? context.primary
-                        : context.border.withOpacity(0.35),
+                        : context.border.withValues(alpha: 0.35),
                   ),
                 ),
                 child: Text(
@@ -636,7 +636,7 @@ class _ColorWrap extends StatelessWidget {
               color: colors[i],
               shape: BoxShape.circle,
               border: Border.all(
-                color: on ? context.primary : context.border.withOpacity(0.35),
+                color: on ? context.primary : context.border.withValues(alpha: 0.35),
                 width: on ? 2.2 : 1,
               ),
             ),
@@ -668,11 +668,11 @@ class _SortPill extends StatelessWidget {
       child: Ink(
         decoration: BoxDecoration(
           color: on
-              ? context.primary.withOpacity(0.14)
-              : context.input.withOpacity(context.isDark ? 0.6 : 1),
+              ? context.primary.withValues(alpha: 0.14)
+              : context.input.withValues(alpha: context.isDark ? 0.6 : 1),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: on ? context.primary : context.border.withOpacity(0.35),
+            color: on ? context.primary : context.border.withValues(alpha: 0.35),
           ),
         ),
         child: InkWell(

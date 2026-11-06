@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 
 class MiniItemPriceTile extends StatelessWidget {
-  final String imageUrl; // أو asset لو تحب
-  final int badgeCount; // الرقم الصغير فوق الصورة (1)
-  final String title; // "Lorem ipsum..."
-  final String subtitle; // "consectetur."
-  final String priceText; // "$17,00"
+  final String imageUrl;
+  final int badgeCount;
+  final String title;
+  final String subtitle;
+  final String priceText;
   final VoidCallback? onTap;
 
   final double radius;
@@ -33,7 +33,6 @@ class MiniItemPriceTile extends StatelessWidget {
         final img = compact ? imageSize - 4 : imageSize;
         final titleSize = compact ? 12.5 : 13.5;
         final subSize = compact ? 11.5 : 12.5;
-        final priceSize = compact ? 13 : 14;
 
         return Material(
           color: Colors.transparent,
@@ -134,7 +133,7 @@ class _AvatarWithBadge extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: context.border.withOpacity(.35),
+                color: context.border.withValues(alpha: .35),
                 width: 1,
               ),
             ),
@@ -142,8 +141,10 @@ class _AvatarWithBadge extends StatelessWidget {
             child: Image.network(
               imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                color: context.muted.withOpacity(context.isDark ? .25 : .5),
+              errorBuilder: (_, _, _) => Container(
+                color: context.muted.withValues(
+                  alpha: context.isDark ? .25 : .5,
+                ),
                 child: Icon(
                   Icons.image_outlined,
                   color: context.mutedForeground,
@@ -163,10 +164,12 @@ class _AvatarWithBadge extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: context.card,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: context.border.withOpacity(.45)),
+                  border: Border.all(
+                    color: context.border.withValues(alpha: .45),
+                  ),
                   boxShadow: [
                     BoxShadow(
-                      color: context.shadow.withOpacity(.08),
+                      color: context.shadow.withValues(alpha: .08),
                       blurRadius: 10,
                       offset: const Offset(0, 6),
                     ),

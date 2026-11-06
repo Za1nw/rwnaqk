@@ -33,7 +33,7 @@ class AppActionIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ?? context.primary.withOpacity(.10);
+    final bg = backgroundColor ?? context.primary.withValues(alpha: .10);
     final ic = iconColor ?? context.primary;
     final bd = borderColor;
 

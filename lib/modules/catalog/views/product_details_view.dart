@@ -160,8 +160,7 @@ class _SectionTitle extends StatelessWidget {
 
   const _SectionTitle({
     required this.title,
-    this.trailing,
-  });
+  }) : trailing = null;
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +175,7 @@ class _SectionTitle extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        if (trailing != null) trailing!,
+        ?trailing,
       ],
     );
   }
@@ -215,12 +214,12 @@ class _SpecRow extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: context.background.withOpacity(
-                      context.isDark ? 0.18 : 0.75,
+                    color: context.background.withValues(
+                      alpha: context.isDark ? 0.18 : 0.75,
                     ),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: context.border.withOpacity(0.35),
+                      color: context.border.withValues(alpha: 0.35),
                     ),
                   ),
                   child: Text(
@@ -306,7 +305,7 @@ class _BottomBar extends StatelessWidget {
           color: context.background,
           border: Border(
             top: BorderSide(
-              color: context.border.withOpacity(0.35),
+              color: context.border.withValues(alpha: 0.35),
             ),
           ),
         ),
@@ -322,7 +321,7 @@ class _BottomBar extends StatelessWidget {
                   color: context.card,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: context.border.withOpacity(0.55),
+                    color: context.border.withValues(alpha: 0.55),
                   ),
                 ),
                 child: Icon(

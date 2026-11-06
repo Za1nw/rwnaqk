@@ -1,7 +1,6 @@
-﻿import 'package:get/get.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk_frontend/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/contact_info_model.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
@@ -35,7 +34,7 @@ class CartService {
   /// خيارات الشحن المتاحة في صفحة الدفع.
   List<ShippingOptionModel> get shippingOptions => [
     ShippingOptionModel(id: 'standard', priceText: Tk.cartFree.tr),
-    ShippingOptionModel(id: 'express', priceText: '\$12.00'),
+    ShippingOptionModel(id: 'express', priceText: '2,000 ر.ي'),
   ];
 
   /// بيانات التواصل الحالية.
@@ -167,17 +166,23 @@ class CartService {
   /// هذه الدالة تعيد عناصر السلة التجريبية.
   List<HomeProductItem> seedCartItems() {
     return [
-      HomeProductItem(
+      const HomeProductItem(
         id: '1',
-        title: Mk.cartPinkDress,
+        title: 'فستان سهرة مخملي راقي',
+        brand: 'رَوْنَقُك',
         imageUrl: 'https://picsum.photos/200',
-        price: 17,
+        price: 24000,
+        discountPercent: 20,
+        stockText: 'متوفر في المخزون',
       ),
-      HomeProductItem(
+      const HomeProductItem(
         id: '2',
-        title: Mk.cartSummerShirt,
+        title: 'قميص حرير كلاسيكي أنيق',
+        brand: 'شانيل',
         imageUrl: 'https://picsum.photos/201',
-        price: 17,
+        price: 14500,
+        discountPercent: 15,
+        stockText: 'متبقي 2 فقط',
       ),
     ];
   }
@@ -185,11 +190,14 @@ class CartService {
   /// هذه الدالة تعيد عناصر المفضلة التجريبية.
   List<HomeProductItem> seedWishlistItems() {
     return [
-      HomeProductItem(
+      const HomeProductItem(
         id: '3',
-        title: Mk.cartWishlistItem,
+        title: 'حقيبة يد جلدية فاخرة رَوْنَقُك',
+        brand: 'رَوْنَقُك',
         imageUrl: 'https://picsum.photos/202',
-        price: 17,
+        price: 19500,
+        discountPercent: 10,
+        stockText: 'متوفر في المخزون',
       ),
     ];
   }

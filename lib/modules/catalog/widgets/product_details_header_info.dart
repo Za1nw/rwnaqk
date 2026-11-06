@@ -212,9 +212,9 @@ class _DiscountBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: context.destructive.withOpacity(0.10),
+        color: context.destructive.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: context.destructive.withOpacity(0.25)),
+        border: Border.all(color: context.destructive.withValues(alpha: 0.25)),
       ),
       child: Text(
         text,

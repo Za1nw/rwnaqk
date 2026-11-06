@@ -40,12 +40,12 @@ class _OnboardingShell extends StatelessWidget {
         color: Colors.transparent,
         child: Container(
           decoration: BoxDecoration(
-            color: context.card.withOpacity(context.isDark ? .62 : .48),
+            color: context.card.withValues(alpha: context.isDark ? .62 : .48),
             // borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: context.border.withOpacity(.18)),
+            border: Border.all(color: context.border.withValues(alpha: .18)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(context.isDark ? .25 : .10),
+                color: Colors.black.withValues(alpha: context.isDark ? .25 : .10),
                 offset: const Offset(0, 18),
                 blurRadius: 32,
               ),
@@ -237,15 +237,15 @@ class _IconBadge extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: context.card,
-        border: Border.all(color: context.border.withOpacity(.18)),
+        border: Border.all(color: context.border.withValues(alpha: .18)),
         boxShadow: [
           BoxShadow(
-            color: Colors.white.withOpacity(context.isDark ? .08 : .55),
+            color: Colors.white.withValues(alpha: context.isDark ? .08 : .55),
             offset: const Offset(-8, -8),
             blurRadius: 18,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(context.isDark ? .35 : .12),
+            color: Colors.black.withValues(alpha: context.isDark ? .35 : .12),
             offset: const Offset(12, 12),
             blurRadius: 22,
           ),
@@ -257,9 +257,9 @@ class _IconBadge extends StatelessWidget {
           height: inner,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: context.background.withOpacity(.12),
+            color: context.background.withValues(alpha: .12),
             border: Border.all(
-              color: context.primary.withOpacity(.18),
+              color: context.primary.withValues(alpha: .18),
               width: 1.2,
             ),
           ),
@@ -331,12 +331,12 @@ class _Dots extends StatelessWidget {
           width: active ? 22 : 7,
           height: 7,
           decoration: BoxDecoration(
-            color: active ? context.primary : context.border.withOpacity(.55),
+            color: active ? context.primary : context.border.withValues(alpha: .55),
             borderRadius: BorderRadius.circular(99),
             boxShadow: active
                 ? [
                     BoxShadow(
-                      color: context.primary.withOpacity(.18),
+                      color: context.primary.withValues(alpha: .18),
                       offset: const Offset(0, 6),
                       blurRadius: 14,
                     ),

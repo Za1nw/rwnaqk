@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
@@ -30,131 +30,161 @@ class OrderTrackingSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: context.card,
-      shape: RoundedRectangleBorder(
+    final isDark = context.isDark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF24111F) : Colors.white,
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: context.border.withOpacity(.35)),
+        border: Border.all(
+          color: isDark
+              ? BrandColors.gold.withValues(alpha: 0.20)
+              : BrandColors.burgundy.withValues(alpha: 0.08),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          children: [
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  id,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : const Color(0xFF1E0A17),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                    fontFamily: 'Cairo',
+                  ),
+                ),
+              ),
+              OrderStatusPill(status: status),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _MiniInfo(
+                icon: Icons.calendar_month_outlined,
+                text: AppDateUtils.formatYmd(createdAt),
+                isDark: isDark,
+              ),
+              const SizedBox(width: 8),
+              _MiniInfo(
+                icon: Icons.shopping_bag_outlined,
+                text: Tk.ordersItemsCount.trParams({'count': '$itemsCount'}),
+                isDark: isDark,
+              ),
+              const Spacer(),
+              Text(
+                AppMoneyUtils.riyal(total),
+                style: TextStyle(
+                  color: isDark ? BrandColors.gold : BrandColors.burgundy,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 15.5,
+                  fontFamily: 'Cairo',
+                ),
+              ),
+            ],
+          ),
+          if ((addressLine ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Icon(
+                  Icons.location_on_outlined,
+                  size: 16,
+                  color: isDark
+                      ? BrandColors.gold.withValues(alpha: 0.7)
+                      : BrandColors.burgundy.withValues(alpha: 0.6),
+                ),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
-                    id,
+                    addressLine!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: context.foreground,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 14.5,
+                      color: isDark ? Colors.white70 : const Color(0xFF6E5664),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                      fontFamily: 'Cairo',
+                      height: 1.3,
                     ),
                   ),
                 ),
-                OrderStatusPill(status: status),
               ],
             ),
+          ],
+          if (((deliveryName ?? '').trim().isNotEmpty) ||
+              ((deliveryPhone ?? '').trim().isNotEmpty)) ...[
             const SizedBox(height: 12),
-            Row(
-              children: [
-                _MiniInfo(
-                  icon: Icons.calendar_month_outlined,
-                  text: AppDateUtils.formatYmd(createdAt),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.04)
+                    : const Color(0xFFF7F1F5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : BrandColors.burgundy.withValues(alpha: 0.06),
                 ),
-                const SizedBox(width: 12),
-                _MiniInfo(
-                  icon: Icons.shopping_bag_outlined,
-                  text: Tk.ordersItemsCount.trParams({
-                    'count': '$itemsCount',
-                  }),
-                ),
-                const Spacer(),
-                Text(
-                  AppMoneyUtils.whole(total),
-                  style: TextStyle(
-                    color: context.primary,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                  ),
-                ),
-              ],
-            ),
-            if ((addressLine ?? '').trim().isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              child: Row(
                 children: [
                   Icon(
-                    Icons.location_on_outlined,
+                    Icons.person_outline_rounded,
                     size: 18,
-                    color: context.muted,
+                    color: isDark ? BrandColors.gold : BrandColors.burgundy,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      addressLine!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: context.muted,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12.5,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if ((deliveryName ?? '').trim().isNotEmpty)
+                          Text(
+                            deliveryName!,
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF1E0A17),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12.5,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                        if ((deliveryPhone ?? '').trim().isNotEmpty)
+                          Text(
+                            deliveryPhone!,
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white60
+                                  : const Color(0xFF7E6674),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11.5,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ],
-            if (((deliveryName ?? '').trim().isNotEmpty) ||
-                ((deliveryPhone ?? '').trim().isNotEmpty)) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: context.input,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: context.border.withOpacity(.25)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.person_outline_rounded,
-                      size: 18,
-                      color: context.muted,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if ((deliveryName ?? '').trim().isNotEmpty)
-                            Text(
-                              deliveryName!,
-                              style: TextStyle(
-                                color: context.foreground,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 12.8,
-                              ),
-                            ),
-                          if ((deliveryPhone ?? '').trim().isNotEmpty)
-                            Text(
-                              deliveryPhone!,
-                              style: TextStyle(
-                                color: context.muted,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 12,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -163,32 +193,45 @@ class OrderTrackingSummaryCard extends StatelessWidget {
 class _MiniInfo extends StatelessWidget {
   final IconData icon;
   final String text;
+  final bool isDark;
 
   const _MiniInfo({
     required this.icon,
     required this.text,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
-        color: context.input,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.border.withOpacity(.25)),
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.04)
+            : const Color(0xFFF7F1F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.06)
+              : BrandColors.burgundy.withValues(alpha: 0.06),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 15, color: context.muted),
-          const SizedBox(width: 6),
+          Icon(
+            icon,
+            size: 14,
+            color: isDark ? BrandColors.gold : BrandColors.burgundy,
+          ),
+          const SizedBox(width: 5),
           Text(
             text,
             style: TextStyle(
-              color: context.foreground,
-              fontWeight: FontWeight.w800,
-              fontSize: 12,
+              color: isDark ? Colors.white70 : const Color(0xFF4A3442),
+              fontWeight: FontWeight.w700,
+              fontSize: 11.5,
+              fontFamily: 'Cairo',
             ),
           ),
         ],

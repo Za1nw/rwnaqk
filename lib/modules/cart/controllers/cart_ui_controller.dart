@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
@@ -73,9 +73,7 @@ class CartUiController extends GetxController {
     required void Function(ShippingAddress next) updateAddress,
   }) {
     updateAddress(
-      current.copyWith(
-        country: AppMockContentUtils.resolveCountryKey(value),
-      ),
+      current.copyWith(country: AppMockContentUtils.resolveCountryKey(value)),
     );
   }
 
@@ -122,9 +120,7 @@ class CartUiController extends GetxController {
   }
 
   /// بناء عنوان شحن جاهز من حقول النموذج.
-  ShippingAddress buildShippingFromForm({
-    required ShippingAddress current,
-  }) {
+  ShippingAddress buildShippingFromForm({required ShippingAddress current}) {
     return ShippingAddress(
       id: current.id,
       country: current.country,
@@ -147,9 +143,7 @@ class CartUiController extends GetxController {
   }
 
   /// بناء بيانات التواصل من حقول النموذج الحالية.
-  ContactInfoModel buildContactFromForm({
-    required ContactInfoModel current,
-  }) {
+  ContactInfoModel buildContactFromForm({required ContactInfoModel current}) {
     return current.copyWith(
       phone: contactPhoneCtrl.text.trim(),
       email: contactEmailCtrl.text.trim(),
@@ -169,4 +163,3 @@ class CartUiController extends GetxController {
 
 /// enum يحدد المرحلة الحالية داخل منظومة السلة والدفع.
 enum CartStep { cart, payment }
-

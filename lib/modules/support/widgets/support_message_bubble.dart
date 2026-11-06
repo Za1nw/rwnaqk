@@ -17,7 +17,7 @@ class SupportMessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final bubbleColor = isAgent
         ? context.card
-        : context.primary.withOpacity(context.isDark ? .22 : .12);
+        : context.primary.withValues(alpha: context.isDark ? .22 : .12);
     final textColor = isAgent ? context.foreground : context.primary;
 
     return Align(
@@ -37,7 +37,7 @@ class SupportMessageBubble extends StatelessWidget {
               bottomEnd: Radius.circular(isAgent ? 18 : 6),
             ),
             border: Border.all(
-              color: (isAgent ? context.border : context.primary).withOpacity(.22),
+              color: (isAgent ? context.border : context.primary).withValues(alpha: .22),
             ),
           ),
           child: Column(

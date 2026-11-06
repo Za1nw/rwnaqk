@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/modules/checkout/data/models/wallet_transfer_account.dart';
 
 class WalletCompany {
@@ -6,11 +6,7 @@ class WalletCompany {
   final String? assetPath;
   final IconData? icon;
 
-  const WalletCompany({
-    required this.name,
-    this.assetPath,
-    this.icon,
-  });
+  const WalletCompany({required this.name, this.assetPath, this.icon});
 
   factory WalletCompany.fromTransferAccount(
     WalletTransferAccount account, {

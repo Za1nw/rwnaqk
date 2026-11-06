@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_controller.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
@@ -132,16 +132,28 @@ class OrderTrackingScreen extends GetView<OrdersController> {
               ),
             ),
             const SizedBox(height: 10),
-            Material(
-              color: context.card,
-              shape: RoundedRectangleBorder(
+            Container(
+              decoration: BoxDecoration(
+                color: context.isDark ? const Color(0xFF24111F) : Colors.white,
                 borderRadius: BorderRadius.circular(18),
-                side: BorderSide(color: context.border.withOpacity(.35)),
+                border: Border.all(
+                  color: context.isDark
+                      ? BrandColors.gold.withValues(alpha: 0.20)
+                      : BrandColors.burgundy.withValues(alpha: 0.08),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(
+                      alpha: context.isDark ? 0.35 : 0.05,
+                    ),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: OrderTimeline(steps: steps, currentStatus: order.status),
-              ),
+              padding: const EdgeInsets.all(16),
+              child: OrderTimeline(steps: steps, currentStatus: order.status),
             ),
             const SizedBox(height: 16),
             OrderTrackingActions(
@@ -149,10 +161,7 @@ class OrderTrackingScreen extends GetView<OrdersController> {
               canReorder: AppOrderUtils.canReorder(order.status),
               showReview: order.status == 'delivered',
               onCancel: () {
-                Get.snackbar(
-                  Tk.ordersActionCancel.tr,
-                  Tk.commonMockAction.tr,
-                );
+                Get.snackbar(Tk.ordersActionCancel.tr, Tk.commonMockAction.tr);
               },
               onHelpOrReorder: () {
                 Get.snackbar(Tk.commonDone.tr, Tk.commonMockAction.tr);
@@ -161,9 +170,9 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                 ReviewDialog.show(
                   context,
                   title: Tk.reviewsDialogTitle.tr,
-                  userName: 'Zain Alzubair',
+                  userName: 'أحمد الحكيمي',
                   orderId: order.id,
-                  onSubmit: (_, __) {
+                  onSubmit: (_, _) {
                     Get.snackbar(Tk.commonDone.tr, Tk.reviewsSubmitted.tr);
                   },
                 );

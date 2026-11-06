@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
@@ -30,20 +30,33 @@ class CartTotalBar extends StatelessWidget {
     this.buttonFg,
     this.outlinedButton = false,
     this.helperText,
-    this.buttonWidth = 170,
+    this.buttonWidth = 175,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
+    final primaryColor = isDark ? BrandColors.gold : BrandColors.burgundy;
+    final defaultBtnBg = buttonBg ?? primaryColor;
+    final defaultBtnFg =
+        buttonFg ?? (isDark ? const Color(0xFF1E0A17) : Colors.white);
+
     return Container(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 16),
       decoration: BoxDecoration(
-        color: context.card,
-        border: Border(top: BorderSide(color: context.border.withOpacity(.3))),
+        color: isDark ? const Color(0xFF24111F) : Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: isDark
+                ? BrandColors.gold.withValues(alpha: 0.20)
+                : BrandColors.burgundy.withValues(alpha: 0.08),
+            width: 1.2,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
-            color: context.shadow.withOpacity(.06),
-            blurRadius: 16,
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
+            blurRadius: 18,
             offset: const Offset(0, -6),
           ),
         ],
@@ -51,6 +64,7 @@ class CartTotalBar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Total Details
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -61,40 +75,46 @@ class CartTotalBar extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                    color: context.mutedForeground,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white60 : const Color(0xFF7E6674),
+                    fontFamily: 'Cairo',
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
-                  AppMoneyUtils.currency(total),
+                  AppMoneyUtils.riyal(total),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 19,
                     fontWeight: FontWeight.w900,
-                    color: context.foreground,
-                    height: 1.0,
+                    color: primaryColor,
+                    fontFamily: 'Cairo',
+                    height: 1.1,
                   ),
                 ),
                 if (helperText != null && helperText!.trim().isNotEmpty) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     helperText!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: context.mutedForeground,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white54 : const Color(0xFF8E7684),
+                      fontFamily: 'Cairo',
                     ),
                   ),
                 ],
               ],
             ),
           ),
+
           const SizedBox(width: 12),
+
+          // Primary Checkout Button
           SizedBox(
             width: buttonWidth,
             child: IgnorePointer(
@@ -106,8 +126,8 @@ class CartTotalBar extends StatelessWidget {
                   icon: checkoutIcon,
                   height: 48,
                   outlined: outlinedButton,
-                  backgroundColor: buttonBg,
-                  foregroundColor: buttonFg,
+                  backgroundColor: defaultBtnBg,
+                  foregroundColor: defaultBtnFg,
                   onPressed: enabled ? onCheckout : () {},
                 ),
               ),

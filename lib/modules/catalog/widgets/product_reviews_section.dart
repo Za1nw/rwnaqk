@@ -76,7 +76,7 @@ class _SectionTitle extends StatelessWidget {
   final String title;
   final Widget? trailing;
 
-  const _SectionTitle({required this.title, this.trailing});
+  const _SectionTitle({required this.title}) : trailing = null;
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +91,7 @@ class _SectionTitle extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        if (trailing != null) trailing!,
+        ?trailing,
       ],
     );
   }
@@ -108,7 +108,7 @@ class _EmptyReviews extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.border.withOpacity(0.55)),
+        border: Border.all(color: context.border.withValues(alpha: 0.55)),
       ),
       child: Text(
         Tk.reviewsEmpty.tr,
@@ -130,7 +130,7 @@ class _ReviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.border.withOpacity(0.55)),
+        border: Border.all(color: context.border.withValues(alpha: 0.55)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

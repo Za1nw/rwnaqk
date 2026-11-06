@@ -17,18 +17,21 @@ class OrderTrackingEtaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
+    final primaryColor = isDark ? BrandColors.gold : BrandColors.burgundy;
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: context.primary.withOpacity(.08),
+        color: primaryColor.withValues(alpha: isDark ? 0.16 : 0.08),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: context.primary.withOpacity(.16),
+          color: primaryColor.withValues(alpha: isDark ? 0.40 : 0.18),
         ),
       ),
       child: Row(
         children: [
-          Icon(icon, color: context.primary, size: 20),
+          Icon(icon, color: primaryColor, size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -36,9 +39,10 @@ class OrderTrackingEtaCard extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: context.primary,
-                fontWeight: FontWeight.w900,
+                color: isDark ? Colors.white : const Color(0xFF1E0A17),
+                fontWeight: FontWeight.w800,
                 fontSize: 12.5,
+                fontFamily: 'Cairo',
               ),
             ),
           ),

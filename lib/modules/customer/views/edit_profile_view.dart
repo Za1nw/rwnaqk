@@ -129,7 +129,7 @@ class _EditableAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: controller.nameCtrl,
-      builder: (_, __) {
+      builder: (_, _) {
         return Obx(
           () => Column(
             mainAxisSize: MainAxisSize.min,
@@ -148,7 +148,7 @@ class _EditableAvatar extends StatelessWidget {
                         color: context.card,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(.08),
+                            color: Colors.black.withValues(alpha: .08),
                             blurRadius: 18,
                             offset: const Offset(0, 10),
                           ),
@@ -170,7 +170,7 @@ class _EditableAvatar extends StatelessWidget {
                           if (controller.isUploadingAvatar)
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(.20),
+                                color: Colors.black.withValues(alpha: .20),
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -205,7 +205,7 @@ class _EditableAvatar extends StatelessWidget {
                             borderRadius: BorderRadius.circular(999),
                             child: LinearProgressIndicator(
                               minHeight: 6,
-                              backgroundColor: context.border.withOpacity(.18),
+                              backgroundColor: context.border.withValues(alpha: .18),
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 context.primary,
                               ),
@@ -283,7 +283,7 @@ class _BottomSheetTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.input,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: context.border.withOpacity(.3)),
+          border: Border.all(color: context.border.withValues(alpha: .3)),
         ),
         child: Row(
           children: [
@@ -314,9 +314,9 @@ class _SoftField extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: context.input.withOpacity(context.isDark ? .55 : .75),
+        color: context.input.withValues(alpha: context.isDark ? .55 : .75),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: context.border.withOpacity(.20)),
+        border: Border.all(color: context.border.withValues(alpha: .20)),
       ),
       child: child,
     );

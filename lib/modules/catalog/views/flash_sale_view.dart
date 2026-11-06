@@ -123,12 +123,12 @@ class _FlashSaleHeroHeader extends StatelessWidget {
     final primary = context.primary;
     final accent = context.accent;
     final headerBg = context.isDark
-        ? context.card.withOpacity(0.96)
+        ? context.card.withValues(alpha: 0.96)
         : context.background;
     final softCircle = context.isDark
-        ? accent.withOpacity(0.18)
-        : accent.withOpacity(0.90);
-    final deepCircle = context.isDark ? primary.withOpacity(0.85) : primary;
+        ? accent.withValues(alpha: 0.18)
+        : accent.withValues(alpha: 0.90);
+    final deepCircle = context.isDark ? primary.withValues(alpha: 0.85) : primary;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
@@ -183,8 +183,8 @@ class _FlashSaleHeroHeader extends StatelessWidget {
                         Text(
                           Tk.flashSaleSubtitle.tr,
                           style: TextStyle(
-                            color: context.mutedForeground.withOpacity(
-                              context.isDark ? 0.9 : 0.85,
+                            color: context.mutedForeground.withValues(
+                              alpha: context.isDark ? 0.9 : 0.85,
                             ),
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -232,9 +232,9 @@ class _FlashSaleCountdownBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bg = context.isDark
-        ? context.background.withOpacity(0.35)
+        ? context.background.withValues(alpha: 0.35)
         : context.background;
-    final border = context.border.withOpacity(context.isDark ? 0.55 : 0.35);
+    final border = context.border.withValues(alpha: context.isDark ? 0.55 : 0.35);
 
     return Container(
       width: 32,
@@ -246,7 +246,7 @@ class _FlashSaleCountdownBox extends StatelessWidget {
         border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: context.shadow.withOpacity(context.isDark ? 0.20 : 0.12),
+            color: context.shadow.withValues(alpha: context.isDark ? 0.20 : 0.12),
             blurRadius: 10,
             offset: const Offset(0, 6),
           ),
@@ -279,8 +279,8 @@ class _FlashSaleDiscountTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final railBg = context.isDark
-        ? context.muted.withOpacity(0.55)
-        : context.muted.withOpacity(0.35);
+        ? context.muted.withValues(alpha: 0.55)
+        : context.muted.withValues(alpha: 0.35);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -304,7 +304,7 @@ class _FlashSaleDiscountTabs extends StatelessWidget {
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: context.foreground.withOpacity(0.85),
+                    color: context.foreground.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w800,
                     fontSize: 12,
                   ),
@@ -324,8 +324,8 @@ class _FlashSaleDiscountTabs extends StatelessWidget {
                 border: Border.all(color: context.primary, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: context.primary.withOpacity(
-                      context.isDark ? 0.22 : 0.20,
+                    color: context.primary.withValues(
+                      alpha: context.isDark ? 0.22 : 0.20,
                     ),
                     blurRadius: 12,
                     offset: const Offset(0, 8),

@@ -30,7 +30,7 @@ class AppErrorState extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.card,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: context.border.withOpacity(0.35)),
+            border: Border.all(color: context.border.withValues(alpha: 0.35)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

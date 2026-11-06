@@ -1,4 +1,4 @@
-﻿import 'package:get/get.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
 import 'package:rwnaqk_frontend/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk_frontend/modules/checkout/data/models/wallet_transfer_account.dart';
@@ -16,7 +16,8 @@ class PaymentController extends GetxController {
   final selectedWalletAccountIndex = 0.obs;
 
   /// المحافظ متاحة من الـ ProfileStore (admin-controlled)
-  RxList<WalletTransferAccount> get walletAccounts => _profileStore.walletAccounts;
+  RxList<WalletTransferAccount> get walletAccounts =>
+      _profileStore.walletAccounts;
 
   bool get isWalletPayment => paymentMethodId.value == 'wallet';
 
@@ -27,7 +28,9 @@ class PaymentController extends GetxController {
     final accounts = walletAccounts;
     if (accounts.isEmpty) return null;
     final i = selectedWalletAccountIndex.value;
-    final clamped = i < 0 ? 0 : (i >= accounts.length ? accounts.length - 1 : i);
+    final clamped = i < 0
+        ? 0
+        : (i >= accounts.length ? accounts.length - 1 : i);
     return accounts[clamped];
   }
 
@@ -54,4 +57,3 @@ class PaymentController extends GetxController {
     });
   }
 }
-

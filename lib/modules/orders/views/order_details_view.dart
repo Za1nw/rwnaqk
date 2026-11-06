@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_controller.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
@@ -13,7 +13,6 @@ import 'package:rwnaqk_frontend/modules/orders/widgets/order_details_items_card.
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_details_summary_card.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_tracking_summary_card.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/review_dialog.dart';
-
 
 class OrderDetailsScreen extends GetView<OrdersController> {
   const OrderDetailsScreen({super.key});
@@ -89,10 +88,8 @@ class OrderDetailsScreen extends GetView<OrdersController> {
               title: Tk.ordersDetailsTitle.tr,
               onBack: Get.back,
               trailingIcon: Icons.local_shipping_outlined,
-              onTrailingTap: () => Get.toNamed(
-                AppRoutes.orderTracking,
-                arguments: order,
-              ),
+              onTrailingTap: () =>
+                  Get.toNamed(AppRoutes.orderTracking, arguments: order),
             ),
             const SizedBox(height: 12),
             OrderTrackingSummaryCard(
@@ -167,8 +164,6 @@ class OrderDetailsScreen extends GetView<OrdersController> {
                       builder: (_) => ReviewDialog(
                         title: "تقييم ${item.title}",
                         onSubmit: (rating, comment) {
-                          // نفذ حفظ التقييم هنا
-                          print("تم تقييم ${item.title}: $rating, $comment");
                           Navigator.of(context).pop();
                         },
                       ),
@@ -182,10 +177,8 @@ class OrderDetailsScreen extends GetView<OrdersController> {
               AppButton(
                 text: Tk.ordersDetailsTrackOrder.tr,
                 icon: Icons.local_shipping_outlined,
-                onPressed: () => Get.toNamed(
-                  AppRoutes.orderTracking,
-                  arguments: order,
-                ),
+                onPressed: () =>
+                    Get.toNamed(AppRoutes.orderTracking, arguments: order),
               ),
             ],
           ],

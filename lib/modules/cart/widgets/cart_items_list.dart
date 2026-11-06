@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/utils/app_product_utils.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/cart_item_tile.dart';
@@ -31,7 +31,7 @@ class CartItemsList extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (_, i) {
         final item = items[i];
         final variant =

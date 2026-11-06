@@ -93,10 +93,10 @@ class ProductDetailsHeaderCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.card,
             borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: context.border.withOpacity(0.55)),
+            border: Border.all(color: context.border.withValues(alpha: 0.55)),
             boxShadow: [
               BoxShadow(
-                color: context.shadow.withOpacity(context.isDark ? 0.14 : 0.07),
+                color: context.shadow.withValues(alpha: context.isDark ? 0.14 : 0.07),
                 blurRadius: 18,
                 offset: const Offset(0, 10),
               ),

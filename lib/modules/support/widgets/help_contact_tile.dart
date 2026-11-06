@@ -21,7 +21,7 @@ class HelpContactTile extends StatelessWidget {
       color: context.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: context.border.withOpacity(.35)),
+        side: BorderSide(color: context.border.withValues(alpha: .35)),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -34,9 +34,9 @@ class HelpContactTile extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: context.primary.withOpacity(.08),
+                  color: context.primary.withValues(alpha: .08),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: context.primary.withOpacity(.18)),
+                  border: Border.all(color: context.primary.withValues(alpha: .18)),
                 ),
                 child: Icon(icon, color: context.primary, size: 20),
               ),
@@ -73,7 +73,7 @@ class HelpContactTile extends StatelessWidget {
               const SizedBox(width: 10),
               Icon(
                 Icons.arrow_forward_rounded,
-                color: context.primary.withOpacity(.7),
+                color: context.primary.withValues(alpha: .7),
                 size: 20,
               ),
             ],

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
@@ -42,21 +42,21 @@ class ShippingAddressSheet extends StatefulWidget {
     this.emailController,
     required this.onSave,
   }) : assert(
-          section == EditSection.shipping
-              ? (addressController != null &&
-                  cityController != null &&
-                  postcodeController != null &&
-                  countries != null &&
-                  onCountryChanged != null)
-              : true,
-          'Shipping mode requires address/city/postcode/countries/onCountryChanged',
-        ),
-        assert(
-          section == EditSection.contact
-              ? (phoneController != null && emailController != null)
-              : true,
-          'Contact mode requires phoneController & emailController',
-        );
+         section == EditSection.shipping
+             ? (addressController != null &&
+                   cityController != null &&
+                   postcodeController != null &&
+                   countries != null &&
+                   onCountryChanged != null)
+             : true,
+         'Shipping mode requires address/city/postcode/countries/onCountryChanged',
+       ),
+       assert(
+         section == EditSection.contact
+             ? (phoneController != null && emailController != null)
+             : true,
+         'Contact mode requires phoneController & emailController',
+       );
 
   // =========================
   // Show helpers (أفضل لك بالاستدعاء)

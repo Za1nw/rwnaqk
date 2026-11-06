@@ -41,13 +41,13 @@ class AppLinkButton extends StatelessWidget {
                 boxShadow: [
                   // light shadow (top-left)
                   BoxShadow(
-                    color: Colors.white.withOpacity(0.4),
+                    color: Colors.white.withValues(alpha: 0.4),
                     offset: const Offset(-2, -2),
                     blurRadius: 6,
                   ),
                   // dark shadow (bottom-right)
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     offset: const Offset(3, 3),
                     blurRadius: 8,
                   ),

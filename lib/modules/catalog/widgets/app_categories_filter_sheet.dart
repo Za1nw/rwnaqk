@@ -70,7 +70,7 @@ class _AppCategoriesFilterSheetState extends State<AppCategoriesFilterSheet> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: categories.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (_, i) {
                       final category = categories[i];
                       final isExpanded = expandedIndices.contains(i);
@@ -166,12 +166,12 @@ class _Tab extends StatelessWidget {
             color: on ? context.background : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: on
-                ? Border.all(color: context.primary.withOpacity(0.2), width: 1)
+                ? Border.all(color: context.primary.withValues(alpha: 0.2), width: 1)
                 : null,
             boxShadow: on
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -221,7 +221,7 @@ class _CategoryTile extends StatelessWidget {
             decoration: BoxDecoration(
               color: context.card,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: context.border.withOpacity(0.5)),
+              border: Border.all(color: context.border.withValues(alpha: 0.5)),
             ),
             child: Row(
               children: [
@@ -317,8 +317,8 @@ class _SubItem extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: on
-                ? context.primary.withOpacity(0.5)
-                : context.border.withOpacity(0.4),
+                ? context.primary.withValues(alpha: 0.5)
+                : context.border.withValues(alpha: 0.4),
             width: on ? 1.5 : 1,
           ),
         ),
