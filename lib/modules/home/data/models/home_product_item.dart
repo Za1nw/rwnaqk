@@ -3,6 +3,8 @@ import 'package:rwnaqk_frontend/modules/catalog/data/models/product_size_guide.d
 
 class HomeProductItem {
   final String id;
+  /// معرف المنتج الأصلي في الكتالوج، يمنع فقدان هوية المنتج عند استخدام id كـ lineId فريد في السلة
+  final String? originalProductId;
   final String title;
   final String imageUrl;
   final double price;
@@ -25,6 +27,7 @@ class HomeProductItem {
 
   const HomeProductItem({
     required this.id,
+    this.originalProductId,
     required this.title,
     required this.imageUrl,
     required this.price,
@@ -43,6 +46,12 @@ class HomeProductItem {
     this.sizeGuide,
   });
 
+  /// معرف المنتج الحقيقي الدائم
+  String get productId =>
+      (originalProductId != null && originalProductId!.isNotEmpty)
+          ? originalProductId!
+          : id;
+
   bool get hasDiscount => discountPercent != null && discountPercent! > 0;
 
   double get salePrice {
@@ -52,6 +61,7 @@ class HomeProductItem {
 
   HomeProductItem copyWith({
     String? id,
+    String? originalProductId,
     String? title,
     String? imageUrl,
     double? price,
@@ -71,6 +81,7 @@ class HomeProductItem {
   }) {
     return HomeProductItem(
       id: id ?? this.id,
+      originalProductId: originalProductId ?? this.originalProductId,
       title: title ?? this.title,
       imageUrl: imageUrl ?? this.imageUrl,
       price: price ?? this.price,
@@ -93,6 +104,7 @@ class HomeProductItem {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'originalProductId': originalProductId,
       'title': title,
       'imageUrl': imageUrl,
       'price': price,
@@ -115,6 +127,7 @@ class HomeProductItem {
   factory HomeProductItem.fromMap(Map<String, dynamic> map) {
     return HomeProductItem(
       id: (map['id'] ?? '').toString(),
+      originalProductId: map['originalProductId']?.toString(),
       title: (map['title'] ?? '').toString(),
       imageUrl: (map['imageUrl'] ?? '').toString(),
       price: (map['price'] ?? 0).toDouble(),

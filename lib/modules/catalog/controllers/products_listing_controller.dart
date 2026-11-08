@@ -1,7 +1,9 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/catalog/controllers/products_listing_service.dart';
 import 'package:rwnaqk_frontend/modules/catalog/controllers/products_listing_ui_controller.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/providers/fake_products_remote_data_source.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/repositories/products_repository.dart';
 import 'package:rwnaqk_frontend/core/utils/app_filter_utils.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/app_filter_sheet.dart';
@@ -15,12 +17,17 @@ import 'package:rwnaqk_frontend/modules/catalog/widgets/app_filter_sheet.dart';
 /// - التحميل الإضافي
 ///
 /// كما أنه يعمل كحلقة ربط بين:
-/// - ProductsListingService الخاص بالبيانات
+/// - IProductsRepository / ProductsListingService الخاص بالبيانات
 /// - ProductsListingUiController الخاص بحالات الواجهة
 class ProductsListingController extends GetxController {
-  ProductsListingController(this._service);
+  ProductsListingController(
+    this._service, {
+    IProductsRepository? repository,
+  }) : _repository =
+            repository ?? FakeProductsRepository(listingService: _service);
 
   final ProductsListingService _service;
+  final IProductsRepository _repository;
 
   late final ProductsListingUiController ui;
 
@@ -57,8 +64,8 @@ class ProductsListingController extends GetxController {
   /// هذا bridge لإبقاء الاستدعاءات الحالية في الشاشة والودجت كما هي.
   RxInt get activeFilterCount => ui.activeFilterCount;
 
-  /// هذا bridge لإبقاء الاستدعاءات الحالية في الشاشة والودجت كما هي.
-  ScrollController get scrollController => ui.scrollController;
+  /// متحكم السكرول المملوك حصرياً لـ ProductsListingController
+  final scrollController = ScrollController();
 
   @override
   /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
@@ -99,7 +106,9 @@ class ProductsListingController extends GetxController {
     try {
       final base = initialItems.isNotEmpty
           ? initialItems.toList()
-          : _service.mockProducts();
+          : await _repository.getProducts(sort: sort.value);
+
+      if (isClosed) return;
 
       final sorted = _service.applySort(
         list: base,
@@ -111,12 +120,18 @@ class ProductsListingController extends GetxController {
         filterResult: filterResult.value,
       );
 
+      if (isClosed) return;
+
       items.assignAll(filtered);
       hasMore.value = true;
     } catch (_) {
-      errorMessage.value = 'Something went wrong';
+      if (!isClosed) {
+        errorMessage.value = 'Something went wrong';
+      }
     } finally {
-      isLoading.value = false;
+      if (!isClosed) {
+        isLoading.value = false;
+      }
     }
   }
 
@@ -129,8 +144,14 @@ class ProductsListingController extends GetxController {
 
     try {
       await Future.delayed(const Duration(milliseconds: 500));
+      if (isClosed) return;
 
-      final more = _service.mockProducts(seed: items.length + 1);
+      final more = await _repository.getProducts(
+        seed: items.length + 1,
+        sort: sort.value,
+      );
+
+      if (isClosed) return;
 
       if (more.isEmpty) {
         hasMore.value = false;
@@ -147,10 +168,13 @@ class ProductsListingController extends GetxController {
           filterResult: filterResult.value,
         );
 
+        if (isClosed) return;
         items.assignAll(filtered);
       }
     } finally {
-      isLoadingMore.value = false;
+      if (!isClosed) {
+        isLoadingMore.value = false;
+      }
     }
   }
 
@@ -201,5 +225,17 @@ class ProductsListingController extends GetxController {
     );
 
     items.assignAll(filtered);
+  }
+
+  bool _isDisposed = false;
+
+  @override
+  void onClose() {
+    if (!_isDisposed) {
+      _isDisposed = true;
+      scrollController.removeListener(_onScroll);
+      scrollController.dispose();
+    }
+    super.onClose();
   }
 }

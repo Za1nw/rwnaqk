@@ -10,6 +10,7 @@ import 'package:rwnaqk_frontend/modules/checkout/controllers/payment_controller.
 import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
@@ -18,6 +19,7 @@ import 'package:rwnaqk_frontend/modules/customer/data/models/contact_info_model.
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/shipping_address.dart';
 import 'package:rwnaqk_frontend/modules/checkout/data/models/shipping_option_model.dart';
+import 'package:rwnaqk_frontend/modules/checkout/data/models/wallet_transfer_account.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة السلة.
 ///
@@ -40,6 +42,9 @@ class CartController extends GetxController {
   final _profileStore = Get.find<ProfileStoreService>();
 
   late final CartUiController ui;
+
+  /// مرجع العامل لمراقبة عناوين الملف الشخصي
+  Worker? _addressesWorker;
 
   // =========================
   // CART DATA
@@ -357,42 +362,54 @@ class CartController extends GetxController {
   }
 
   /// هذه الدالة تضيف عنصرًا إلى السلة.
-  /// إذا كان موجودًا مسبقًا، نزيد الكمية بدل تكرار السطر.
+  /// إذا كان موجودًا مسبقًا بنفس المتغير، نزيد الكمية، وإن كان بمتغير جديد ننشئ سطرًا مستقلاً مع الحفاظ على معرف المنتج الأصلي productId.
   void addToCart(
     HomeProductItem item, {
+    int quantity = 1,
     String? variantText,
     double? rating,
     int? reviewsCount,
   }) {
-    final existingIndex = cartItems.indexWhere((e) => e.id == item.id);
+    final qty = quantity > 0 ? quantity : 1;
+    final v = (variantText ?? '').trim();
+    final realProductId = item.productId;
+    final lineId = v.isNotEmpty ? '${realProductId}_$v' : realProductId;
+    final cartItem = item.copyWith(
+      id: lineId,
+      originalProductId: realProductId,
+    );
+
+    final existingIndex = cartItems.indexWhere((e) => e.id == lineId);
 
     if (existingIndex == -1) {
-      cartItems.add(item);
-      itemQuantities[item.id] = 1;
+      cartItems.add(cartItem);
+      itemQuantities[lineId] = qty;
     } else {
-      incrementQuantity(item.id);
+      itemQuantities[lineId] = (itemQuantities[lineId] ?? 0) + qty;
     }
 
-    final v = (variantText ?? '').trim();
     if (v.isNotEmpty) {
-      itemVariantTexts[item.id] = v;
+      itemVariantTexts[lineId] = v;
     }
 
     if (rating != null && rating > 0) {
-      itemRatings[item.id] = rating;
+      itemRatings[lineId] = rating;
     }
 
     if (reviewsCount != null && reviewsCount > 0) {
-      itemReviewsCounts[item.id] = reviewsCount;
+      itemReviewsCounts[lineId] = reviewsCount;
     }
 
     if (Get.isRegistered<WishlistController>()) {
-      Get.find<WishlistController>().removeFromWishlist(item.id);
+      Get.find<WishlistController>().removeFromWishlist(realProductId);
     }
   }
 
   /// هذه الدالة تنفذ عملية الدفع الحالية وتحوّلها إلى Order جاهز وتعيده للواجهة.
-  OrderModel? payNow() {
+  OrderModel? payNow({
+    String? paymentMethodKey,
+    WalletTransferAccount? walletAccount,
+  }) {
     if (cartItems.isEmpty) {
       AppToast.warning(
         Tk.cartValidationCartEmpty.tr,
@@ -417,19 +434,26 @@ class CartController extends GetxController {
       return null;
     }
 
-    final payment = Get.find<PaymentController>();
-
-    if (payment.isWalletPayment) {
-      final acc = payment.selectedWalletAccount;
-      if (acc == null ||
-          acc.receiverName.trim().isEmpty ||
-          acc.walletNumber.trim().isEmpty) {
-        AppToast.warning(
-          Tk.cartValidationWalletMissing.tr,
-          title: Tk.cartValidationWalletTitle.tr,
-        );
-        return null;
+    final String resolvedPaymentMethodKey;
+    if (paymentMethodKey != null && paymentMethodKey.trim().isNotEmpty) {
+      resolvedPaymentMethodKey = paymentMethodKey;
+    } else if (Get.isRegistered<PaymentController>()) {
+      final payment = Get.find<PaymentController>();
+      if (payment.isWalletPayment) {
+        final acc = walletAccount ?? payment.selectedWalletAccount;
+        if (acc == null ||
+            acc.receiverName.trim().isEmpty ||
+            acc.walletNumber.trim().isEmpty) {
+          AppToast.warning(
+            Tk.cartValidationWalletMissing.tr,
+            title: Tk.cartValidationWalletTitle.tr,
+          );
+          return null;
+        }
       }
+      resolvedPaymentMethodKey = payment.paymentMethodLabel;
+    } else {
+      resolvedPaymentMethodKey = Tk.cartPaymentCodTitle.tr;
     }
 
     final order = _service.buildCheckoutOrder(
@@ -442,11 +466,13 @@ class CartController extends GetxController {
       address: shippingAddress.value,
       contact: contactInfo.value,
       shippingMethodKey: selectedShippingTitle,
-      paymentMethodKey: payment.paymentMethodLabel,
+      paymentMethodKey: resolvedPaymentMethodKey,
       status: 'pending',
     );
 
-    Get.find<OrdersController>().addOrder(order);
+    if (Get.isRegistered<OrdersController>()) {
+      Get.find<OrdersController>().addOrder(order);
+    }
 
     cartItems.clear();
     itemQuantities.clear();
@@ -464,16 +490,41 @@ class CartController extends GetxController {
 
     ui = Get.find<CartUiController>();
     contactInfo = _service.contactInfo.obs;
-    ever<List<dynamic>>(_profileStore.addresses, (_) {
-      shippingAddress.value = _service.seedShippingAddress();
-      fillShippingFormFromState();
+    _addressesWorker = ever<List<dynamic>>(_profileStore.addresses, (list) {
+      if (list.isNotEmpty) {
+        final def = _profileStore.defaultAddress;
+        if (def != null) {
+          shippingAddress.value = def;
+          fillShippingFormFromState();
+        }
+      } else {
+        shippingAddress.value = ShippingAddress.empty();
+        clearShippingForm();
+      }
     });
 
     seedMockData();
   }
 
+  @override
+  void onClose() {
+    _addressesWorker?.dispose();
+    super.onClose();
+  }
+
   /// هذه الدالة تحمل البيانات التجريبية الحالية الخاصة بالسلة.
   void seedMockData() {
+    if (!AppEnv.enableMockData) {
+      cartItems.clear();
+      wishlistItems.clear();
+      itemQuantities.clear();
+      itemVariantTexts.clear();
+      itemRatings.clear();
+      itemReviewsCounts.clear();
+      _syncCheckoutDefaultsFromProfile(forceContact: true);
+      return;
+    }
+
     cartItems.assignAll(_service.seedCartItems());
     wishlistItems.assignAll(_service.seedWishlistItems());
     shippingAddress.value = _service.seedShippingAddress();

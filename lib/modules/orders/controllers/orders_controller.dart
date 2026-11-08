@@ -4,6 +4,8 @@ import 'package:rwnaqk_frontend/modules/orders/controllers/orders_service.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_ui_controller.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_details_model.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
+import 'package:rwnaqk_frontend/modules/orders/data/providers/fake_orders_repository.dart';
+import 'package:rwnaqk_frontend/modules/orders/data/repositories/orders_repository.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة الطلبات.
@@ -15,11 +17,13 @@ import 'package:rwnaqk_frontend/routes/app_routes.dart';
 ///
 /// كما أنه يعمل كحلقة ربط بين:
 /// - OrdersUiController الخاص بحالة الواجهة
-/// - OrdersService الخاص بالبيانات والتجهيزات
+/// - IOrdersRepository / OrdersService الخاص بالبيانات والتجهيزات
 class OrdersController extends GetxController {
-  OrdersController(this._service);
+  OrdersController(this._service, {IOrdersRepository? repository})
+      : _repository = repository ?? FakeOrdersRepository(service: _service);
 
   final OrdersService _service;
+  final IOrdersRepository _repository;
 
   late final OrdersUiController ui;
 
@@ -47,6 +51,7 @@ class OrdersController extends GetxController {
   /// هذه الدالة تضيف طلبًا جديدًا في أعلى القائمة.
   void addOrder(OrderModel order) {
     orders.insert(0, order);
+    _repository.createOrder(order);
     ui.setFilter(OrdersFilter.all);
   }
 
@@ -82,8 +87,22 @@ class OrdersController extends GetxController {
     }
   }
 
+  /// هذه الدالة تفرغ قائمة الطلبات الحالية والكاش المحلي لعزل الجلسة.
+  void clearOrders() {
+    orders.clear();
+    _repository.clearLocalCache();
+  }
+
   /// هذه الدالة تهيئ البيانات التجريبية الحالية للطلبات.
   void seedMockData() {
     orders.assignAll(_service.seedMockOrders());
+  }
+
+  /// تحميل الطلبات من المستودع بطريقة غير متزامنة مع حماية الكنترولر المنتهي.
+  Future<void> loadOrders() async {
+    final list = await _repository.getOrders();
+    if (!isClosed) {
+      orders.assignAll(list);
+    }
   }
 }

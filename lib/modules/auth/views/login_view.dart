@@ -12,8 +12,26 @@ import 'package:rwnaqk_frontend/core/widgets/app_password_field.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_form_page_layout.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
 
-class LoginScreen extends GetView<LoginController> {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  late final GlobalKey<FormState> _formKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _formKey = GlobalKey<FormState>();
+    if (Get.isRegistered<LoginController>()) {
+      Get.find<LoginController>().formKey = _formKey;
+    }
+  }
+
+  LoginController get controller => Get.find<LoginController>();
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +108,7 @@ class LoginScreen extends GetView<LoginController> {
                     boxShadow: cardShadows,
                   ),
                   child: Form(
-                    key: controller.formKey,
+                    key: _formKey,
                     child: Column(
                       children: [
                         AppInputField(

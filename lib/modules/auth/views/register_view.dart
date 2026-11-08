@@ -16,8 +16,26 @@ import 'package:rwnaqk_frontend/core/widgets/app_select_field.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_form_page_layout.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
 
-class RegisterScreen extends GetView<RegisterController> {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  late final GlobalKey<FormState> _formKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _formKey = GlobalKey<FormState>();
+    if (Get.isRegistered<RegisterController>()) {
+      Get.find<RegisterController>().formKey = _formKey;
+    }
+  }
+
+  RegisterController get controller => Get.find<RegisterController>();
 
   static String get _resolvedApiBaseUrl => AppEnv.apiBaseUrl;
 
@@ -117,7 +135,7 @@ class RegisterScreen extends GetView<RegisterController> {
                     boxShadow: cardShadows,
                   ),
                   child: Form(
-                    key: controller.formKey,
+                    key: _formKey,
                     child: Column(
                       children: [
                         // الاسم واللقب في سطر واحد متناسق

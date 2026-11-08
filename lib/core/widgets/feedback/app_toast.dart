@@ -164,6 +164,10 @@ abstract final class RawnaqkToast {
     String? actionLabel,
     RawnaqkToastPosition position = RawnaqkToastPosition.top,
   }) {
+    if (Get.overlayContext == null) {
+      return;
+    }
+
     _triggerHaptic(type);
 
     if (Get.isSnackbarOpen) {

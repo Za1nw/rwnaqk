@@ -1,11 +1,10 @@
-﻿import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/catalog/controllers/products_listing_service.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/app_filter_sheet.dart';
 
 /// هذا الملف مسؤول عن حالات الواجهة فقط الخاصة بشاشة عرض المنتجات.
 /// نستخدمه لعزل الحالات التفاعلية والبصرية عن الكنترولر الرئيسي،
-/// مثل نوع الترتيب الحالي، نتيجة الفلترة، عدد الفلاتر النشطة، وحالة السكرول.
+/// مثل نوع الترتيب الحالي، نتيجة الفلترة، وعدد الفلاتر النشطة.
 class ProductsListingUiController extends GetxController {
   /// نوع الترتيب الحالي المختار من المستخدم.
   final sort = ListingSort.newest.obs;
@@ -15,9 +14,6 @@ class ProductsListingUiController extends GetxController {
 
   /// عدد الفلاتر المفعلة حاليًا لعرضه في الواجهة.
   final activeFilterCount = 0.obs;
-
-  /// متحكم السكرول المستخدم لمراقبة نهاية القائمة وتشغيل التحميل الإضافي.
-  final scrollController = ScrollController();
 
   /// هذه الدالة تقوم بتغيير نوع الترتيب الحالي.
   /// تُستخدم عند اختيار المستخدم خيارًا جديدًا من نافذة الترتيب.
@@ -40,13 +36,5 @@ class ProductsListingUiController extends GetxController {
   void clearFilters() {
     filterResult.value = null;
     activeFilterCount.value = 0;
-  }
-
-  @override
-  /// هذه الدالة تُستدعى عند التخلص من الكنترولر.
-  /// نستخدمها لتحرير ScrollController حتى لا يحدث تسريب في الذاكرة.
-  void onClose() {
-    scrollController.dispose();
-    super.onClose();
   }
 }

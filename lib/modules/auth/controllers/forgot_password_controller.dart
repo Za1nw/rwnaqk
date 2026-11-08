@@ -37,7 +37,7 @@ class ForgotPasswordController extends GetxController {
   final resendSeconds = 30.obs;
 
   /// مفاتيح ومتحكمات الحقول
-  final formKey = GlobalKey<FormState>();
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final targetController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmController = TextEditingController();
@@ -55,6 +55,7 @@ class ForgotPasswordController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    formKey = GlobalKey<FormState>();
 
     final args = Get.arguments;
     if (args is Map) {

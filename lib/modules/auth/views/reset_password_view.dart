@@ -12,8 +12,27 @@ import 'package:rwnaqk_frontend/core/widgets/app_password_field.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_centered_container.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
 
-class ResetPasswordScreen extends GetView<ForgotPasswordController> {
+class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
+
+  @override
+  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+}
+
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
+  late final GlobalKey<FormState> _formKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _formKey = GlobalKey<FormState>();
+    if (Get.isRegistered<ForgotPasswordController>()) {
+      Get.find<ForgotPasswordController>().formKey = _formKey;
+    }
+  }
+
+  ForgotPasswordController get controller =>
+      Get.find<ForgotPasswordController>();
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +65,7 @@ class ResetPasswordScreen extends GetView<ForgotPasswordController> {
                 ],
               ),
               child: Form(
-                key: controller.formKey,
+                key: _formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

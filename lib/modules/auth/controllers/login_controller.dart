@@ -15,9 +15,15 @@ class LoginController extends GetxController {
   final isLoading = false.obs;
 
   /// مفتاح الفورم ومتحكمات الحقول
-  final formKey = GlobalKey<FormState>();
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
+  @override
+  void onInit() {
+    super.onInit();
+    formKey = GlobalKey<FormState>();
+  }
 
   /// للتوافق مع أي استدعاءات سابقة لـ ui
   LoginController get ui => this;

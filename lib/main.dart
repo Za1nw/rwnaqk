@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'core/bindings/initial_binding.dart';
 import 'core/constants/app_env.dart';
 import 'core/constants/local_storage_keys.dart';
+import 'core/services/auth/auth_token_storage.dart';
 import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
 import 'core/translations/app_translations.dart';
@@ -25,14 +26,19 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final hasSeenOnboarding =
       prefs.getBool(LocalStorageKeys.onboardingSeen) ?? false;
-  final persistedToken = prefs.getString(LocalStorageKeys.authToken);
+  final tokenStorage = SecureAuthTokenStorage();
+  final persistedToken = await tokenStorage.readToken();
 
   final initialRoute = _resolveInitialRoute(
     hasSeenOnboarding: hasSeenOnboarding,
     persistedToken: persistedToken,
   );
 
-  runApp(MyApp(initialRoute: initialRoute, initialAccessToken: persistedToken));
+  runApp(MyApp(
+    initialRoute: initialRoute,
+    initialAccessToken: persistedToken,
+    tokenStorage: tokenStorage,
+  ));
 }
 
 String _resolveInitialRoute({
@@ -53,10 +59,12 @@ class MyApp extends StatelessWidget {
     super.key,
     this.initialRoute = AppRoutes.onboarding,
     this.initialAccessToken,
+    this.tokenStorage,
   });
 
   final String initialRoute;
   final String? initialAccessToken;
+  final IAuthTokenStorage? tokenStorage;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +73,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
 
       // Bindings عامة
-      initialBinding: InitialBinding(initialAccessToken: initialAccessToken),
+      initialBinding: InitialBinding(
+        initialAccessToken: initialAccessToken,
+        tokenStorage: tokenStorage,
+      ),
 
       // Routes
       initialRoute: initialRoute,

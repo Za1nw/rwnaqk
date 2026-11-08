@@ -15,15 +15,24 @@ import 'package:rwnaqk_frontend/modules/catalog/data/models/product_color_option
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_attribute_group.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_size_guide.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/providers/fake_products_remote_data_source.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/repositories/products_repository.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'product_details_service.dart';
 import 'product_details_ui_controller.dart';
 
 class ProductDetailsController extends GetxController {
-  ProductDetailsController(this._service);
+  ProductDetailsController(
+    this._service, {
+    IProductsRepository? repository,
+  }) : _repository =
+            repository ?? FakeProductsRepository(detailsService: _service);
 
   final ProductDetailsService _service;
+  final IProductsRepository _repository;
+
+  IProductsRepository get repository => _repository;
 
   late final ProductDetailsUiController ui;
 
@@ -467,20 +476,13 @@ class ProductDetailsController extends GetxController {
     if (Get.isRegistered<CartController>()) {
       final cart = Get.find<CartController>();
       final variant = AppProductUtils.joinInline(selectedOptionChips);
-      final wasInCart = cart.cartItems.any((e) => e.id == current.id);
       cart.addToCart(
         current,
+        quantity: quantity.value,
         variantText: variant.trim().isEmpty ? null : variant,
         rating: hasReviews ? averageRating : null,
         reviewsCount: hasReviews ? reviewsCount : null,
       );
-      final q = quantity.value;
-      if (!wasInCart && q > 1) {
-        cart.itemQuantities[current.id] = q;
-      } else if (wasInCart && q > 1) {
-        cart.itemQuantities[current.id] =
-            (cart.itemQuantities[current.id] ?? 1) + (q - 1);
-      }
     }
 
     final context = Get.context;
@@ -503,20 +505,13 @@ class ProductDetailsController extends GetxController {
 
     final cart = Get.find<CartController>();
     final variant = AppProductUtils.joinInline(selectedOptionChips);
-    final wasInCart = cart.cartItems.any((e) => e.id == current.id);
     cart.addToCart(
       current,
+      quantity: quantity.value,
       variantText: variant.trim().isEmpty ? null : variant,
       rating: hasReviews ? averageRating : null,
       reviewsCount: hasReviews ? reviewsCount : null,
     );
-    final q = quantity.value;
-    if (!wasInCart && q > 1) {
-      cart.itemQuantities[current.id] = q;
-    } else if (wasInCart && q > 1) {
-      cart.itemQuantities[current.id] =
-          (cart.itemQuantities[current.id] ?? 1) + (q - 1);
-    }
     cart.openPayment();
     Get.toNamed(AppRoutes.payment);
   }

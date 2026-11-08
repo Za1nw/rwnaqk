@@ -53,6 +53,7 @@ class AppSearchController extends GetxController {
   final activeFilters = 0.obs;
 
   Timer? _debounce;
+  int _searchSequence = 0;
 
   /// هذا bridge لإبقاء نفس أسلوب الاستدعاء في الشاشات.
   TextEditingController get searchC => ui.searchC;
@@ -172,14 +173,23 @@ class AppSearchController extends GetxController {
 
   /// هذه الدالة تنفذ البحث المحلي الحالي على منتجات discover.
   ///
-  /// لاحقًا هذا هو المكان المناسب لاستبدال البحث المحلي بـ API.
-  void _runSearch(String raw) {
-    final filtered = _service.runLocalSearch(
-      source: discover,
-      rawQuery: raw,
-    );
-
-    results.assignAll(filtered);
+  /// تحمي من الـ Async Race Conditions بحيث لا تتجاوز نتائج طلب قديم نتائج أحدث طلب.
+  Future<void> _runSearch(String raw) async {
+    final sequence = ++_searchSequence;
+    isLoading.value = true;
+    try {
+      final filtered = _service.runLocalSearch(
+        source: discover,
+        rawQuery: raw,
+      );
+      if (sequence == _searchSequence && !isClosed) {
+        results.assignAll(filtered);
+      }
+    } finally {
+      if (sequence == _searchSequence && !isClosed) {
+        isLoading.value = false;
+      }
+    }
   }
 
   /// هذه الدالة تفتح شاشة نتائج البحث فقط إذا لم تكن مفتوحة بالفعل.

@@ -34,6 +34,9 @@ class PaymentController extends GetxController {
   /// حالة جاري إرسال وتأكيد الطلب
   final isSubmitting = false.obs;
 
+  /// مرجع العامل لمراقبة قائمة المحافظ
+  Worker? _accountsWorker;
+
   /// المحافظ المتاحة من إدارة النظام
   RxList<WalletTransferAccount> get walletAccounts =>
       _profileStore.walletAccounts;
@@ -164,13 +167,19 @@ class PaymentController extends GetxController {
 
   /// تأكيد وإرسال الطلب نهائياً من شاشة التأكيد والانتقال إلى شاشة النجاح
   Future<void> confirmAndSubmitOrder() async {
+    // 1. حارس فوري مانع للنقر المزدوج أو التكرار المتزامن
+    if (isSubmitting.value) return;
+
     if (!validateCheckoutPrerequisites()) return;
 
     final cart = Get.find<CartController>();
 
     try {
       isSubmitting.value = true;
-      final order = cart.payNow();
+      final order = cart.payNow(
+        paymentMethodKey: paymentMethodLabel,
+        walletAccount: selectedWalletAccount,
+      );
 
       if (order != null) {
         removeReceiptImage();
@@ -193,7 +202,7 @@ class PaymentController extends GetxController {
     super.onInit();
 
     // التأكد من صحة الفهرس عند تحديث قائمة المحافظ
-    ever<List<WalletTransferAccount>>(walletAccounts, (accounts) {
+    _accountsWorker = ever<List<WalletTransferAccount>>(walletAccounts, (accounts) {
       if (accounts.isEmpty) {
         selectedWalletAccountIndex.value = 0;
         return;
@@ -203,5 +212,11 @@ class PaymentController extends GetxController {
         selectedWalletAccountIndex.value = 0;
       }
     });
+  }
+
+  @override
+  void onClose() {
+    _accountsWorker?.dispose();
+    super.onClose();
   }
 }

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_notifier.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/app_confirm_dialog.dart';
+import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_service.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_ui_controller.dart';
+import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
+import 'package:rwnaqk_frontend/modules/orders/controllers/orders_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لإعدادات التطبيق.
@@ -184,7 +188,7 @@ class AppSettingsController extends GetxController {
     try {
       final token = (_authSession.token.value ?? '').trim();
 
-      if (token.isNotEmpty) {
+      if (token.isNotEmpty && !AppEnv.enableMockData) {
         final response = await _authApi.logout(token: token);
 
         if (!response.isOk) {
@@ -197,13 +201,31 @@ class AppSettingsController extends GetxController {
         }
       }
 
-      _authSession.clearSession();
-      Get.offAllNamed(AppRoutes.login);
+      _clearLocalUserData();
+      if (Get.currentRoute != AppRoutes.login) {
+        Get.offAllNamed(AppRoutes.login);
+      }
     } catch (_) {
-      _authSession.clearSession();
-      Get.offAllNamed(AppRoutes.login);
+      _clearLocalUserData();
+      if (Get.currentRoute != AppRoutes.login) {
+        Get.offAllNamed(AppRoutes.login);
+      }
     } finally {
       isLoggingOut.value = false;
+    }
+  }
+
+  /// تصفير بيانات الجلسة والسلة والعناوين لضمان عدم تسرب بيانات العميل السابق
+  void _clearLocalUserData() {
+    _authSession.clearSession();
+    if (Get.isRegistered<CartController>()) {
+      Get.find<CartController>().clearCart();
+    }
+    if (Get.isRegistered<OrdersController>()) {
+      Get.find<OrdersController>().clearOrders();
+    }
+    if (Get.isRegistered<ProfileStoreService>()) {
+      Get.find<ProfileStoreService>().addresses.clear();
     }
   }
 }

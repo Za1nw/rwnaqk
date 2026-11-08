@@ -1,20 +1,24 @@
 import 'dart:async';
 
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
+import 'package:rwnaqk_frontend/core/services/auth/auth_token_storage.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:rwnaqk_frontend/core/constants/local_storage_keys.dart';
 
 class AuthSessionService extends GetxService {
-  AuthSessionService({String? initialAccessToken}) {
+  AuthSessionService({
+    String? initialAccessToken,
+    IAuthTokenStorage? tokenStorage,
+  }) : _tokenStorage = tokenStorage ?? SecureAuthTokenStorage() {
     final hasInitialToken = (initialAccessToken ?? '').trim().isNotEmpty;
     if (hasInitialToken) {
       token.value = initialAccessToken!.trim();
     }
   }
+
+  final IAuthTokenStorage _tokenStorage;
 
   final token = RxnString();
   final requiresEmailVerification = false.obs;
@@ -41,6 +45,20 @@ class AuthSessionService extends GetxService {
   Future<void> bootstrapSession(CustomerAuthApiService api) async {
     final currentToken = (token.value ?? '').trim();
     if (currentToken.isEmpty) {
+      return;
+    }
+
+    if (AppEnv.enableMockData) {
+      customer.value ??= CustomerModel(
+        id: 1,
+        firstName: 'مستخدم',
+        lastName: 'تجريبي',
+        fullName: 'مستخدم تجريبي',
+        email: 'user@rawnaqk.com',
+        mobile: '777000000',
+        emailVerifiedAt: DateTime.now(),
+      );
+      _setEmailVerificationRequired(false);
       return;
     }
 
@@ -129,15 +147,13 @@ class AuthSessionService extends GetxService {
   }
 
   Future<void> _persistToken(String? accessToken) async {
-    final prefs = await SharedPreferences.getInstance();
-
     final normalizedToken = (accessToken ?? '').trim();
     if (normalizedToken.isEmpty) {
-      await prefs.remove(LocalStorageKeys.authToken);
+      await _tokenStorage.clearToken();
       return;
     }
 
-    await prefs.setString(LocalStorageKeys.authToken, normalizedToken);
+    await _tokenStorage.writeToken(normalizedToken);
   }
 
   void _setEmailVerificationRequired(bool value) {
@@ -154,6 +170,10 @@ class AuthSessionService extends GetxService {
         currentRoute == AppRoutes.forgot ||
         currentRoute == AppRoutes.otp ||
         currentRoute == AppRoutes.reset) {
+      return;
+    }
+
+    if (Get.context == null || (Get.testMode && Get.key.currentState == null)) {
       return;
     }
 

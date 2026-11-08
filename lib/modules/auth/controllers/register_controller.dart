@@ -16,7 +16,7 @@ class RegisterController extends GetxController {
   final isLoading = false.obs;
 
   /// مفتاح الفورم للتحقق من صحة المدخلات
-  final formKey = GlobalKey<FormState>();
+  GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   /// متحكمات حقول الإدخال
   final firstNameController = TextEditingController();
@@ -41,6 +41,7 @@ class RegisterController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    formKey = GlobalKey<FormState>();
     _loadGovernorates();
   }
 

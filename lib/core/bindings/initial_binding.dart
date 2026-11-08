@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_controller.dart';
@@ -16,6 +16,8 @@ import 'package:rwnaqk_frontend/modules/home/controllers/main_ui_controller.dart
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_controller.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_service.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_ui_controller.dart';
+import 'package:rwnaqk_frontend/modules/orders/data/providers/fake_orders_repository.dart';
+import 'package:rwnaqk_frontend/modules/orders/data/repositories/orders_repository.dart';
 import 'package:rwnaqk_frontend/modules/checkout/controllers/payment_controller.dart';
 import 'package:rwnaqk_frontend/modules/checkout/controllers/payment_ui_controller.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
@@ -23,12 +25,14 @@ import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_service.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_ui_controller.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
+import 'package:rwnaqk_frontend/core/services/auth/auth_token_storage.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 
 class InitialBinding extends Bindings {
-  InitialBinding({this.initialAccessToken});
+  InitialBinding({this.initialAccessToken, this.tokenStorage});
 
   final String? initialAccessToken;
+  final IAuthTokenStorage? tokenStorage;
 
   @override
   void dependencies() {
@@ -40,9 +44,16 @@ class InitialBinding extends Bindings {
   }
 
   void _registerCoreServices() {
+    Get.put<IAuthTokenStorage>(
+      tokenStorage ?? SecureAuthTokenStorage(),
+      permanent: true,
+    );
     Get.put<CustomerAuthApiService>(CustomerAuthApiService(), permanent: true);
     Get.put<AuthSessionService>(
-      AuthSessionService(initialAccessToken: initialAccessToken),
+      AuthSessionService(
+        initialAccessToken: initialAccessToken,
+        tokenStorage: Get.find<IAuthTokenStorage>(),
+      ),
       permanent: true,
     );
   }
@@ -108,9 +119,16 @@ class InitialBinding extends Bindings {
     );
 
     Get.lazyPut<OrdersUiController>(() => OrdersUiController(), fenix: true);
-    Get.lazyPut<OrdersService>(() => OrdersService(), fenix: true);
+    Get.put<OrdersService>(OrdersService(), permanent: true);
+    Get.put<IOrdersRepository>(
+      FakeOrdersRepository(service: Get.find<OrdersService>()),
+      permanent: true,
+    );
     Get.lazyPut<OrdersController>(
-      () => OrdersController(Get.find<OrdersService>()),
+      () => OrdersController(
+        Get.find<OrdersService>(),
+        repository: Get.find<IOrdersRepository>(),
+      ),
       fenix: true,
     );
   }
