@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/favorite_added_dialog.dart';
+import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
@@ -12,6 +13,8 @@ import 'package:rwnaqk_frontend/core/utils/app_product_utils.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_color_option.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/models/product_attribute_group.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/models/product_size_guide.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'product_details_service.dart';
@@ -42,6 +45,13 @@ class ProductDetailsController extends GetxController {
   final RxList<HomeProductItem> recommended = <HomeProductItem>[].obs;
 
   // =========================================================
+  // Dynamic Attributes & Variants
+  // =========================================================
+  final RxList<ProductAttributeGroup> attributeGroups =
+      <ProductAttributeGroup>[].obs;
+  final RxMap<String, String> selectedAttributes = <String, String>{}.obs;
+
+  // =========================================================
   // UI bridges (حتى لا تتكسر الشاشة الحالية)
   // =========================================================
   RxInt get selectedThumb => ui.selectedThumb;
@@ -49,6 +59,7 @@ class ProductDetailsController extends GetxController {
   RxString get deliverySelected => ui.deliverySelected;
   RxString get selectedColorId => ui.selectedColorId;
   RxString get selectedSize => ui.selectedSize;
+  RxInt get quantity => ui.quantity;
 
   // =========================================================
   // Base getters
@@ -72,6 +83,12 @@ class ProductDetailsController extends GetxController {
   int get discount => product?.discountPercent ?? 0;
 
   bool get hasDiscount => discount > 0;
+
+  double get unitPrice => hasDiscount ? (price * (1 - discount / 100)) : price;
+
+  double get totalPrice => unitPrice * quantity.value;
+
+  String get totalPriceText => totalPrice.toStringAsFixed(2);
 
   String get salePriceText {
     if (!hasDiscount) return price.toStringAsFixed(2);
@@ -157,6 +174,22 @@ class ProductDetailsController extends GetxController {
   }
 
   List<String> get selectedOptionChips {
+    if (attributeGroups.isNotEmpty) {
+      final chips = <String>[];
+      for (final group in attributeGroups) {
+        final optId = selectedAttributes[group.id];
+        if (optId != null) {
+          for (final opt in group.options) {
+            if (opt.id == optId) {
+              chips.add(opt.label.tr);
+              break;
+            }
+          }
+        }
+      }
+      if (chips.isNotEmpty) return chips;
+    }
+
     final chips = <String>[];
 
     final colorName = selectedColorOption?.name.trim() ?? '';
@@ -169,6 +202,13 @@ class ProductDetailsController extends GetxController {
     }
 
     return chips;
+  }
+
+  ProductSizeGuide get sizeGuide {
+    if (product?.sizeGuide != null) {
+      return product!.sizeGuide!;
+    }
+    return ProductSizeGuide.forProductTitle(title, availableSizes);
   }
 
   int get photosCount => images.length;
@@ -234,6 +274,146 @@ class ProductDetailsController extends GetxController {
         current.id,
       );
     }
+
+    final rawGroups = map['attributeGroups'];
+    if (rawGroups is List<ProductAttributeGroup> && rawGroups.isNotEmpty) {
+      attributeGroups.assignAll(rawGroups);
+      for (final g in rawGroups) {
+        if (g.options.isNotEmpty) {
+          selectedAttributes[g.id] = g.options.first.id;
+        }
+      }
+    } else {
+      _initDefaultAttributeGroups(
+        resolvedColorId: resolvedColorId,
+        resolvedSize: resolvedSize,
+      );
+    }
+  }
+
+  void _initDefaultAttributeGroups({
+    required String resolvedColorId,
+    required String resolvedSize,
+  }) {
+    final groups = <ProductAttributeGroup>[];
+
+    if (availableColors.isNotEmpty) {
+      groups.add(
+        ProductAttributeGroup(
+          id: 'color',
+          name: Tk.productDetailsColorLabel.tr,
+          type: ProductAttributeType.color,
+          options: availableColors.map((c) {
+            return ProductAttributeOption(
+              id: c.id,
+              label: c.name.tr,
+              imageUrl: c.imageUrl,
+            );
+          }).toList(),
+        ),
+      );
+      selectedAttributes['color'] = resolvedColorId.isNotEmpty
+          ? resolvedColorId
+          : availableColors.first.id;
+    }
+
+    if (availableSizes.isNotEmpty) {
+      groups.add(
+        ProductAttributeGroup(
+          id: 'size',
+          name: Tk.productDetailsSizeLabel.tr,
+          type: ProductAttributeType.text,
+          options: availableSizes.map((s) {
+            return ProductAttributeOption(
+              id: s,
+              label: s,
+            );
+          }).toList(),
+        ),
+      );
+      selectedAttributes['size'] = resolvedSize.isNotEmpty
+          ? resolvedSize
+          : availableSizes.first;
+    }
+
+    if (variationImages.isNotEmpty) {
+      groups.add(
+        ProductAttributeGroup(
+          id: 'style',
+          name: 'الموديل',
+          type: ProductAttributeType.image,
+          options: variationImages.asMap().entries.map((entry) {
+            return ProductAttributeOption(
+              id: 'style_${entry.key}',
+              label: '${entry.key + 1}',
+              imageUrl: entry.value,
+            );
+          }).toList(),
+        ),
+      );
+      if (selectedAttributes['style'] == null &&
+          groups.last.options.isNotEmpty) {
+        selectedAttributes['style'] = groups.last.options.first.id;
+      }
+    }
+
+    attributeGroups.assignAll(groups);
+  }
+
+  void selectAttribute(String groupId, String optionId) {
+    selectedAttributes[groupId] = optionId;
+    if (groupId == 'color') {
+      setSelectedColor(optionId);
+    } else if (groupId == 'size') {
+      setSelectedSize(optionId);
+    } else if (groupId == 'style') {
+      final index = int.tryParse(optionId.replaceAll('style_', ''));
+      if (index != null) {
+        selectThumb(index);
+      }
+    }
+  }
+
+  String get selectedOptionsSummary {
+    if (attributeGroups.isEmpty) {
+      final chips = selectedOptionChips;
+      return chips.isEmpty
+          ? Tk.productDetailsSelectOptions.tr
+          : chips.join(' • ');
+    }
+    final summaryList = <String>[];
+    for (final group in attributeGroups) {
+      final selectedOptId = selectedAttributes[group.id];
+      if (selectedOptId != null) {
+        for (final opt in group.options) {
+          if (opt.id == selectedOptId) {
+            summaryList.add('${group.name}: ${opt.label}');
+            break;
+          }
+        }
+      }
+    }
+    if (summaryList.isEmpty) {
+      return Tk.productDetailsSelectOptions.tr;
+    }
+    return summaryList.join(' • ');
+  }
+
+  void addReview({
+    required double rating,
+    required String comment,
+    String? name,
+  }) {
+    final newReview = ProductReview(
+      name: (name != null && name.trim().isNotEmpty)
+          ? name.trim()
+          : Tk.reviewsAuthorGuest.tr,
+      rating: rating,
+      text: comment.trim(),
+      dateText: Tk.reviewsJustNow.tr,
+    );
+    reviews.insert(0, newReview);
+    AppToast.success(Tk.reviewsSuccessMessage.tr);
   }
 
   // =========================================================
@@ -277,18 +457,30 @@ class ProductDetailsController extends GetxController {
     ui.setSelectedSize(value);
   }
 
+  void incrementQuantity() => ui.incrementQuantity();
+  void decrementQuantity() => ui.decrementQuantity();
+
   void addToCart() {
     final current = item.value;
     if (current == null) return;
 
     if (Get.isRegistered<CartController>()) {
+      final cart = Get.find<CartController>();
       final variant = AppProductUtils.joinInline(selectedOptionChips);
-      Get.find<CartController>().addToCart(
+      final wasInCart = cart.cartItems.any((e) => e.id == current.id);
+      cart.addToCart(
         current,
         variantText: variant.trim().isEmpty ? null : variant,
         rating: hasReviews ? averageRating : null,
         reviewsCount: hasReviews ? reviewsCount : null,
       );
+      final q = quantity.value;
+      if (!wasInCart && q > 1) {
+        cart.itemQuantities[current.id] = q;
+      } else if (wasInCart && q > 1) {
+        cart.itemQuantities[current.id] =
+            (cart.itemQuantities[current.id] ?? 1) + (q - 1);
+      }
     }
 
     final context = Get.context;
@@ -302,21 +494,29 @@ class ProductDetailsController extends GetxController {
     if (current == null) return;
 
     if (!Get.isRegistered<CartController>()) {
-      Get.snackbar(
-        Tk.productDetailsBuyNow.tr,
+      AppToast.info(
         Tk.productDetailsProceedToCheckout.tr,
+        title: Tk.productDetailsBuyNow.tr,
       );
       return;
     }
 
     final cart = Get.find<CartController>();
     final variant = AppProductUtils.joinInline(selectedOptionChips);
+    final wasInCart = cart.cartItems.any((e) => e.id == current.id);
     cart.addToCart(
       current,
       variantText: variant.trim().isEmpty ? null : variant,
       rating: hasReviews ? averageRating : null,
       reviewsCount: hasReviews ? reviewsCount : null,
     );
+    final q = quantity.value;
+    if (!wasInCart && q > 1) {
+      cart.itemQuantities[current.id] = q;
+    } else if (wasInCart && q > 1) {
+      cart.itemQuantities[current.id] =
+          (cart.itemQuantities[current.id] ?? 1) + (q - 1);
+    }
     cart.openPayment();
     Get.toNamed(AppRoutes.payment);
   }
@@ -337,11 +537,7 @@ class ProductDetailsController extends GetxController {
       await SharePlus.instance.share(ShareParams(text: shareText));
     } on MissingPluginException {
       await Clipboard.setData(ClipboardData(text: shareText));
-      Get.snackbar(
-        Tk.commonDone.tr,
-        Tk.commonCopied.tr,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      AppToast.copied(message: Tk.commonCopied.tr, title: Tk.commonDone.tr);
     }
   }
 }

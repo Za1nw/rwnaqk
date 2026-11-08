@@ -83,7 +83,9 @@ class CartService {
       return 0;
     }
 
-    final match = RegExp(r'(\d+(?:\.\d+)?)').firstMatch(text);
+    // تنظيف الفواصل العادية والعربية حتى لا يتم اقتطاع الأرقام الكبيرة مثل 2,000
+    final sanitized = text.replaceAll(',', '').replaceAll('،', '');
+    final match = RegExp(r'(\d+(?:\.\d+)?)').firstMatch(sanitized);
     if (match == null) return 0;
 
     return double.tryParse(match.group(1) ?? '') ?? 0;
@@ -95,6 +97,7 @@ class CartService {
     required Map<String, int> quantities,
     required int itemsCount,
     required double shippingFee,
+    double discountAmount = 0.0,
     required double total,
     required ShippingAddress address,
     required ContactInfoModel contact,
@@ -122,6 +125,7 @@ class CartService {
           .toList(growable: false),
       subtotal: subtotal,
       shippingFee: shippingFee,
+      discountAmount: discountAmount,
       shippingMethodKey: shippingMethodKey,
       paymentMethodKey: paymentMethodKey,
       deliveryName: deliveryName.isEmpty ? contact.email.trim() : deliveryName,

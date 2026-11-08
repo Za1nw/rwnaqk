@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
-import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_action_icon_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
@@ -172,7 +172,7 @@ class ProductCard extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    '${discountedPrice.toStringAsFixed(0)} ${Tk.homeCurrency.tr}',
+                                    AppMoneyUtils.riyal(discountedPrice),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -186,7 +186,7 @@ class ProductCard extends StatelessWidget {
                                   if (hasDiscount) ...[
                                     const SizedBox(height: 2),
                                     Text(
-                                      '${originalPrice.toStringAsFixed(0)} ${Tk.homeCurrency.tr}',
+                                      AppMoneyUtils.riyal(originalPrice),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(

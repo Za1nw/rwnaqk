@@ -1,9 +1,11 @@
-﻿import 'package:flutter/src/widgets/editable_text.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/addresses_service.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/addresses_ui_controller.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/app_confirm_dialog.dart';
+import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
+import 'package:rwnaqk_frontend/modules/customer/controllers/addresses_service.dart';
+import 'package:rwnaqk_frontend/modules/customer/controllers/addresses_ui_controller.dart';
+import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/shipping_address.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لشاشة العناوين.
@@ -91,7 +93,7 @@ class AddressesController extends GetxController {
     final p = postcodeCtrl.text.trim();
 
     if (c.isEmpty || a.isEmpty || city.isEmpty || p.isEmpty) {
-      Get.snackbar(Tk.commonError.tr, Tk.profileEditFillAll.tr);
+      AppToast.warning(Tk.profileEditFillAll.tr, title: Tk.commonError.tr);
       return;
     }
 
@@ -120,6 +122,13 @@ class AddressesController extends GetxController {
 
     _service.saveAddresses(addresses.toList(growable: false));
 
+    AppToast.success(
+      ui.editingId == null
+          ? 'تمت إضافة العنوان بنجاح'
+          : 'تم تحديث بيانات العنوان بنجاح',
+      title: 'عناوين التوصيل',
+    );
+
     Get.back();
   }
 
@@ -131,6 +140,31 @@ class AddressesController extends GetxController {
         id: id,
       ),
     );
+    AppToast.success(
+      'تم تعيين العنوان كافتراضي لتوصيل طلباتك',
+      title: 'العنوان الافتراضي',
+    );
+  }
+
+  /// طلب تأكيد قبل الحذف لمنع الحذف العرضي
+  Future<void> confirmDeleteAddress(String id) async {
+    final item = addresses.firstWhereOrNull((e) => e.id == id);
+    if (item == null) return;
+
+    final confirmed = await AppConfirmDialog.show(
+      title: 'حذف عنوان التوصيل',
+      message:
+          'هل أنت متأكد من رغبتك في حذف هذا العنوان نهائياً؟\n(${item.city} - ${item.address})',
+      confirmLabel: 'نعم، حذف',
+      cancelLabel: Tk.commonCancel.tr,
+      icon: Icons.delete_outline_rounded,
+      isDestructive: true,
+    );
+
+    if (confirmed == true) {
+      deleteAddress(id);
+      AppToast.info('تم حذف العنوان بنجاح', title: 'عناوين التوصيل');
+    }
   }
 
   /// هذه الدالة تحذف عنوانًا من القائمة.
@@ -140,8 +174,6 @@ class AddressesController extends GetxController {
   void deleteAddress(String id) {
     final next = addresses.where((e) => e.id != id).toList();
 
-    _service.saveAddresses(
-      _service.buildDefaultAfterDelete(next),
-    );
+    _service.saveAddresses(_service.buildDefaultAfterDelete(next));
   }
 }

@@ -484,6 +484,55 @@ abstract final class Tk {
   static const productDetailsSizeGuide = 'product_details.size_guide';
   static const productDetailsSizeGuideOpened =
       'product_details.size_guide_opened';
+  static const productDetailsSizeGuideTitle =
+      'product_details.size_guide_title';
+  static const productDetailsSizeGuideSubtitle =
+      'product_details.size_guide_subtitle';
+  static const productDetailsUnitCm = 'product_details.unit_cm';
+  static const productDetailsUnitInch = 'product_details.unit_inch';
+  static const productDetailsSizeLabel = 'product_details.size_label';
+  static const productDetailsColorLabel = 'product_details.color_label';
+  static const productDetailsChest = 'product_details.chest';
+  static const productDetailsWaist = 'product_details.waist';
+  static const productDetailsHips = 'product_details.hips';
+  static const productDetailsLength = 'product_details.length';
+  static const productDetailsShoulders = 'product_details.shoulders';
+  static const productDetailsFootLength = 'product_details.foot_length';
+  static const productDetailsHowToMeasure = 'product_details.how_to_measure';
+  static const productDetailsMeasureTip = 'product_details.measure_tip';
+  static const productDetailsSelectSizeCta = 'product_details.select_size_cta';
+  static const productDetailsSizeSelected = 'product_details.size_selected';
+  static const productDetailsTrustAuthentic = 'product_details.trust_authentic';
+  static const productDetailsTrustAuthenticDesc =
+      'product_details.trust_authentic_desc';
+  static const productDetailsTrustShipping = 'product_details.trust_shipping';
+  static const productDetailsTrustShippingDesc =
+      'product_details.trust_shipping_desc';
+  static const productDetailsTrustReturns = 'product_details.trust_returns';
+  static const productDetailsTrustReturnsDesc =
+      'product_details.trust_returns_desc';
+  static const productDetailsTrustSecure = 'product_details.trust_secure';
+  static const productDetailsTrustSecureDesc =
+      'product_details.trust_secure_desc';
+  static const productDetailsVatIncluded = 'product_details.vat_included';
+  static const productDetailsCareInstructions =
+      'product_details.care_instructions';
+  static const productDetailsCareDryClean = 'product_details.care_dry_clean';
+  static const productDetailsCareIron = 'product_details.care_iron';
+  static const productDetailsCareNoBleach = 'product_details.care_no_bleach';
+  static const productDetailsQty = 'product_details.qty';
+  static const productDetailsCategoryClothing =
+      'product_details.category_clothing';
+  static const productDetailsCategoryAbayas = 'product_details.category_abayas';
+  static const productDetailsCategoryShoes = 'product_details.category_shoes';
+  static const productDetailsTotal = 'product_details.total';
+  static const productDetailsInStock = 'product_details.in_stock';
+  static const productDetailsReadMore = 'product_details.read_more';
+  static const productDetailsReadLess = 'product_details.read_less';
+  static const productDetailsSelectOptions = 'product_details.select_options';
+  static const reviewsAuthorGuest = 'reviews.author_guest';
+  static const reviewsJustNow = 'reviews.just_now';
+  static const reviewsSuccessMessage = 'reviews.success_message';
   static const productDetailsDelivery = 'product_details.delivery';
   static const productDetailsDeliveryStandardTitle =
       'product_details.delivery.standard_title';

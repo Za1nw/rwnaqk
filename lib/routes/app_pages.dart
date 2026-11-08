@@ -1,13 +1,5 @@
-﻿import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/addresses_controller.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/edit_profile_controller.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/profile_controller.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/edit_profile_service.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/profile_service.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/two_factor_settings_controller.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/two_factor_settings_service.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/edit_profile_ui_controller.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
+import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/modules/customer/bindings/customer_binding.dart';
 import 'package:rwnaqk_frontend/modules/catalog/bindings/flash_sale_binding.dart';
 import 'package:rwnaqk_frontend/modules/auth/bindings/forgot_password_binding.dart';
 import 'package:rwnaqk_frontend/modules/auth/bindings/login_binding.dart';
@@ -20,8 +12,6 @@ import 'package:rwnaqk_frontend/modules/search/bindings/search_binding.dart';
 import 'package:rwnaqk_frontend/modules/support/bindings/support_binding.dart';
 import 'package:rwnaqk_frontend/core/middleware/auth_middleware.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
-import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
-import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/views/forgot_password_method_view.dart';
 import 'package:rwnaqk_frontend/modules/auth/views/email_verification_view.dart';
 import 'package:rwnaqk_frontend/modules/auth/views/login_view.dart';
@@ -39,11 +29,11 @@ import 'package:rwnaqk_frontend/modules/orders/views/order_details_view.dart';
 import 'package:rwnaqk_frontend/modules/orders/views/order_tracking_view.dart';
 import 'package:rwnaqk_frontend/modules/orders/views/orders_view.dart';
 import 'package:rwnaqk_frontend/modules/checkout/views/payment_view.dart';
+import 'package:rwnaqk_frontend/modules/checkout/views/order_confirmation_view.dart';
+import 'package:rwnaqk_frontend/modules/checkout/views/order_success_view.dart';
 import 'package:rwnaqk_frontend/modules/catalog/views/product_details_view.dart';
 import 'package:rwnaqk_frontend/modules/catalog/views/products_listing_view.dart';
 import 'package:rwnaqk_frontend/modules/customer/views/addresses_view.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/addresses_service.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/addresses_ui_controller.dart';
 import 'package:rwnaqk_frontend/modules/customer/views/edit_profile_view.dart';
 import 'package:rwnaqk_frontend/modules/customer/views/profile_view.dart';
 import 'package:rwnaqk_frontend/modules/catalog/views/reviews_view.dart';
@@ -158,36 +148,30 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.payment,
-      page: () => PaymentScreen(),
+      page: () => const PaymentScreen(),
+      middlewares: _authOnly,
+    ),
+    GetPage(
+      name: AppRoutes.orderConfirmation,
+      page: () => const OrderConfirmationScreen(),
+      middlewares: _authOnly,
+    ),
+    GetPage(
+      name: AppRoutes.orderSuccess,
+      page: () => const OrderSuccessScreen(),
       middlewares: _authOnly,
     ),
     GetPage(
       name: AppRoutes.settings,
       page: () => const SettingsScreen(),
+      binding: SettingsBinding(),
       middlewares: _authOnly,
     ),
     GetPage(
       name: AppRoutes.profile,
       page: () => const ProfileScreen(),
+      binding: ProfileBinding(),
       middlewares: _authOnly,
-      binding: BindingsBuilder(() {
-        Get.lazyPut<ProfileService>(
-          () => ProfileService(Get.find<ProfileStoreService>()),
-        );
-        Get.lazyPut<ProfileController>(
-          () => ProfileController(Get.find<ProfileService>()),
-        );
-        Get.lazyPut<TwoFactorSettingsService>(
-          () => TwoFactorSettingsService(
-            Get.find<CustomerAuthApiService>(),
-            Get.find<AuthSessionService>(),
-          ),
-        );
-        Get.lazyPut<TwoFactorSettingsController>(
-          () =>
-              TwoFactorSettingsController(Get.find<TwoFactorSettingsService>()),
-        );
-      }),
     ),
     GetPage(
       name: AppRoutes.helpCenter,
@@ -204,30 +188,14 @@ class AppPages {
     GetPage(
       name: AppRoutes.editProfile,
       page: () => const EditProfileScreen(),
+      binding: EditProfileBinding(),
       middlewares: _authOnly,
-      binding: BindingsBuilder(() {
-        Get.lazyPut<EditProfileUiController>(() => EditProfileUiController());
-        Get.lazyPut<EditProfileService>(
-          () => EditProfileService(Get.find<ProfileStoreService>()),
-        );
-        Get.lazyPut<EditProfileController>(
-          () => EditProfileController(Get.find<EditProfileService>()),
-        );
-      }),
     ),
     GetPage(
       name: AppRoutes.addresses,
       page: () => const AddressesScreen(),
+      binding: AddressesBinding(),
       middlewares: _authOnly,
-      binding: BindingsBuilder(() {
-        Get.lazyPut<AddressesUiController>(() => AddressesUiController());
-        Get.lazyPut<AddressesService>(
-          () => AddressesService(Get.find<ProfileStoreService>()),
-        );
-        Get.lazyPut<AddressesController>(
-          () => AddressesController(Get.find<AddressesService>()),
-        );
-      }),
     ),
     GetPage(
       name: AppRoutes.orders,

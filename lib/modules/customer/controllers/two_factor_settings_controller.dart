@@ -1,10 +1,10 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/two_factor_settings_service.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_notifier.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/app_confirm_dialog.dart';
+import 'package:rwnaqk_frontend/modules/customer/controllers/two_factor_settings_service.dart';
 
 class TwoFactorSettingsController extends GetxController {
   TwoFactorSettingsController(this._service);
@@ -105,22 +105,13 @@ class TwoFactorSettingsController extends GetxController {
       return;
     }
 
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: Text(Tk.profileTwoFactorDisableConfirmTitle.tr),
-        content: Text(Tk.profileTwoFactorDisableConfirmMessage.tr),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back<bool>(result: false),
-            child: Text(Tk.commonCancel.tr),
-          ),
-          FilledButton(
-            onPressed: () => Get.back<bool>(result: true),
-            child: Text(Tk.commonYes.tr),
-          ),
-        ],
-      ),
-      barrierDismissible: true,
+    final confirmed = await AppConfirmDialog.show(
+      title: Tk.profileTwoFactorDisableConfirmTitle.tr,
+      message: Tk.profileTwoFactorDisableConfirmMessage.tr,
+      confirmLabel: Tk.profileTwoFactorDisable.tr,
+      cancelLabel: Tk.commonCancel.tr,
+      icon: Icons.shield_outlined,
+      isDestructive: true,
     );
 
     if (confirmed != true) {
@@ -180,7 +171,7 @@ class TwoFactorSettingsController extends GetxController {
 
     final content = recoveryCodes.join('\n');
     await Clipboard.setData(ClipboardData(text: content));
-    AppNotifier.success(Tk.commonCopied);
+    AppToast.copied(message: 'تم نسخ جميع رموز الاسترداد إلى الحافظة');
   }
 
   Future<void> copyRecoveryCode(String code) async {
@@ -190,7 +181,7 @@ class TwoFactorSettingsController extends GetxController {
     }
 
     await Clipboard.setData(ClipboardData(text: value));
-    AppNotifier.success(Tk.commonCopied);
+    AppToast.copied(message: 'تم نسخ رمز الاسترداد ($value) إلى الحافظة');
   }
 
   void onCodeChanged(String value) {
@@ -204,7 +195,7 @@ class TwoFactorSettingsController extends GetxController {
     }
 
     await Clipboard.setData(ClipboardData(text: key));
-    AppNotifier.success(Tk.commonCopied);
+    AppToast.copied(message: 'تم نسخ مفتاح الإعداد اليدوي إلى الحافظة');
   }
 
   void _applyState(TwoFactorSettingsState state) {

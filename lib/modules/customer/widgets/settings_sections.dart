@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/settings_list_tile.dart';
@@ -30,10 +30,7 @@ class SettingsSectionSpec {
   final String title;
   final List<SettingsTileSpec> tiles;
 
-  const SettingsSectionSpec({
-    required this.title,
-    required this.tiles,
-  });
+  const SettingsSectionSpec({required this.title, required this.tiles});
 }
 
 class SettingsSections extends StatelessWidget {

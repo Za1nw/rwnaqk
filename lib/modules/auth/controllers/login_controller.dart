@@ -70,17 +70,17 @@ class LoginController extends GetxController {
 
   /// تسجيل الدخول عبر Google (Mock)
   void loginWithGoogle() {
-    Get.snackbar(Tk.commonSocial.tr, Tk.loginWithGoogle.tr);
+    AppNotifier.info(Tk.loginWithGoogle.tr, isKey: false, title: Tk.commonSocial.tr);
   }
 
   /// تسجيل الدخول عبر Apple (Mock)
   void loginWithApple() {
-    Get.snackbar(Tk.commonSocial.tr, Tk.loginWithApple.tr);
+    AppNotifier.info(Tk.loginWithApple.tr, isKey: false, title: Tk.commonSocial.tr);
   }
 
   /// تسجيل الدخول عبر Facebook (Mock)
   void loginWithFacebook() {
-    Get.snackbar(Tk.commonSocial.tr, Tk.loginWithFacebook.tr);
+    AppNotifier.info(Tk.loginWithFacebook.tr, isKey: false, title: Tk.commonSocial.tr);
   }
 
   /// الانتقال إلى شاشة استعادة كلمة المرور

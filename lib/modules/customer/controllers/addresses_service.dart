@@ -1,4 +1,4 @@
-﻿import 'package:get/get.dart';
+import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/shipping_address.dart';
@@ -44,7 +44,9 @@ class AddressesService {
   ///
   /// إذا لم يعد هناك عنوان افتراضي بعد الحذف وكان هناك عناصر متبقية،
   /// يتم جعل أول عنوان هو الافتراضي.
-  List<ShippingAddress> buildDefaultAfterDelete(List<ShippingAddress> addresses) {
+  List<ShippingAddress> buildDefaultAfterDelete(
+    List<ShippingAddress> addresses,
+  ) {
     if (addresses.isEmpty) return addresses;
 
     final hasDefault = addresses.any((e) => e.isDefault);

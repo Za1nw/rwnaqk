@@ -1,9 +1,30 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/profile_avatar.dart';
 
+/// شريط التنقل السفلي الفاخر مع مؤشر انسيابي متحرك وحركات نبض حركية
+/// (Boutique Luxury Animated Floating Bottom Nav)
+///
+/// صمم وفق أعلى معايير المتاجر الفاخرة العالمية (Farfetch, Ounass, Apple Store)
+/// ويتميز بـ:
+/// 1. **مؤشر كبسولي منزلق ناعم (Sliding Indicator Capsule)**:
+///    ينزلق أفقياً بمرونة فيزيائية (`Curves.easeOutBack`) تحت التبويب النشط، متوافق كلياً مع RTL وLTR.
+/// 2. **ارتداد وأناقة الأيقونة (Micro-Bounce Pop)**:
+///    تكبير مرن عند التحديد (`scale: 0.76 -> 1.0`) وارتفاع طفيف للأعلى (-1.5px) لإعطاء إحساس ثلاثي الأبعاد.
+/// 3. **انتقال سلس بين الأيقونات مزدوجة الحالة (Icon Morph Crossfade)**:
+///    تلاشي وتدرج بصري ناعم بين الأيقونة المفرغة والممتلئة عبر `AnimatedSwitcher`.
+/// 4. **نبض الشارة التفاعلي (Badge Scale Pulse)**:
+///    شارة السلة والمفضلة تتفاعل وتقفز بلطف عند تغير عدد المنتجات.
+/// 5. **تأثير الزجاج المعتم الفاخر (Frosted Glass)**:
+///    ضبابية `ImageFilter.blur(sigma: 20)` لعكس خلفية محتوى المتجر بنعومة.
+/// 6. **استجابة لمسية واضحة (Haptic Feedback)**:
+///    اهتزاز دقيق `HapticFeedback.selectionClick()` عند كل انتقال.
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onChanged;
@@ -26,22 +47,35 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = <_NavSpec>[
-      _NavSpec(icon: Icons.home_rounded, label: Tk.navHome.tr),
-      _NavSpec(
-        icon: Icons.favorite_rounded,
-        label: Tk.navWishlist.tr,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final items = <_NavItemSpec>[
+      _NavItemSpec(
+        inactiveIcon: Icons.home_outlined,
+        activeIcon: Icons.home_rounded,
+        label: Tk.navHome.tr, // 'الرئيسية'
+      ),
+      _NavItemSpec(
+        inactiveIcon: Icons.favorite_outline_rounded,
+        activeIcon: Icons.favorite_rounded,
+        label: Tk.navWishlist.tr, // 'المفضلة'
         badgeCount: wishlistBadgeCount,
       ),
-      _NavSpec(icon: Icons.receipt_rounded, label: Tk.navOrders.tr),
-      _NavSpec(
-        icon: Icons.shopping_bag_rounded,
-        label: Tk.navShop.tr,
+      _NavItemSpec(
+        inactiveIcon: Icons.inventory_2_outlined,
+        activeIcon: Icons.inventory_2_rounded,
+        label: Tk.navOrders.tr, // 'طلباتي'
+      ),
+      _NavItemSpec(
+        inactiveIcon: Icons.shopping_bag_outlined,
+        activeIcon: Icons.shopping_bag_rounded,
+        label: Tk.cartTitle.tr, // 'السلة'
         badgeCount: cartBadgeCount,
       ),
-      _NavSpec(
-        icon: Icons.person_rounded,
-        label: Tk.navAccount.tr,
+      _NavItemSpec(
+        inactiveIcon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
+        label: Tk.navAccount.tr, // 'حسابي'
         useAvatar: true,
       ),
     ];
@@ -49,107 +83,135 @@ class AppBottomNav extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-        child: DecoratedBox(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: Container(
+          height: 68,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(26),
             boxShadow: [
               BoxShadow(
-                color: context.shadow.withValues(alpha: 0.10),
-                blurRadius: 28,
-                offset: const Offset(0, 14),
+                color: Colors.black.withValues(alpha: isDark ? 0.45 : 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: Container(
-              height: 68,
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: context.card,
-                border: Border.all(
-                  color: context.border.withValues(alpha: 0.28),
+            borderRadius: BorderRadius.circular(26),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                height: 68,
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF1E0A17).withValues(alpha: 0.92)
+                      : Colors.white.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(26),
+                  border: Border.all(
+                    color: isDark
+                        ? BrandColors.gold.withValues(alpha: 0.22)
+                        : BrandColors.burgundy.withValues(alpha: 0.12),
+                    width: 1.2,
+                  ),
                 ),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    context.card,
-                    Color.lerp(context.card, context.background, .18)!,
-                  ],
-                ),
-              ),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final segmentWidth = constraints.maxWidth / items.length;
-                  final showActiveLabel = segmentWidth >= 88;
-                  final indicatorX = _indicatorAlignment(
-                    context,
-                    count: items.length,
-                    index: currentIndex,
-                  );
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final totalWidth = constraints.maxWidth;
+                    final tabCount = items.length;
+                    final tabWidth = totalWidth / tabCount;
+                    // عرض وارتفاع كبسولة المؤشر المنزلق
+                    final pillWidth = (tabWidth * 0.88).clamp(46.0, 58.0);
+                    const pillHeight = 52.0;
+                    final pillTop = (constraints.maxHeight - pillHeight) / 2;
+                    final pillStart =
+                        currentIndex * tabWidth + (tabWidth - pillWidth) / 2;
 
-                  return Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Animated highlight under the active segment
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: AnimatedAlign(
-                          duration: const Duration(milliseconds: 260),
-                          curve: Curves.easeOutCubic,
-                          alignment: Alignment(indicatorX, 0),
-                          child: IgnorePointer(
-                            child: Container(
-                              width: segmentWidth - 4,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                color: context.primary.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                  color: context.primary.withValues(
-                                    alpha: 0.16,
-                                  ),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: context.primary.withValues(
-                                      alpha: context.isDark ? 0.20 : 0.08,
-                                    ),
-                                    blurRadius: 18,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // 1. مؤشر التبويب الانسيابي المنزلق (Gliding Indicator Pill)
+                        AnimatedPositionedDirectional(
+                          duration: const Duration(milliseconds: 320),
+                          curve: Curves.easeOutBack,
+                          start: pillStart,
+                          top: pillTop,
+                          width: pillWidth,
+                          height: pillHeight,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(18),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: isDark
+                                    ? [
+                                        BrandColors.gold.withValues(
+                                          alpha: 0.22,
+                                        ),
+                                        BrandColors.gold.withValues(
+                                          alpha: 0.08,
+                                        ),
+                                      ]
+                                    : [
+                                        BrandColors.burgundy.withValues(
+                                          alpha: 0.12,
+                                        ),
+                                        BrandColors.burgundy.withValues(
+                                          alpha: 0.04,
+                                        ),
+                                      ],
                               ),
+                              border: Border.all(
+                                color: isDark
+                                    ? BrandColors.gold.withValues(alpha: 0.35)
+                                    : BrandColors.burgundy.withValues(
+                                        alpha: 0.18,
+                                      ),
+                                width: 1.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      (isDark
+                                              ? BrandColors.gold
+                                              : BrandColors.burgundy)
+                                          .withValues(
+                                            alpha: isDark ? 0.20 : 0.08,
+                                          ),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      ),
 
-                      // Segments
-                      Row(
-                        children: [
-                          for (int i = 0; i < items.length; i++)
-                            Expanded(
-                              child: _NavSegment(
-                                icon: items[i].icon,
-                                label: items[i].label,
-                                selected: i == currentIndex,
-                                showLabel: showActiveLabel && i == currentIndex,
-                                useAvatar: items[i].useAvatar,
-                                badgeCount: items[i].badgeCount,
-                                profileName: profileName,
-                                profileAvatarPath: profileAvatarPath,
-                                profileAvatarUrl: profileAvatarUrl,
-                                onTap: () => onChanged(i),
+                        // 2. صف التبويبات التفاعلية
+                        Row(
+                          children: [
+                            for (int i = 0; i < tabCount; i++)
+                              Expanded(
+                                child: _NavTabButton(
+                                  spec: items[i],
+                                  isSelected: i == currentIndex,
+                                  profileName: profileName,
+                                  profileAvatarPath: profileAvatarPath,
+                                  profileAvatarUrl: profileAvatarUrl,
+                                  onTap: () {
+                                    if (i != currentIndex) {
+                                      HapticFeedback.selectionClick();
+                                      onChanged(i);
+                                    }
+                                  },
+                                ),
                               ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  );
-                },
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -157,59 +219,35 @@ class AppBottomNav extends StatelessWidget {
       ),
     );
   }
-
-  double _indicatorAlignment(
-    BuildContext context, {
-    required int count,
-    required int index,
-  }) {
-    if (count <= 1) return 0;
-
-    final safeIndex = index.clamp(0, count - 1);
-    final step = 2 / (count - 1);
-    final textDirection = Directionality.of(context);
-
-    if (textDirection == TextDirection.rtl) {
-      return 1 - (safeIndex * step);
-    }
-
-    return -1 + (safeIndex * step);
-  }
 }
 
-class _NavSpec {
-  final IconData icon;
+class _NavItemSpec {
+  final IconData inactiveIcon;
+  final IconData activeIcon;
   final String label;
-  final bool useAvatar;
   final int badgeCount;
+  final bool useAvatar;
 
-  const _NavSpec({
-    required this.icon,
+  const _NavItemSpec({
+    required this.inactiveIcon,
+    required this.activeIcon,
     required this.label,
-    this.useAvatar = false,
     this.badgeCount = 0,
+    this.useAvatar = false,
   });
 }
 
-class _NavSegment extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final bool showLabel;
-  final bool useAvatar;
-  final int badgeCount;
+class _NavTabButton extends StatelessWidget {
+  final _NavItemSpec spec;
+  final bool isSelected;
   final String profileName;
   final String profileAvatarPath;
   final String profileAvatarUrl;
   final VoidCallback onTap;
 
-  const _NavSegment({
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.showLabel,
-    required this.useAvatar,
-    this.badgeCount = 0,
+  const _NavTabButton({
+    required this.spec,
+    required this.isSelected,
     required this.profileName,
     required this.profileAvatarPath,
     required this.profileAvatarUrl,
@@ -218,103 +256,164 @@ class _NavSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeFg = context.primary;
-    final inactiveFg = context.mutedForeground;
-    const duration = Duration(milliseconds: 180);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark ? BrandColors.gold : BrandColors.burgundy;
+    final inactiveColor = isDark
+        ? AppColors.textSecondaryDark.withValues(alpha: 0.70)
+        : const Color(0xFF8C7584);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(999),
-        splashColor: context.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        splashColor: primaryColor.withValues(alpha: 0.12),
         highlightColor: Colors.transparent,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-          child: Center(
-            child: TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: 0, end: selected ? 1 : 0),
-              duration: duration,
-              curve: Curves.easeOutCubic,
-              builder: (context, t, child) {
-                return Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: selected ? 6 : 2,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 1. حاوية الأيقونة مع حركة النبض والارتفاع المرن
+              TweenAnimationBuilder<double>(
+                key: ValueKey<bool>(isSelected),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutBack,
+                tween: Tween<double>(begin: isSelected ? 0.76 : 1.0, end: 1.0),
+                builder: (context, scale, child) {
+                  return Transform.scale(scale: scale, child: child);
+                },
+                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeOutCubic,
+                  offset: Offset(0, isSelected ? -0.07 : 0.0),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
                     children: [
-                      Transform.scale(
-                        scale: .94 + (.08 * t),
-                        child: useAvatar
-                            ? Transform.scale(
-                                scale: 1.5,
-                                child: Container(
-                                  width: 45,
-                                  height: 45,
-                                  padding: const EdgeInsets.all(1),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Color.lerp(
-                                        context.border.withValues(alpha: 0.32),
-                                        context.primary.withValues(alpha: 0.50),
-                                        t > 0.3 ? t : 0.3,
-                                      )!,
-                                      width: 1,
+                      // الصورة الشخصية لحسابي أو الأيقونة
+                      if (spec.useAvatar)
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 260),
+                          curve: Curves.easeOutCubic,
+                          width: isSelected ? 26 : 24,
+                          height: isSelected ? 26 : 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected
+                                  ? primaryColor
+                                  : (isDark ? Colors.white24 : Colors.black12),
+                              width: isSelected ? 2.0 : 1.0,
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: primaryColor.withValues(
+                                        alpha: isDark ? 0.35 : 0.20,
+                                      ),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
                                     ),
-                                  ),
-                                  child: ProfileAvatar(
-                                    name: profileName.isEmpty
-                                        ? label
-                                        : profileName,
-                                    imagePath: profileAvatarPath,
-                                    imageUrl: profileAvatarUrl,
-                                    size: 45,
-                                    fontSize: 9,
-                                    showBorder: false,
-                                  ),
+                                  ]
+                                : null,
+                          ),
+                          child: ProfileAvatar(
+                            name: profileName.isEmpty
+                                ? spec.label
+                                : profileName,
+                            imagePath: profileAvatarPath,
+                            imageUrl: profileAvatarUrl,
+                            size: isSelected ? 26 : 24,
+                            fontSize: 10.5,
+                            backgroundColor: isDark
+                                ? const Color(0xFF2E091E)
+                                : const Color(0xFFFFF7FA),
+                            textColor: isDark
+                                ? BrandColors.gold
+                                : BrandColors.burgundy,
+                            showBorder: false,
+                          ),
+                        )
+                      else
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 220),
+                          transitionBuilder: (child, animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: ScaleTransition(
+                                scale: animation,
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Icon(
+                            isSelected ? spec.activeIcon : spec.inactiveIcon,
+                            key: ValueKey<bool>(isSelected),
+                            size: 22,
+                            color: isSelected ? primaryColor : inactiveColor,
+                          ),
+                        ),
+
+                      // شارة عدد العناصر التفاعلية ذات النبض
+                      if (spec.badgeCount > 0)
+                        PositionedDirectional(
+                          top: -4,
+                          end: -6,
+                          child: AnimatedScale(
+                            scale: spec.badgeCount > 0 ? 1.0 : 0.0,
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeOutBack,
+                            child: TweenAnimationBuilder<double>(
+                              key: ValueKey<int>(spec.badgeCount),
+                              duration: const Duration(milliseconds: 320),
+                              curve: Curves.easeOutBack,
+                              tween: Tween<double>(begin: 0.6, end: 1.0),
+                              builder: (context, badgeScale, child) {
+                                return Transform.scale(
+                                  scale: badgeScale,
+                                  child: child,
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4.5,
+                                  vertical: 1.5,
                                 ),
-                              )
-                            : Badge(
-                                isLabelVisible: badgeCount > 0,
-                                label: Text(
-                                  badgeCount > 99 ? '99+' : '$badgeCount',
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE11D48),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? const Color(0xFF1E0A17)
+                                        : Colors.white,
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFE11D48)
+                                          .withValues(alpha: 0.45),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 1),
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  spec.badgeCount > 99
+                                      ? '99+'
+                                      : '${spec.badgeCount}',
+                                  textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     fontSize: 8.5,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
                                     fontFamily: 'Cairo',
-                                  ),
-                                ),
-                                backgroundColor: context.primary,
-                                child: Icon(
-                                  icon,
-                                  size: 20,
-                                  color: Color.lerp(inactiveFg, activeFg, t),
-                                ),
-                              ),
-                      ),
-                      if (showLabel)
-                        ClipRect(
-                          child: Align(
-                            widthFactor: t,
-                            child: Opacity(
-                              opacity: t,
-                              child: Padding(
-                                padding: const EdgeInsetsDirectional.only(
-                                  start: 6,
-                                ),
-                                child: Text(
-                                  label,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: activeFg,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: .1,
+                                    height: 1.1,
                                   ),
                                 ),
                               ),
@@ -323,9 +422,29 @@ class _NavSegment extends StatelessWidget {
                         ),
                     ],
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+              const SizedBox(height: 2),
+
+              // 2. اسم التبويب الواضح مع انتقال الخط واللون
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                style: AppTextTheme.cairo(
+                  fontSize: isSelected ? 10.5 : 10.0,
+                  fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                  color: isSelected ? primaryColor : inactiveColor,
+                  letterSpacing: isSelected ? -0.1 : -0.2,
+                  height: 1.15,
+                ),
+                child: Text(
+                  spec.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
         ),
       ),

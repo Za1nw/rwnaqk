@@ -5,6 +5,7 @@ import 'package:rwnaqk_frontend/modules/home/controllers/main_controller.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_service.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_ui_controller.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_controller.dart';
+import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
 import 'package:rwnaqk_frontend/modules/checkout/controllers/payment_controller.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
@@ -12,6 +13,7 @@ import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
+import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/contact_info_model.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/shipping_address.dart';
@@ -71,8 +73,42 @@ class CartController extends GetxController {
     selectedId: selectedShippingId.value,
   );
 
-  /// الإجمالي النهائي.
-  double get total => itemsSubtotal + shippingFee;
+  // =========================
+  // COUPON / PROMO CODE
+  /// كود الخصم المطبق حالياً.
+  final couponCode = ''.obs;
+
+  /// نسبة الخصم المطبقة (مثلاً: 15%).
+  final couponDiscountPercent = 0.obs;
+
+  /// هل يوجد كود خصم نشط حالياً؟
+  bool get hasCoupon =>
+      couponCode.value.isNotEmpty && couponDiscountPercent.value > 0;
+
+  /// قيمة الخصم المالي الفعلي بالريال.
+  double get couponDiscountAmount =>
+      (itemsSubtotal * couponDiscountPercent.value / 100);
+
+  /// تطبيق كود الخصم
+  bool applyCoupon(String code) {
+    final clean = code.trim().toUpperCase();
+    if (clean == 'RAWNAQ' || clean == 'RWNAQK') {
+      couponCode.value = clean;
+      couponDiscountPercent.value = 15;
+      return true;
+    }
+    return false;
+  }
+
+  /// إزالة كود الخصم
+  void removeCoupon() {
+    couponCode.value = '';
+    couponDiscountPercent.value = 0;
+  }
+
+  /// الإجمالي النهائي مع احتساب الخصم والشحن.
+  double get total => (itemsSubtotal - couponDiscountAmount + shippingFee)
+      .clamp(0.0, double.infinity);
 
   /// هل السلة فارغة؟
   bool get isEmpty => cartItems.isEmpty;
@@ -286,6 +322,7 @@ class CartController extends GetxController {
     itemVariantTexts.clear();
     itemRatings.clear();
     itemReviewsCounts.clear();
+    removeCoupon();
 
     if (isPayment) {
       backToCart();
@@ -354,30 +391,30 @@ class CartController extends GetxController {
     }
   }
 
-  /// هذه الدالة تنفذ عملية الدفع الحالية وتحوّلها إلى Order جاهز.
-  void payNow() {
+  /// هذه الدالة تنفذ عملية الدفع الحالية وتحوّلها إلى Order جاهز وتعيده للواجهة.
+  OrderModel? payNow() {
     if (cartItems.isEmpty) {
-      Get.snackbar(
-        Tk.cartValidationCartTitle.tr,
+      AppToast.warning(
         Tk.cartValidationCartEmpty.tr,
+        title: Tk.cartValidationCartTitle.tr,
       );
-      return;
+      return null;
     }
 
     if (!hasShippingAddress) {
-      Get.snackbar(
-        Tk.cartValidationShippingTitle.tr,
+      AppToast.warning(
         Tk.cartValidationShippingMissing.tr,
+        title: Tk.cartValidationShippingTitle.tr,
       );
-      return;
+      return null;
     }
 
     if (contactInfo.value.isEmpty) {
-      Get.snackbar(
-        Tk.cartValidationContactTitle.tr,
+      AppToast.warning(
         Tk.cartValidationContactMissing.tr,
+        title: Tk.cartValidationContactTitle.tr,
       );
-      return;
+      return null;
     }
 
     final payment = Get.find<PaymentController>();
@@ -387,11 +424,11 @@ class CartController extends GetxController {
       if (acc == null ||
           acc.receiverName.trim().isEmpty ||
           acc.walletNumber.trim().isEmpty) {
-        Get.snackbar(
-          Tk.cartValidationWalletTitle.tr,
+        AppToast.warning(
           Tk.cartValidationWalletMissing.tr,
+          title: Tk.cartValidationWalletTitle.tr,
         );
-        return;
+        return null;
       }
     }
 
@@ -400,6 +437,7 @@ class CartController extends GetxController {
       quantities: Map<String, int>.from(itemQuantities),
       itemsCount: itemsCount,
       shippingFee: shippingFee,
+      discountAmount: couponDiscountAmount,
       total: total,
       address: shippingAddress.value,
       contact: contactInfo.value,
@@ -412,10 +450,10 @@ class CartController extends GetxController {
 
     cartItems.clear();
     itemQuantities.clear();
+    removeCoupon();
     ui.completeCheckout();
 
-    Get.offNamed(AppRoutes.orderTracking, arguments: order);
-    Get.snackbar(Tk.cartOrderCreatedTitle.tr, Tk.cartOrderCreatedMessage.tr);
+    return order;
   }
 
   @override

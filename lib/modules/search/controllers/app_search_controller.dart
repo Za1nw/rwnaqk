@@ -1,4 +1,4 @@
-﻿  import 'dart:async';
+  import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -6,6 +6,7 @@ import 'package:rwnaqk_frontend/modules/search/controllers/search_service.dart';
 import 'package:rwnaqk_frontend/modules/search/controllers/search_ui_controller.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/app_filter_sheet.dart';
 
@@ -131,7 +132,7 @@ class AppSearchController extends GetxController {
 
   /// هذه الدالة مخصصة لفتح الكاميرا لاحقًا للبحث بالصورة.
   void openCamera() {
-    Get.snackbar(Tk.commonCamera.tr, Tk.commonNotImplementedYet.tr);
+    AppToast.info(Tk.commonNotImplementedYet.tr, title: Tk.commonCamera.tr);
   }
 
   /// هذه الدالة تفتح نافذة الفلاتر السفلية.

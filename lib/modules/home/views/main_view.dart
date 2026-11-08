@@ -38,6 +38,7 @@ class MainScreen extends GetView<MainController> {
       final wishlistCount = wishlistController?.wishlist.length ?? 0;
 
       return Scaffold(
+        extendBody: true,
         body: IndexedStack(index: i, children: pages),
         bottomNavigationBar: AppBottomNav(
           currentIndex: i,

@@ -70,7 +70,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
     return LayoutBuilder(
       builder: (context, c) {
         final w = c.maxWidth;
-        final h = (w * 0.40).clamp(155.0, 200.0);
+        final h = (w * 0.44).clamp(160.0, 210.0);
 
         return Column(
           children: [
@@ -102,22 +102,33 @@ class _BannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(16);
+    final isDark = context.isDark;
+    final radius = BorderRadius.circular(18);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
         borderRadius: radius,
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF3B0319), BrandColors.burgundy, Color(0xFF86043C)],
+          colors: isDark
+              ? const [
+                  Color(0xFF4C0224),
+                  BrandColors.burgundy,
+                  Color(0xFF220010),
+                ]
+              : const [Color(0xFFFFF1F6), Color(0xFFFDE4ED), Color(0xFFF9D1E0)],
+        ),
+        border: Border.all(
+          color: isDark
+              ? BrandColors.gold.withValues(alpha: 0.35)
+              : BrandColors.burgundy.withValues(alpha: 0.25),
+          width: 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: BrandColors.burgundy.withValues(
-              alpha: context.isDark ? 0.35 : 0.20,
-            ),
+            color: BrandColors.burgundy.withValues(alpha: isDark ? 0.35 : 0.12),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -128,28 +139,32 @@ class _BannerCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Decorative background patterns
-            Positioned(
-              left: -30,
-              bottom: -30,
+            // Decorative background luxury circles
+            PositionedDirectional(
+              end: -35,
+              bottom: -35,
               child: Container(
-                width: 140,
-                height: 140,
+                width: 160,
+                height: 160,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.04),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.04)
+                      : BrandColors.burgundy.withValues(alpha: 0.06),
                 ),
               ),
             ),
-            Positioned(
-              right: -20,
-              top: -20,
+            PositionedDirectional(
+              start: -25,
+              top: -25,
               child: Container(
-                width: 120,
-                height: 120,
+                width: 130,
+                height: 130,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: BrandColors.gold.withValues(alpha: 0.08),
+                  color: BrandColors.gold.withValues(
+                    alpha: isDark ? 0.08 : 0.12,
+                  ),
                 ),
               ),
             ),
@@ -163,31 +178,34 @@ class _BannerCard extends StatelessWidget {
                 if (progress == null) return child;
                 return const SizedBox.shrink();
               },
-              errorBuilder: (_, _, _) {
-                // Graceful fallback: show elegant luxury banner texture instead of broken icon
-                return const SizedBox.shrink();
-              },
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
 
-            // Directional Dark Overlay for Maximum Legibility
+            // Directional Adaptive Overlay for Maximum Legibility
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: AlignmentDirectional.centerStart,
                   end: AlignmentDirectional.centerEnd,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.78),
-                    Colors.black.withValues(alpha: 0.40),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.60, 1.0],
+                  colors: isDark
+                      ? [
+                          Colors.black.withValues(alpha: 0.85),
+                          Colors.black.withValues(alpha: 0.48),
+                          Colors.transparent,
+                        ]
+                      : [
+                          const Color(0xFFFFF0F5).withValues(alpha: 0.95),
+                          const Color(0xFFFFF0F5).withValues(alpha: 0.70),
+                          Colors.transparent,
+                        ],
+                  stops: const [0.0, 0.65, 1.0],
                 ),
               ),
             ),
 
             // Content
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -198,10 +216,10 @@ class _BannerCard extends StatelessWidget {
                     item.titleKey.tr,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : BrandColors.burgundy,
                       fontWeight: FontWeight.w900,
-                      fontSize: 22,
+                      fontSize: 21,
                       fontFamily: 'Cairo',
                       height: 1.15,
                     ),
@@ -214,12 +232,62 @@ class _BannerCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.92),
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.90)
+                            : const Color(0xFF4A1528),
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
                         fontFamily: 'Cairo',
                         height: 1.25,
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // CTA Button
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark ? BrandColors.gold : BrandColors.burgundy,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              (isDark ? BrandColors.gold : BrandColors.burgundy)
+                                  .withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'تسوق الآن',
+                          style: TextStyle(
+                            color: isDark
+                                ? const Color(0xFF26141E)
+                                : Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                            fontFamily: 'Cairo',
+                            height: 1.0,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Directionality.of(context) == TextDirection.rtl
+                              ? Icons.arrow_back_rounded
+                              : Icons.arrow_forward_rounded,
+                          size: 12,
+                          color: isDark
+                              ? const Color(0xFF26141E)
+                              : Colors.white,
+                        ),
+                      ],
                     ),
                   ),
                 ],

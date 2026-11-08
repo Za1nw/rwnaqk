@@ -27,13 +27,13 @@ class GeoLookupApiService extends GetConnect {
       '${AppEnv.geoLookupPrefix}/governorates',
       query: <String, dynamic>{'country_id': ?countryId},
     );
-    
+
     return _parseItems(response.body);
   }
 
   Future<YemenGovernoratesLookup?> yemenGovernorates() async {
     final response = await get('${AppEnv.geoLookupPrefix}/yemen/governorates');
-    print(response.body);
+
     final body = response.body;
 
     if (body is! Map<String, dynamic>) {

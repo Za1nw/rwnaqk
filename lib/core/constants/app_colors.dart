@@ -41,6 +41,9 @@ class BrandGradients {
     ],
   );
 
+  /// Convenient alias for luxuryGold
+  static const LinearGradient gold = luxuryGold;
+
   /// Deep Night 145° (#140A13 0% / #33091F 100%)
   static const LinearGradient deepNight = LinearGradient(
     begin: Alignment(-0.57, -0.82),

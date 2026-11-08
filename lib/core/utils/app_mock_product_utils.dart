@@ -42,8 +42,8 @@ class AppMockProductUtils {
     MockProductIdBuilder? idBuilder,
     MockProductImageBuilder? imageBuilder,
     String? titlePrefix,
-    double basePrice = 25,
-    double priceStep = 10,
+    double basePrice = 18000,
+    double priceStep = 3500,
     String tagKey = '',
     bool includeDetails = false,
   }) {

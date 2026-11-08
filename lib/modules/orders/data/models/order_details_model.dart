@@ -18,6 +18,7 @@ class OrderDetailsModel {
   final List<OrderDetailsItem> items;
   final double subtotal;
   final double shippingFee;
+  final double discountAmount;
   final String shippingMethodKey;
   final String paymentMethodKey;
   final String deliveryName;
@@ -28,6 +29,7 @@ class OrderDetailsModel {
     required this.items,
     required this.subtotal,
     required this.shippingFee,
+    this.discountAmount = 0.0,
     required this.shippingMethodKey,
     required this.paymentMethodKey,
     required this.deliveryName,
@@ -35,5 +37,9 @@ class OrderDetailsModel {
     required this.addressLine,
   });
 
-  double get total => subtotal + shippingFee;
+  double get total =>
+      (subtotal - discountAmount + shippingFee).clamp(0.0, double.infinity);
+
+  String get paymentMethod => paymentMethodKey;
+  String get shippingMethod => shippingMethodKey;
 }

@@ -115,12 +115,12 @@ class CartTotalBar extends StatelessWidget {
           const SizedBox(width: 12),
 
           // Primary Checkout Button
-          SizedBox(
-            width: buttonWidth,
-            child: IgnorePointer(
-              ignoring: !enabled,
+          Flexible(
+            flex: 0,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: buttonWidth, minWidth: 140),
               child: Opacity(
-                opacity: enabled ? 1.0 : 0.45,
+                opacity: enabled ? 1.0 : 0.6,
                 child: AppButton(
                   text: checkoutText,
                   icon: checkoutIcon,
@@ -128,7 +128,7 @@ class CartTotalBar extends StatelessWidget {
                   outlined: outlinedButton,
                   backgroundColor: defaultBtnBg,
                   foregroundColor: defaultBtnFg,
-                  onPressed: enabled ? onCheckout : () {},
+                  onPressed: onCheckout,
                 ),
               ),
             ),

@@ -1,23 +1,21 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_service.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_ui_controller.dart';
-import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_notifier.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/app_confirm_dialog.dart';
+import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_service.dart';
+import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_ui_controller.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لإعدادات التطبيق.
 ///
 /// نستخدمه لإدارة:
 /// - وضع الثيم
 /// - اللغة الحالية
+/// - الإشعارات والعملة
 /// - تطبيق التغييرات على مستوى التطبيق بالكامل
-///
-/// كما أنه يعمل كحلقة ربط بين:
-/// - AppSettingsUiController الخاص بحالة الواجهة
-/// - AppSettingsService الخاص بالمنطق المساعد والقيم الابتدائية
 class AppSettingsController extends GetxController {
   AppSettingsController(this._service);
 
@@ -28,6 +26,12 @@ class AppSettingsController extends GetxController {
   late final AppSettingsUiController ui;
 
   final isLoggingOut = false.obs;
+
+  /// إشعارات العروض وحالة الشحنات
+  final notificationsEnabled = true.obs;
+
+  /// العملة المعتمدة للعرض (YER, SAR, USD)
+  final selectedCurrency = 'YER'.obs;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشات والمكونات.
   Rx<ThemeMode> get themeMode => ui.themeMode;
@@ -45,8 +49,6 @@ class AppSettingsController extends GetxController {
   String get langLabel => _service.langLabel(locale.value);
 
   @override
-  /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
-  /// نستخدمها لتهيئة الـ UI controller بالقيم الابتدائية.
   void onInit() {
     super.onInit();
 
@@ -56,20 +58,59 @@ class AppSettingsController extends GetxController {
     ui.setLocale(_service.initialLocale());
   }
 
+  /// تسمية وضع الثيم الحالي
+  String get themeModeLabel {
+    switch (themeMode.value) {
+      case ThemeMode.dark:
+        return 'الوضع الليلي (داكن)';
+      case ThemeMode.light:
+        return 'الوضع النهاري (فاتح)';
+      case ThemeMode.system:
+        return 'تلقائي (حسب الجهاز)';
+    }
+  }
+
+  /// أيقونة وضع الثيم الحالي
+  IconData get themeModeIcon {
+    switch (themeMode.value) {
+      case ThemeMode.dark:
+        return Icons.dark_mode_rounded;
+      case ThemeMode.light:
+        return Icons.light_mode_rounded;
+      case ThemeMode.system:
+        return Icons.brightness_auto_rounded;
+    }
+  }
+
+  /// هذه الدالة تغيّر الثيم المختار (نهاري، ليلي، أو تلقائي حسب الجهاز).
+  void setThemeMode(ThemeMode mode) {
+    ui.setThemeMode(mode);
+    Get.changeThemeMode(mode);
+    String message;
+    switch (mode) {
+      case ThemeMode.dark:
+        message = 'تم تفعيل الوضع الليلي';
+        break;
+      case ThemeMode.light:
+        message = 'تم تفعيل الوضع النهاري';
+        break;
+      case ThemeMode.system:
+        message = 'تم تفعيل الوضع التلقائي حسب الجهاز';
+        break;
+    }
+    AppToast.success(message, title: 'المظهر');
+  }
+
   /// هذه الدالة تغيّر الثيم مباشرة حسب القيمة المطلوبة.
-  ///
-  /// نستخدمها مثلًا عند ربط Switch في شاشة الإعدادات.
   void setDarkMode(bool value) {
     final mode = value ? ThemeMode.dark : ThemeMode.light;
-    ui.setThemeMode(mode);
-    Get.changeThemeMode(themeMode.value);
+    setThemeMode(mode);
   }
 
   /// هذه الدالة تبدّل بين الثيم الفاتح والداكن.
   void toggleTheme() {
     final next = _service.nextThemeMode(themeMode.value);
-    ui.setThemeMode(next);
-    Get.changeThemeMode(themeMode.value);
+    setThemeMode(next);
   }
 
   /// هذه الدالة تبدّل بين العربية والإنجليزية.
@@ -79,27 +120,53 @@ class AppSettingsController extends GetxController {
     Get.updateLocale(locale.value);
   }
 
+  /// تعيين لغة محددة مباشرة
+  void setLanguage(String code) {
+    final newLocale = code == 'en'
+        ? const Locale('en', 'US')
+        : const Locale('ar', 'YE');
+    ui.setLocale(newLocale);
+    Get.updateLocale(newLocale);
+    AppToast.success(
+      code == 'en' ? 'Switched to English' : 'تم تغيير اللغة إلى العربية',
+      title: 'لغة التطبيق',
+    );
+  }
+
+  /// تفعيل أو تعطيل إشعارات العروض وحالة الطلبات
+  void toggleNotifications(bool value) {
+    notificationsEnabled.value = value;
+    if (value) {
+      AppToast.success(
+        'تم تفعيل إشعارات وتنبيهات الطلبات والعروض',
+        title: 'الإشعارات',
+      );
+    } else {
+      AppToast.info('تم إيقاف إشعارات التطبيق مؤقتاً', title: 'الإشعارات');
+    }
+  }
+
+  /// تغيير عملة العرض
+  void setCurrency(String currencyCode) {
+    selectedCurrency.value = currencyCode;
+    AppToast.success(
+      'تم اعتماد عملة العرض: $currencyCode',
+      title: 'عملة المتجر',
+    );
+  }
+
   Future<void> confirmLogout() async {
     if (isLoggingOut.value) {
       return;
     }
 
-    final confirmed = await Get.dialog<bool>(
-      AlertDialog(
-        title: Text(Tk.settingsLogout.tr),
-        content: Text(Tk.settingsLogoutSubtitle.tr),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back<bool>(result: false),
-            child: Text(Tk.commonCancel.tr),
-          ),
-          FilledButton(
-            onPressed: () => Get.back<bool>(result: true),
-            child: Text(Tk.commonYes.tr),
-          ),
-        ],
-      ),
-      barrierDismissible: true,
+    final confirmed = await AppConfirmDialog.show(
+      title: Tk.settingsLogout.tr,
+      message: 'هل أنت متأكد من رغبتك في تسجيل الخروج من حسابك في رَوْنَقُك؟',
+      confirmLabel: 'تسجيل الخروج',
+      cancelLabel: Tk.commonCancel.tr,
+      icon: Icons.logout_rounded,
+      isDestructive: true,
     );
 
     if (confirmed == true) {

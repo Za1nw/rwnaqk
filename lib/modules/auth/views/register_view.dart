@@ -5,6 +5,7 @@ import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_validators.dart';
+import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:rwnaqk_frontend/modules/auth/controllers/register_controller.dart';
@@ -32,7 +33,7 @@ class RegisterScreen extends GetView<RegisterController> {
     final uri = _buildLegalUri(path);
     final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!opened) {
-      Get.snackbar(Tk.commonError.tr, Tk.commonUnexpectedError.tr);
+      AppToast.error(Tk.commonUnexpectedError.tr, title: Tk.commonError.tr);
     }
   }
 

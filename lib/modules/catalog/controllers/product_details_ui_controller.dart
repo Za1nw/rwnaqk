@@ -6,6 +6,23 @@ class ProductDetailsUiController extends GetxController {
   final RxString deliverySelected = 'standard'.obs;
   final RxString selectedColorId = ''.obs;
   final RxString selectedSize = ''.obs;
+  final RxInt quantity = 1.obs;
+
+  void incrementQuantity() {
+    if (quantity.value < 99) {
+      quantity.value++;
+    }
+  }
+
+  void decrementQuantity() {
+    if (quantity.value > 1) {
+      quantity.value--;
+    }
+  }
+
+  void resetQuantity() {
+    quantity.value = 1;
+  }
 
   void selectThumb({
     required int index,

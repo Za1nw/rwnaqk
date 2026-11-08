@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
+import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/address_section.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/cart_checkout_stepper.dart';
@@ -288,9 +289,9 @@ class CartScreen extends GetView<CartController> {
             // Fixed Bottom Checkout Bar
             Obx(
               () => CartTotalBar(
-                total: controller.itemsSubtotal,
+                total: controller.total,
                 enabled: controller.canCheckout,
-                totalLabel: Tk.cartSubtotal.tr,
+                totalLabel: Tk.cartTotal.tr,
                 helperText: controller.cartItems.isEmpty
                     ? Tk.cartStartCheckout.tr
                     : Tk.cartCheckoutReady.trParams({
@@ -506,139 +507,244 @@ class CartScreen extends GetView<CartController> {
   Widget _buildPromoCodeCard(BuildContext context) {
     final isDark = context.isDark;
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF24111F) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark
-              ? BrandColors.gold.withValues(alpha: 0.15)
-              : const Color(0xFFEDE3EA),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.confirmation_number_outlined,
-                size: 18,
-                color: isDark ? BrandColors.gold : BrandColors.burgundy,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'كوبون الخصم',
-                style: TextStyle(
-                  color: isDark ? Colors.white : const Color(0xFF1E0A17),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  fontFamily: 'Cairo',
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isDark
+    return Obx(() {
+      final hasCoupon = controller.hasCoupon;
+
+      return Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF24111F) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: hasCoupon
+                ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                : (isDark
                       ? BrandColors.gold.withValues(alpha: 0.15)
-                      : BrandColors.burgundy.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(6),
+                      : const Color(0xFFEDE3EA)),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.confirmation_number_outlined,
+                  size: 18,
+                  color: hasCoupon
+                      ? const Color(0xFF10B981)
+                      : (isDark ? BrandColors.gold : BrandColors.burgundy),
                 ),
-                child: Text(
-                  'كود: RAWNAQ',
+                const SizedBox(width: 8),
+                Text(
+                  hasCoupon ? 'كوبون الخصم مفعّل' : 'كوبون الخصم',
                   style: TextStyle(
-                    color: isDark ? BrandColors.gold : BrandColors.burgundy,
-                    fontSize: 10.5,
+                    color: isDark ? Colors.white : const Color(0xFF1E0A17),
+                    fontSize: 14,
                     fontWeight: FontWeight.w800,
                     fontFamily: 'Cairo',
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 42,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF1B0B17)
-                        : const Color(0xFFF9F5F8),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: isDark ? Colors.white12 : const Color(0xFFE2D6DF),
+                const Spacer(),
+                if (hasCoupon)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'خصم ${controller.couponDiscountPercent.value}%',
+                      style: const TextStyle(
+                        color: Color(0xFF10B981),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? BrandColors.gold.withValues(alpha: 0.15)
+                          : BrandColors.burgundy.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'كود: RAWNAQ',
+                      style: TextStyle(
+                        color: isDark ? BrandColors.gold : BrandColors.burgundy,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'Cairo',
+                      ),
                     ),
                   ),
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    'RAWNAQ',
-                    style: TextStyle(
-                      color: isDark ? Colors.white70 : const Color(0xFF1E0A17),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'Cairo',
-                      letterSpacing: 1.2,
-                    ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            if (hasCoupon) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              InkWell(
-                onTap: () {
-                  Get.snackbar(
-                    'كوبون الخصم',
-                    'تم تفعيل كود الخصم (RAWNAQ) بنجاح!',
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: isDark
-                        ? const Color(0xFF24111F)
-                        : const Color(0xFF6E0131),
-                    colorText: Colors.white,
-                    margin: const EdgeInsets.all(16),
-                    borderRadius: 12,
-                    duration: const Duration(seconds: 2),
-                  );
-                },
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  height: 42,
-                  padding: const EdgeInsets.symmetric(horizontal: 18),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isDark
-                          ? [const Color(0xFFFAAD01), const Color(0xFFE59C00)]
-                          : [const Color(0xFF8E0542), const Color(0xFF6E0131)],
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: Color(0xFF10B981),
+                      size: 18,
                     ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'تطبيق',
-                    style: TextStyle(
-                      color: isDark ? const Color(0xFF1E0A17) : Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      fontFamily: 'Cairo',
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'كود (${controller.couponCode.value}) مفعّل بنجاح!',
+                        style: TextStyle(
+                          color: isDark
+                              ? const Color(0xFF34D399)
+                              : const Color(0xFF065F46),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'Cairo',
+                        ),
+                      ),
                     ),
-                  ),
+                    InkWell(
+                      onTap: () {
+                        controller.removeCoupon();
+                        AppToast.info(
+                          'تم إلغاء تفعيل كوبون الخصم',
+                          title: 'كوبون الخصم',
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(6),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 3,
+                        ),
+                        child: Text(
+                          'إلغاء',
+                          style: TextStyle(
+                            color: isDark
+                                ? const Color(0xFFFCA5A5)
+                                : const Color(0xFFDC2626),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ] else ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 42,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF1B0B17)
+                            : const Color(0xFFF9F5F8),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white12
+                              : const Color(0xFFE2D6DF),
+                        ),
+                      ),
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        'RAWNAQ',
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white70
+                              : const Color(0xFF1E0A17),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Cairo',
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  InkWell(
+                    onTap: () {
+                      final success = controller.applyCoupon('RAWNAQ');
+                      if (success) {
+                        AppToast.success(
+                          'تم تطبيق كود الخصم (RAWNAQ) بنجاح! خصم %15',
+                          title: 'كوبون الخصم',
+                        );
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      height: 42,
+                      padding: const EdgeInsets.symmetric(horizontal: 18),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isDark
+                              ? [
+                                  const Color(0xFFFAAD01),
+                                  const Color(0xFFE59C00),
+                                ]
+                              : [
+                                  const Color(0xFF8E0542),
+                                  const Color(0xFF6E0131),
+                                ],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'تطبيق',
+                        style: TextStyle(
+                          color: isDark
+                              ? const Color(0xFF1E0A17)
+                              : Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          fontFamily: 'Cairo',
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   /// Bill / Cost Breakdown Card
@@ -695,6 +801,18 @@ class CartScreen extends GetView<CartController> {
             value: AppMoneyUtils.riyal(controller.itemsSubtotal),
             isDark: isDark,
           ),
+
+          // Coupon discount if applied
+          if (controller.hasCoupon) ...[
+            const SizedBox(height: 8),
+            _summaryRow(
+              title: 'خصم الكوبون (${controller.couponCode.value})',
+              value:
+                  '- ${AppMoneyUtils.riyal(controller.couponDiscountAmount)}',
+              isHighlight: true,
+              isDark: isDark,
+            ),
+          ],
 
           const SizedBox(height: 8),
 

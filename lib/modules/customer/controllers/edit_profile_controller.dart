@@ -1,4 +1,4 @@
-﻿import 'package:flutter/src/widgets/editable_text.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/edit_profile_service.dart';
@@ -6,6 +6,7 @@ import 'package:rwnaqk_frontend/modules/customer/controllers/edit_profile_ui_con
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/app_saved_dialog.dart';
+import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 
 class EditProfileController extends GetxController {
   EditProfileController(this._service);
@@ -49,11 +50,14 @@ class EditProfileController extends GetxController {
     try {
       final result = await _service.pickAvatar(source);
       if (result == null) return;
-      Get.snackbar(Tk.commonDone.tr, Tk.profileEditPhotoUpdated.tr);
+      AppToast.success(Tk.profileEditPhotoUpdated.tr, title: Tk.commonDone.tr);
       _avatarPath.value = result;
       _avatarUrl.value = '';
     } catch (_) {
-      Get.snackbar(Tk.commonError.tr, Tk.profileEditPhotoPickFailed.tr);
+      AppToast.error(
+        Tk.profileEditPhotoPickFailed.tr,
+        title: Tk.commonError.tr,
+      );
     } finally {
       _isUploadingAvatar.value = false;
     }
@@ -68,7 +72,7 @@ class EditProfileController extends GetxController {
       mobile: mobileCtrl.text,
     );
     if (!canSave) {
-      Get.snackbar(Tk.commonError.tr, Tk.profileEditFillAll.tr);
+      AppToast.warning(Tk.profileEditFillAll.tr, title: Tk.commonError.tr);
       return;
     }
 
@@ -85,7 +89,7 @@ class EditProfileController extends GetxController {
         Get.back<void>();
       }
     } catch (_) {
-      Get.snackbar(Tk.commonError.tr, Tk.commonUnexpectedError.tr);
+      AppToast.error(Tk.commonUnexpectedError.tr, title: Tk.commonError.tr);
     } finally {
       if (!isClosed) {
         _isSaving.value = false;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:rwnaqk_frontend/modules/checkout/data/models/wallet_transfer_account.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/payment_option_tile.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/wallet_companies_row.dart';
@@ -229,17 +229,9 @@ class _DetailRow extends StatelessWidget {
           InkWell(
             onTap: () {
               Clipboard.setData(ClipboardData(text: value));
-              Get.snackbar(
-                'تم النسخ',
-                'تم نسخ رقم الحساب ($value) إلى الحافظة بنجاح',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: context.isDark
-                    ? const Color(0xFF24111F)
-                    : const Color(0xFF6E0131),
-                colorText: Colors.white,
-                margin: const EdgeInsets.all(16),
-                borderRadius: 12,
-                duration: const Duration(seconds: 2),
+              AppToast.copied(
+                message: 'تم نسخ رقم الحساب ($value) إلى الحافظة بنجاح',
+                title: 'تم النسخ',
               );
             },
             borderRadius: BorderRadius.circular(8),

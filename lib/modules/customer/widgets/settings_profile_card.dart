@@ -1,9 +1,9 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
-import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk_frontend/modules/customer/widgets/profile_avatar.dart';
+import 'package:flutter/material.dart';
+import 'package:rwnaqk_frontend/modules/customer/widgets/settings/settings_user_header.dart';
 
+export 'package:rwnaqk_frontend/modules/customer/widgets/settings/settings_user_header.dart';
+
+/// بطاقة الترويسة الفاخرة للعميل (اسم بديل للتوافق)
 class SettingsProfileCard extends StatelessWidget {
   final String name;
   final String phone;
@@ -24,98 +24,13 @@ class SettingsProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: context.card,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: context.border.withValues(alpha: .35)),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        splashColor: context.primary.withValues(alpha: .06),
-        highlightColor: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              ProfileAvatar(
-                name: name,
-                imagePath: avatarPath,
-                imageUrl: avatarUrl,
-                size: 52,
-                fontSize: 20,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: context.foreground,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 15.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      phone,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: context.muted,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              Material(
-                color: Colors.transparent,
-                child: Ink(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.input,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: context.border.withValues(alpha: .35)),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: onEdit,
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.edit_rounded,
-                          size: 18,
-                          color: context.foreground,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          Tk.commonEdit.tr,
-                          style: TextStyle(
-                            color: context.foreground,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 12.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return SettingsUserHeader(
+      name: name,
+      phone: phone,
+      avatarPath: avatarPath,
+      avatarUrl: avatarUrl,
+      onEdit: onEdit,
+      onTap: onTap,
     );
   }
 }

@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_checkout_utils.dart';
@@ -22,57 +19,46 @@ import 'package:rwnaqk_frontend/modules/cart/widgets/shipping_address_sheet.dart
 import 'package:rwnaqk_frontend/modules/cart/widgets/shipping_method_selector.dart';
 import 'package:rwnaqk_frontend/modules/checkout/controllers/payment_controller.dart';
 
-class PaymentScreen extends GetView<CartController> {
-  // حالة صورة سند التحويل
-  final Rx<File?> _receiptImage = Rx<File?>(null);
-
-  Future<void> _pickReceiptImage() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
-    if (picked != null) {
-      _receiptImage.value = File(picked.path);
-    }
-  }
-
-  void _removeReceiptImage() {
-    _receiptImage.value = null;
-  }
-
-  PaymentScreen({super.key});
+/// شاشة إتمام الطلب والدفع (Checkout & Payment Screen)
+/// مرتبطة منطقياً وتصميمياً بـ CartController و PaymentController
+class PaymentScreen extends GetView<PaymentController> {
+  const PaymentScreen({super.key});
 
   void _openShippingSheet(BuildContext context, {required bool isEdit}) {
+    final cart = Get.find<CartController>();
     if (isEdit) {
-      controller.prepareEditShipping();
+      cart.prepareEditShipping();
     } else {
-      controller.prepareAddShipping();
+      cart.prepareAddShipping();
     }
 
     ShippingAddressSheet.showShipping(
       context,
-      addressController: controller.shippingAddressCtrl,
-      cityController: controller.shippingCityCtrl,
-      postcodeController: controller.shippingPostcodeCtrl,
-      country: controller.selectedShippingCountryLabel,
-      countries: controller.shippingCountries,
+      addressController: cart.shippingAddressCtrl,
+      cityController: cart.shippingCityCtrl,
+      postcodeController: cart.shippingPostcodeCtrl,
+      country: cart.selectedShippingCountryLabel,
+      countries: cart.shippingCountries,
       onCountryChanged: (v) {
-        if (v != null) controller.setShippingCountry(v);
+        if (v != null) cart.setShippingCountry(v);
       },
       onSave: () {
-        controller.saveShippingFromForm();
+        cart.saveShippingFromForm();
         Navigator.pop(context);
       },
     );
   }
 
   void _openContactSheet(BuildContext context) {
-    controller.prepareEditContact();
+    final cart = Get.find<CartController>();
+    cart.prepareEditContact();
 
     ShippingAddressSheet.showContact(
       context,
-      phoneController: controller.contactPhoneCtrl,
-      emailController: controller.contactEmailCtrl,
+      phoneController: cart.contactPhoneCtrl,
+      emailController: cart.contactEmailCtrl,
       onSave: () {
-        controller.saveContactFromForm();
+        cart.saveContactFromForm();
         Navigator.pop(context);
       },
     );
@@ -81,59 +67,54 @@ class PaymentScreen extends GetView<CartController> {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDark;
+    final cart = Get.find<CartController>();
 
     return Scaffold(
       backgroundColor: isDark
           ? const Color(0xFF140A13)
           : const Color(0xFFFBF8FA),
       bottomNavigationBar: Obx(() {
-        final payment = Get.find<PaymentController>();
-        final isWallet = payment.isWalletPayment;
-        final hasReceipt = _receiptImage.value != null;
-        final canCheckout = controller.canCheckout && (!isWallet || hasReceipt);
+        final isWallet = controller.isWalletPayment;
+        final hasReceipt = controller.hasReceipt;
+        final canCheckout = controller.canConfirmOrder;
+        final isSubmitting = controller.isSubmitting.value;
+
+        String? helper;
+        if (isWallet && !hasReceipt) {
+          helper = 'يرجى إرفاق صورة السند للمتابعة';
+        } else if (cart.hasCoupon) {
+          helper =
+              'شامل خصم ${cart.couponDiscountPercent.value}% (${cart.couponCode.value})';
+        } else {
+          helper = AppCheckoutUtils.inlineSummary([
+            cart.selectedShippingTitle,
+            controller.paymentMethodLabel,
+          ]);
+        }
 
         return CartTotalBar(
-          total: controller.total,
-          enabled: canCheckout,
+          total: cart.total,
+          enabled: canCheckout && !isSubmitting,
           totalLabel: Tk.cartTotal.tr,
-          helperText: isWallet && !hasReceipt
-              ? 'يرجى إرفاق صورة السند للمتابعة'
-              : AppCheckoutUtils.inlineSummary([
-                  controller.selectedShippingTitle,
-                  payment.paymentMethodLabel,
-                ]),
-          checkoutText: Tk.cartPaymentConfirmOrder.tr,
-          checkoutIcon: Icons.check_circle_outline_rounded,
-          buttonWidth: 190,
+          helperText: helper,
+          checkoutText: 'مراجعة وتأكيد الطلب',
+          checkoutIcon: Icons.arrow_back_rounded,
+          buttonWidth: 175,
           onCheckout: () {
-            if (isWallet && !hasReceipt) {
-              Get.snackbar(
-                'تنبيه الدفع',
-                'يرجى إرفاق صورة سند أو إشعار التحويل البنكي لإتمام الطلب',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFFEF4444),
-                colorText: Colors.white,
-                margin: const EdgeInsets.all(16),
-                borderRadius: 12,
-              );
-              return;
-            }
-            controller.payNow();
+            controller.proceedToConfirmation();
           },
         );
       }),
       body: SafeArea(
         child: Obx(() {
-          final payment = Get.find<PaymentController>();
-
-          if (controller.cartItems.isEmpty) {
-            return _PaymentEmptyState(onBack: controller.backToCart);
+          if (cart.cartItems.isEmpty) {
+            return _PaymentEmptyState(onBack: cart.backToCart);
           }
 
           return Column(
             children: [
               // Custom Top Header
-              _buildTopBar(context),
+              _buildTopBar(context, cart),
 
               // Checkout Stepper (Step 2: Shipping & Payment)
               const CartCheckoutStepper(currentStep: 2),
@@ -154,10 +135,10 @@ class PaymentScreen extends GetView<CartController> {
                       // Delivery Address Section
                       AddressSection(
                         title: Tk.cartShippingAddress.tr,
-                        address: controller.shippingAddressText,
+                        address: cart.shippingAddressText,
                         onEdit: () => _openShippingSheet(
                           context,
-                          isEdit: controller.hasShippingAddress,
+                          isEdit: cart.hasShippingAddress,
                         ),
                         allowAddWhenEmpty: true,
                         emptyHint: Tk.cartAddShippingDetails.tr,
@@ -167,7 +148,7 @@ class PaymentScreen extends GetView<CartController> {
 
                       // Contact Information Section
                       PaymentContactSection(
-                        lines: controller.contactLines,
+                        lines: cart.contactLines,
                         onEdit: () => _openContactSheet(context),
                       ),
 
@@ -176,21 +157,21 @@ class PaymentScreen extends GetView<CartController> {
                       // Order Items Preview Section
                       PaymentItemsHeader(
                         title: Tk.cartPaymentItems.tr,
-                        count: controller.itemsCount,
+                        count: cart.itemsCount,
                       ),
 
                       const SizedBox(height: 10),
 
-                      _buildItemsPreviewCard(context),
+                      _buildItemsPreviewCard(context, cart),
 
                       const SizedBox(height: 18),
 
-                      // Shipping Delivery Options
+                      // Shipping Delivery Options (Standard vs Express)
                       ShippingMethodSelector(
                         headerTitle: Tk.cartPaymentShippingOptions.tr,
-                        selectedId: controller.selectedShippingId.value,
-                        onChanged: controller.setShipping,
-                        options: controller.shippingOptions
+                        selectedId: cart.selectedShippingId.value,
+                        onChanged: cart.setShipping,
+                        options: cart.shippingOptions
                             .map(AppCheckoutUtils.cartShippingTileData)
                             .toList(growable: false),
                       ),
@@ -202,15 +183,15 @@ class PaymentScreen extends GetView<CartController> {
 
                       // Upload Receipt Card (if wallet payment)
                       Obx(() {
-                        if (!payment.isWalletPayment) {
+                        if (!controller.isWalletPayment) {
                           return const SizedBox.shrink();
                         }
                         return Padding(
                           padding: const EdgeInsets.only(top: 16.0),
                           child: PaymentReceiptUploadCard(
-                            imageFile: _receiptImage.value,
-                            onPickImage: _pickReceiptImage,
-                            onRemoveImage: _removeReceiptImage,
+                            imageFile: controller.receiptImage.value,
+                            onPickImage: controller.pickReceiptImage,
+                            onRemoveImage: controller.removeReceiptImage,
                           ),
                         );
                       }),
@@ -219,11 +200,15 @@ class PaymentScreen extends GetView<CartController> {
 
                       // Final Order Payment Summary Card
                       _PaymentSummaryCard(
-                        subtotal: controller.itemsSubtotal,
-                        shippingFeeText: controller.shippingFeeText,
-                        total: controller.total,
-                        shippingTitle: controller.selectedShippingTitle,
-                        paymentMethod: payment.paymentMethodLabel,
+                        subtotal: cart.itemsSubtotal,
+                        hasCoupon: cart.hasCoupon,
+                        couponCode: cart.couponCode.value,
+                        couponDiscountAmount: cart.couponDiscountAmount,
+                        shippingFeeText: cart.shippingFeeText,
+                        shippingFee: cart.shippingFee,
+                        total: cart.total,
+                        shippingTitle: cart.selectedShippingTitle,
+                        paymentMethod: controller.paymentMethodLabel,
                       ),
 
                       const SizedBox(height: 30),
@@ -239,7 +224,7 @@ class PaymentScreen extends GetView<CartController> {
   }
 
   /// Top Bar with back button to Cart
-  Widget _buildTopBar(BuildContext context) {
+  Widget _buildTopBar(BuildContext context, CartController cart) {
     final isDark = context.isDark;
 
     return Container(
@@ -259,7 +244,7 @@ class PaymentScreen extends GetView<CartController> {
         children: [
           // Back button
           InkWell(
-            onTap: controller.backToCart,
+            onTap: cart.backToCart,
             borderRadius: BorderRadius.circular(10),
             child: Container(
               padding: const EdgeInsets.all(8),
@@ -293,23 +278,21 @@ class PaymentScreen extends GetView<CartController> {
           ),
 
           // Items count pill
-          Obx(
-            () => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? BrandColors.gold.withValues(alpha: 0.15)
-                    : BrandColors.burgundy.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                '${controller.itemsCount} عناصر',
-                style: TextStyle(
-                  color: isDark ? BrandColors.gold : BrandColors.burgundy,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 11.5,
-                  fontFamily: 'Cairo',
-                ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? BrandColors.gold.withValues(alpha: 0.15)
+                  : BrandColors.burgundy.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              '${cart.itemsCount} عناصر',
+              style: TextStyle(
+                color: isDark ? BrandColors.gold : BrandColors.burgundy,
+                fontWeight: FontWeight.w800,
+                fontSize: 11.5,
+                fontFamily: 'Cairo',
               ),
             ),
           ),
@@ -387,7 +370,7 @@ class PaymentScreen extends GetView<CartController> {
   }
 
   /// Order Items Preview Card
-  Widget _buildItemsPreviewCard(BuildContext context) {
+  Widget _buildItemsPreviewCard(BuildContext context, CartController cart) {
     final isDark = context.isDark;
 
     return Container(
@@ -404,20 +387,20 @@ class PaymentScreen extends GetView<CartController> {
       padding: const EdgeInsets.all(8),
       child: Column(
         children: [
-          for (var i = 0; i < controller.cartItems.length; i++) ...[
+          for (var i = 0; i < cart.cartItems.length; i++) ...[
             MiniItemPriceTile(
-              imageUrl: controller.cartItems[i].imageUrl,
-              badgeCount: controller.quantityOf(controller.cartItems[i].id),
-              title: controller.cartItems[i].title.tr,
+              imageUrl: cart.cartItems[i].imageUrl,
+              badgeCount: cart.quantityOf(cart.cartItems[i].id),
+              title: cart.cartItems[i].title.tr,
               subtitle: AppCheckoutUtils.paymentItemSubtitle(
-                controller.cartItems[i],
-                quantity: controller.quantityOf(controller.cartItems[i].id),
+                cart.cartItems[i],
+                quantity: cart.quantityOf(cart.cartItems[i].id),
               ),
               priceText: AppMoneyUtils.riyal(
-                controller.lineTotalOf(controller.cartItems[i]),
+                cart.lineTotalOf(cart.cartItems[i]),
               ),
             ),
-            if (i != controller.cartItems.length - 1)
+            if (i != cart.cartItems.length - 1)
               Divider(
                 height: 1,
                 thickness: 1,
@@ -463,14 +446,22 @@ class _PaymentMethodBlock extends StatelessWidget {
 
 class _PaymentSummaryCard extends StatelessWidget {
   final double subtotal;
+  final bool hasCoupon;
+  final String couponCode;
+  final double couponDiscountAmount;
   final String shippingFeeText;
+  final double shippingFee;
   final double total;
   final String shippingTitle;
   final String paymentMethod;
 
   const _PaymentSummaryCard({
     required this.subtotal,
+    required this.hasCoupon,
+    required this.couponCode,
+    required this.couponDiscountAmount,
     required this.shippingFeeText,
+    required this.shippingFee,
     required this.total,
     required this.shippingTitle,
     required this.paymentMethod,
@@ -525,25 +516,40 @@ class _PaymentSummaryCard extends StatelessWidget {
 
           const SizedBox(height: 14),
 
+          // Subtotal
           _SummaryRow(
             label: Tk.cartSubtotal.tr,
             value: AppMoneyUtils.riyal(subtotal),
             isDark: isDark,
           ),
 
+          // Coupon Discount if active
+          if (hasCoupon) ...[
+            const SizedBox(height: 8),
+            _SummaryRow(
+              label: 'خصم الكوبون ($couponCode)',
+              value: '- ${AppMoneyUtils.riyal(couponDiscountAmount)}',
+              isHighlight: true,
+              isDark: isDark,
+            ),
+          ],
+
           const SizedBox(height: 8),
 
+          // Shipping details
           _SummaryRow(
             label: Tk.cartPaymentShipping.tr,
             value: AppCheckoutUtils.inlineSummary([
               shippingTitle,
-              shippingFeeText,
+              shippingFee <= 0 ? 'مجاني' : AppMoneyUtils.riyal(shippingFee),
             ]),
+            isHighlight: shippingFee <= 0,
             isDark: isDark,
           ),
 
           const SizedBox(height: 8),
 
+          // Payment method
           _SummaryRow(
             label: Tk.cartPaymentMethod.tr,
             value: paymentMethod,
@@ -562,6 +568,7 @@ class _PaymentSummaryCard extends StatelessWidget {
 
           const SizedBox(height: 12),
 
+          // Final Total
           _SummaryRow(
             label: Tk.cartPaymentFinalTotal.tr,
             value: AppMoneyUtils.riyal(total),
@@ -578,24 +585,32 @@ class _SummaryRow extends StatelessWidget {
   final String label;
   final String value;
   final bool emphasize;
+  final bool isHighlight;
   final bool isDark;
 
   const _SummaryRow({
     required this.label,
     required this.value,
     this.emphasize = false,
+    this.isHighlight = false,
     required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = emphasize
-        ? (isDark ? Colors.white : const Color(0xFF1E0A17))
-        : (isDark ? Colors.white70 : const Color(0xFF6E5664));
+    Color color;
+    Color valueColor;
 
-    final valueColor = emphasize
-        ? (isDark ? BrandColors.gold : BrandColors.burgundy)
-        : (isDark ? Colors.white : const Color(0xFF1E0A17));
+    if (emphasize) {
+      color = isDark ? Colors.white : const Color(0xFF1E0A17);
+      valueColor = isDark ? BrandColors.gold : BrandColors.burgundy;
+    } else if (isHighlight) {
+      color = isDark ? const Color(0xFF34D399) : const Color(0xFF059669);
+      valueColor = isDark ? const Color(0xFF34D399) : const Color(0xFF059669);
+    } else {
+      color = isDark ? Colors.white70 : const Color(0xFF6E5664);
+      valueColor = isDark ? Colors.white : const Color(0xFF1E0A17);
+    }
 
     return Row(
       children: [
@@ -604,7 +619,9 @@ class _SummaryRow extends StatelessWidget {
             label,
             style: TextStyle(
               color: color,
-              fontWeight: emphasize ? FontWeight.w900 : FontWeight.w700,
+              fontWeight: emphasize
+                  ? FontWeight.w900
+                  : (isHighlight ? FontWeight.w800 : FontWeight.w700),
               fontSize: emphasize ? 14.5 : 12.5,
               fontFamily: 'Cairo',
             ),

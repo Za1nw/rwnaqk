@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/two_factor_settings_controller.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
@@ -34,7 +34,9 @@ class ProfileTwoFactorSection extends GetView<TwoFactorSettingsController> {
                   decoration: BoxDecoration(
                     color: context.primary.withValues(alpha: .08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: context.primary.withValues(alpha: .18)),
+                    border: Border.all(
+                      color: context.primary.withValues(alpha: .18),
+                    ),
                   ),
                   child: Icon(
                     Icons.verified_user_outlined,
@@ -98,7 +100,9 @@ class ProfileTwoFactorSection extends GetView<TwoFactorSettingsController> {
                 decoration: BoxDecoration(
                   color: context.input,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: context.border.withValues(alpha: .45)),
+                  border: Border.all(
+                    color: context.border.withValues(alpha: .45),
+                  ),
                 ),
                 child: Text(
                   Tk.profileTwoFactorSetupPending.tr,

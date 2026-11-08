@@ -8,12 +8,14 @@ import 'package:rwnaqk_frontend/modules/orders/widgets/order_details_section_car
 class OrderDetailsSummaryCard extends StatelessWidget {
   final double subtotal;
   final double shippingFee;
+  final double discountAmount;
   final double total;
 
   const OrderDetailsSummaryCard({
     super.key,
     required this.subtotal,
     required this.shippingFee,
+    this.discountAmount = 0.0,
     required this.total,
   });
 
@@ -50,12 +52,22 @@ class OrderDetailsSummaryCard extends StatelessWidget {
             value: AppMoneyUtils.riyal(subtotal),
             isDark: isDark,
           ),
-          const SizedBox(height: 10),
+          if (discountAmount > 0) ...[
+            const SizedBox(height: 8),
+            _SummaryRow(
+              label: 'خصم الكوبون',
+              value: '- ${AppMoneyUtils.riyal(discountAmount)}',
+              isHighlight: true,
+              isDark: isDark,
+            ),
+          ],
+          const SizedBox(height: 8),
           _SummaryRow(
             label: Tk.cartPaymentShipping.tr,
             value: shippingFee <= 0
                 ? Tk.cartFree.tr
                 : AppMoneyUtils.riyal(shippingFee),
+            isHighlight: shippingFee <= 0,
             isDark: isDark,
           ),
           Padding(
@@ -83,39 +95,52 @@ class _SummaryRow extends StatelessWidget {
   final String label;
   final String value;
   final bool emphasize;
+  final bool isHighlight;
   final bool isDark;
 
   const _SummaryRow({
     required this.label,
     required this.value,
     this.emphasize = false,
+    this.isHighlight = false,
     required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
+    Color labelColor;
+    Color valueColor;
+
+    if (emphasize) {
+      labelColor = isDark ? Colors.white : const Color(0xFF1E0A17);
+      valueColor = isDark ? BrandColors.gold : BrandColors.burgundy;
+    } else if (isHighlight) {
+      labelColor = isDark ? const Color(0xFF34D399) : const Color(0xFF059669);
+      valueColor = isDark ? const Color(0xFF34D399) : const Color(0xFF059669);
+    } else {
+      labelColor = isDark ? Colors.white70 : const Color(0xFF6E5664);
+      valueColor = isDark ? Colors.white : const Color(0xFF1E0A17);
+    }
+
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: emphasize
-                  ? (isDark ? Colors.white : const Color(0xFF1E0A17))
-                  : (isDark ? Colors.white60 : const Color(0xFF6E5664)),
-              fontWeight: emphasize ? FontWeight.w900 : FontWeight.w700,
-              fontSize: emphasize ? 14 : 12.5,
-              fontFamily: 'Cairo',
-            ),
+        Text(
+          label,
+          style: TextStyle(
+            color: labelColor,
+            fontWeight: emphasize
+                ? FontWeight.w900
+                : (isHighlight ? FontWeight.w800 : FontWeight.w700),
+            fontSize: emphasize ? 14 : 12.5,
+            fontFamily: 'Cairo',
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            color: emphasize
-                ? (isDark ? BrandColors.gold : BrandColors.burgundy)
-                : (isDark ? Colors.white : const Color(0xFF1E0A17)),
-            fontWeight: FontWeight.w900,
+            color: valueColor,
+            fontWeight: emphasize ? FontWeight.w900 : FontWeight.w800,
             fontSize: emphasize ? 16 : 13,
             fontFamily: 'Cairo',
           ),

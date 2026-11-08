@@ -1,4 +1,5 @@
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_color_option.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/models/product_size_guide.dart';
 
 class HomeProductItem {
   final String id;
@@ -20,6 +21,7 @@ class HomeProductItem {
   final List<String> images;
   final List<ProductColorOption> availableColors;
   final List<String> availableSizes;
+  final ProductSizeGuide? sizeGuide;
 
   const HomeProductItem({
     required this.id,
@@ -38,6 +40,7 @@ class HomeProductItem {
     this.images = const [],
     this.availableColors = const [],
     this.availableSizes = const [],
+    this.sizeGuide,
   });
 
   bool get hasDiscount => discountPercent != null && discountPercent! > 0;
@@ -64,6 +67,7 @@ class HomeProductItem {
     List<String>? images,
     List<ProductColorOption>? availableColors,
     List<String>? availableSizes,
+    ProductSizeGuide? sizeGuide,
   }) {
     return HomeProductItem(
       id: id ?? this.id,
@@ -82,6 +86,7 @@ class HomeProductItem {
       images: images ?? this.images,
       availableColors: availableColors ?? this.availableColors,
       availableSizes: availableSizes ?? this.availableSizes,
+      sizeGuide: sizeGuide ?? this.sizeGuide,
     );
   }
 
@@ -103,6 +108,7 @@ class HomeProductItem {
       'images': images,
       'availableColors': availableColors.map((e) => e.toMap()).toList(),
       'availableSizes': availableSizes,
+      'sizeGuide': sizeGuide?.toMap(),
     };
   }
 
@@ -138,6 +144,11 @@ class HomeProductItem {
       availableSizes:
           (map['availableSizes'] as List?)?.map((e) => e.toString()).toList() ??
           const [],
+      sizeGuide: map['sizeGuide'] != null && map['sizeGuide'] is Map
+          ? ProductSizeGuide.fromMap(
+              Map<String, dynamic>.from(map['sizeGuide'] as Map),
+            )
+          : null,
     );
   }
 }

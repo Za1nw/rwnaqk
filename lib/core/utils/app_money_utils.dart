@@ -20,11 +20,7 @@ class AppMoneyUtils {
     return '$symbol$text$suffix';
   }
 
-  static String whole(
-    num value, {
-    String symbol = '',
-    String suffix = '',
-  }) {
+  static String whole(num value, {String symbol = '', String suffix = ''}) {
     return '$symbol${value.toStringAsFixed(0)}$suffix';
   }
 
@@ -42,7 +38,13 @@ class AppMoneyUtils {
     );
   }
 
+  static String commaFormat(num value) {
+    final str = value.toStringAsFixed(0);
+    final reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+    return str.replaceAllMapped(reg, (m) => '${m[1]},');
+  }
+
   static String riyal(num value) {
-    return whole(value, suffix: ' ر.ي');
+    return '${commaFormat(value)} ر.ي';
   }
 }

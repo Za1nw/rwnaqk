@@ -149,6 +149,7 @@ class OrderDetailsScreen extends GetView<OrdersController> {
             const SizedBox(height: 12),
             OrderDetailsSummaryCard(
               subtotal: details.subtotal,
+              discountAmount: details.discountAmount,
               shippingFee: details.shippingFee,
               total: details.total,
             ),
