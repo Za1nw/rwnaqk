@@ -1,7 +1,9 @@
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 import 'package:rwnaqk_frontend/core/services/geo/geo_lookup_api_service.dart';
+import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
 
 class RegisterResult {
@@ -26,11 +28,17 @@ class RegisterResult {
 /// - OTP
 /// - حفظ بيانات المستخدم
 class RegisterService {
-  RegisterService(this._api, this._session, this._geoLookupApiService);
+  RegisterService(
+    this._api,
+    this._session,
+    this._geoLookupApiService, {
+    this._authRepository,
+  });
 
   final CustomerAuthApiService _api;
   final AuthSessionService _session;
   final GeoLookupApiService _geoLookupApiService;
+  final IAuthRepository? _authRepository;
 
   final RxList<String> governorates = <String>[].obs;
   String _defaultCountryName = 'اليمن';
@@ -90,6 +98,32 @@ class RegisterService {
     required bool termsAccepted,
     required bool privacyPolicyAccepted,
   }) async {
+    final repo = _authRepository;
+    if (repo != null && !AppEnv.enableMockData) {
+      final result = await repo.register(
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        email: email,
+        country: country,
+        governorate: governorate,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+        termsAccepted: termsAccepted,
+        privacyPolicyAccepted: privacyPolicyAccepted,
+      );
+      if (result.isSuccess) {
+        try {
+          final customer = await repo.me();
+          _session.setCustomer(customer);
+        } catch (_) {}
+      }
+      return RegisterResult(
+        message: result.message ?? 'Registered successfully.',
+        requiresEmailVerification: result.requiresEmailVerification,
+      );
+    }
+
     final response = await _api.register(
       firstName: firstName.trim(),
       lastName: lastName.trim(),

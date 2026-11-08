@@ -22,4 +22,7 @@ class ProductReview {
       dateText: map['dateText']?.toString(),
     );
   }
+
+  factory ProductReview.fromJson(Map<String, dynamic> json) =>
+      ProductReview.fromMap(json);
 }

@@ -1,5 +1,7 @@
-﻿import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
+import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
+import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
 
 class LoginResult {
@@ -17,10 +19,15 @@ class LoginResult {
 }
 
 class LoginService {
-  LoginService(this._api, this._session);
+  LoginService(
+    this._api,
+    this._session, {
+    this._authRepository,
+  });
 
   final CustomerAuthApiService _api;
   final AuthSessionService _session;
+  final IAuthRepository? _authRepository;
 
   Future<LoginResult> login({
     required String email,
@@ -28,6 +35,23 @@ class LoginService {
     String? code,
     String? recoveryCode,
   }) async {
+    final repo = _authRepository;
+    if (repo != null && !AppEnv.enableMockData) {
+      final result = await repo.login(
+        email: email,
+        password: password,
+        code: code,
+        recoveryCode: recoveryCode,
+      );
+      if (result.isSuccess) {
+        try {
+          final customer = await repo.me();
+          _session.setCustomer(customer);
+        } catch (_) {}
+      }
+      return result;
+    }
+
     final response = await _api.login(
       email: email.trim(),
       password: password,

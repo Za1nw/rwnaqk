@@ -124,42 +124,58 @@ class HomeProductItem {
     };
   }
 
-  factory HomeProductItem.fromMap(Map<String, dynamic> map) {
+  factory HomeProductItem.fromMap(Map<String, dynamic> map) =>
+      HomeProductItem.fromJson(map);
+
+  factory HomeProductItem.fromJson(Map<String, dynamic> json) {
+    final imagesList = (json['images'] as List?)?.map((e) => e.toString()).toList() ??
+        (json['media'] as List?)
+            ?.map((e) => e is Map ? (e['original_url'] ?? '').toString() : e.toString())
+            .where((s) => s.isNotEmpty)
+            .toList() ??
+        const [];
+
+    final rawPrice = json['price'] ?? json['min_price'] ?? 0;
+    final parsedPrice = rawPrice is num
+        ? rawPrice.toDouble()
+        : double.tryParse(rawPrice.toString()) ?? 0.0;
+
     return HomeProductItem(
-      id: (map['id'] ?? '').toString(),
-      originalProductId: map['originalProductId']?.toString(),
-      title: (map['title'] ?? '').toString(),
-      imageUrl: (map['imageUrl'] ?? '').toString(),
-      price: (map['price'] ?? 0).toDouble(),
-      discountPercent: map['discountPercent'] == null
-          ? null
-          : int.tryParse(map['discountPercent'].toString()),
-      isNew: map['isNew'] == true,
-      tagKey: (map['tagKey'] ?? '').toString(),
-      description: (map['description'] ?? '').toString(),
-      material: map['material']?.toString(),
-      brand: (map['brand'] ?? '').toString(),
-      sku: (map['sku'] ?? '').toString(),
-      stockText: (map['stockText'] ?? '').toString(),
-      soldText: (map['soldText'] ?? '').toString(),
-      images:
-          (map['images'] as List?)?.map((e) => e.toString()).toList() ??
-          const [],
-      availableColors:
-          (map['availableColors'] as List?)
-              ?.map(
-                (e) => ProductColorOption.fromMap(
-                  Map<String, dynamic>.from(e as Map),
-                ),
-              )
+      id: (json['id'] ?? '').toString(),
+      originalProductId: (json['originalProductId'] ?? json['product_id'])?.toString(),
+      title: (json['title'] ?? json['name'] ?? '').toString(),
+      imageUrl: (json['imageUrl'] ?? json['feature_image'] ?? json['image_url'] ?? (imagesList.isNotEmpty ? imagesList.first : '')).toString(),
+      price: parsedPrice,
+      discountPercent: json['discountPercent'] != null
+          ? int.tryParse(json['discountPercent'].toString())
+          : json['discount_percent'] != null
+              ? int.tryParse(json['discount_percent'].toString())
+              : null,
+      isNew: json['isNew'] == true || json['is_new'] == true,
+      tagKey: (json['tagKey'] ?? json['tag_key'] ?? '').toString(),
+      description: (json['description'] ?? '').toString(),
+      material: json['material']?.toString(),
+      brand: json['brand'] is Map
+          ? (json['brand']['name'] ?? '').toString()
+          : (json['brand'] ?? '').toString(),
+      sku: (json['sku'] ?? '').toString(),
+      stockText: (json['stockText'] ??
+              (json['stock_qty'] != null ? '${json['stock_qty']} متوفر' : ''))
+          .toString(),
+      soldText: (json['soldText'] ?? '').toString(),
+      images: imagesList,
+      availableColors: (json['availableColors'] ?? json['colors'] as List?)
+              ?.whereType<Map>()
+              .map((e) => ProductColorOption.fromMap(Map<String, dynamic>.from(e)))
               .toList() ??
           const [],
-      availableSizes:
-          (map['availableSizes'] as List?)?.map((e) => e.toString()).toList() ??
+      availableSizes: (json['availableSizes'] ?? json['sizes'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
           const [],
-      sizeGuide: map['sizeGuide'] != null && map['sizeGuide'] is Map
+      sizeGuide: json['sizeGuide'] != null && json['sizeGuide'] is Map
           ? ProductSizeGuide.fromMap(
-              Map<String, dynamic>.from(map['sizeGuide'] as Map),
+              Map<String, dynamic>.from(json['sizeGuide'] as Map),
             )
           : null,
     );

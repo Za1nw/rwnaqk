@@ -24,9 +24,13 @@ import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_servi
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_service.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_ui_controller.dart';
+import 'package:rwnaqk_frontend/core/network/api_client.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_token_storage.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
+import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
+import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository_impl.dart';
+import 'package:rwnaqk_frontend/modules/orders/data/repositories/orders_repository_impl.dart';
 
 class InitialBinding extends Bindings {
   InitialBinding({this.initialAccessToken, this.tokenStorage});
@@ -46,6 +50,17 @@ class InitialBinding extends Bindings {
   void _registerCoreServices() {
     Get.put<IAuthTokenStorage>(
       tokenStorage ?? SecureAuthTokenStorage(),
+      permanent: true,
+    );
+    Get.put<ApiClient>(
+      ApiClient(tokenStorage: Get.find<IAuthTokenStorage>()),
+      permanent: true,
+    );
+    Get.put<IAuthRepository>(
+      AuthRepositoryImpl(
+        apiClient: Get.find<ApiClient>(),
+        tokenStorage: Get.find<IAuthTokenStorage>(),
+      ),
       permanent: true,
     );
     Get.put<CustomerAuthApiService>(CustomerAuthApiService(), permanent: true);
@@ -121,7 +136,10 @@ class InitialBinding extends Bindings {
     Get.lazyPut<OrdersUiController>(() => OrdersUiController(), fenix: true);
     Get.put<OrdersService>(OrdersService(), permanent: true);
     Get.put<IOrdersRepository>(
-      FakeOrdersRepository(service: Get.find<OrdersService>()),
+      OrdersRepositoryImpl(
+        apiClient: Get.find<ApiClient>(),
+        fallbackRepository: FakeOrdersRepository(service: Get.find<OrdersService>()),
+      ),
       permanent: true,
     );
     Get.lazyPut<OrdersController>(
