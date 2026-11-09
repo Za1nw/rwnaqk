@@ -17,6 +17,23 @@ abstract class IOrdersRepository {
   /// إنشاء طلب جديد وتخزينه
   Future<OrderModel> createOrder(OrderModel order);
 
+  /// إرسال واستكمال طلب الشراء الفعلي عبر Backend API مع منع التكرار
+  Future<OrderModel> submitCheckout({
+    required int addressId,
+    required List<Map<String, dynamic>> items,
+    required String paymentMethod,
+    String? couponCode,
+    String? shippingOptionId,
+    double? expectedGrandTotal,
+    Map<String, dynamic>? walletAccount,
+    String? receiptImageUrl,
+    String? notes,
+    String? idempotencyKey,
+  });
+
+  /// إلغاء الطلب المتاح إلغاؤه للعميل واستعادة المخزون ذرياً
+  Future<OrderModel> cancelOrder(String orderId);
+
   /// تفريغ الكاش المحلي المؤقت للطلبات لضمان عزل الجلسة عند تسجيل الخروج
   /// (تنظيف محلي فقط ولا يفرض دلالة حذف دائم على خادم Backend)
   Future<void> clearLocalCache();

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/app_confirm_dialog.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
@@ -26,6 +27,9 @@ class AddressesController extends GetxController {
   final _store = Get.find<ProfileStoreService>();
   AddressesUiController get ui => Get.find<AddressesUiController>();
 
+  /// حالة التحميل من السيرفر
+  final isLoading = false.obs;
+
   /// قائمة العناوين الحالية.
   RxList<ShippingAddress> get addresses => _store.addresses;
 
@@ -48,7 +52,7 @@ class AddressesController extends GetxController {
 
   @override
   /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
-  /// نستخدمها لتهيئة الـ UI controller وتحميل البيانات التجريبية.
+  /// نستخدمها لتهيئة الـ UI controller وتحميل البيانات.
   void onInit() {
     super.onInit();
   }
@@ -56,8 +60,24 @@ class AddressesController extends GetxController {
   @override
   void onReady() {
     super.onReady();
-    if (addresses.isEmpty) {
-      seedMockData();
+    if (AppEnv.enableMockData) {
+      if (addresses.isEmpty) {
+        seedMockData();
+      }
+    } else {
+      loadAddresses();
+    }
+  }
+
+  /// جلب العناوين من السيرفر الحقيقي
+  Future<void> loadAddresses() async {
+    isLoading.value = true;
+    try {
+      await _service.loadAddresses();
+    } catch (_) {
+      AppToast.error('تعذر جلب العناوين من الخادم', title: 'عناوين التوصيل');
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -97,53 +117,110 @@ class AddressesController extends GetxController {
       return;
     }
 
-    if (ui.editingId == null) {
-      final hasDefault = addresses.any((e) => e.isDefault);
+    if (AppEnv.enableMockData) {
+      if (ui.editingId == null) {
+        final hasDefault = addresses.any((e) => e.isDefault);
 
-      final newItem = ui.buildAddressFromForm(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        isDefault: !hasDefault,
-      );
-
-      addresses.add(newItem);
-    } else {
-      final idx = addresses.indexWhere((e) => e.id == ui.editingId);
-
-      if (idx != -1) {
-        final old = addresses[idx];
-        final updated = ui.buildAddressFromForm(
-          id: old.id,
-          isDefault: old.isDefault,
+        final newItem = ui.buildAddressFromForm(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          isDefault: !hasDefault,
         );
 
-        addresses[idx] = updated;
+        addresses.add(newItem);
+      } else {
+        final idx = addresses.indexWhere((e) => e.id == ui.editingId);
+
+        if (idx != -1) {
+          final old = addresses[idx];
+          final updated = ui.buildAddressFromForm(
+            id: old.id,
+            isDefault: old.isDefault,
+          );
+
+          addresses[idx] = updated;
+        }
       }
+
+      _service.saveAddresses(addresses.toList(growable: false));
+
+      AppToast.success(
+        ui.editingId == null
+            ? 'تمت إضافة العنوان بنجاح'
+            : 'تم تحديث بيانات العنوان بنجاح',
+        title: 'عناوين التوصيل',
+      );
+
+      Get.back();
+    } else {
+      _saveFromSheetRemote();
     }
+  }
 
-    _service.saveAddresses(addresses.toList(growable: false));
+  Future<void> _saveFromSheetRemote() async {
+    isLoading.value = true;
+    try {
+      if (ui.editingId == null) {
+        final hasDefault = addresses.any((e) => e.isDefault);
+        final newItem = ui.buildAddressFromForm(
+          id: '',
+          isDefault: !hasDefault,
+        );
+        await _service.addAddress(newItem);
+      } else {
+        final old = addresses.firstWhereOrNull((e) => e.id == ui.editingId);
+        final updated = ui.buildAddressFromForm(
+          id: old?.id ?? ui.editingId!,
+          isDefault: old?.isDefault ?? false,
+        );
+        await _service.updateAddress(updated);
+      }
 
-    AppToast.success(
-      ui.editingId == null
-          ? 'تمت إضافة العنوان بنجاح'
-          : 'تم تحديث بيانات العنوان بنجاح',
-      title: 'عناوين التوصيل',
-    );
+      AppToast.success(
+        ui.editingId == null
+            ? 'تمت إضافة العنوان بنجاح'
+            : 'تم تحديث بيانات العنوان بنجاح',
+        title: 'عناوين التوصيل',
+      );
 
-    Get.back();
+      Get.back();
+    } catch (_) {
+      AppToast.error('فشل حفظ العنوان على الخادم', title: 'عناوين التوصيل');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   /// هذه الدالة تجعل عنوانًا واحدًا فقط هو الافتراضي.
   void setDefault(String id) {
-    _service.saveAddresses(
-      _service.markDefault(
-        addresses: addresses.toList(growable: false),
-        id: id,
-      ),
-    );
-    AppToast.success(
-      'تم تعيين العنوان كافتراضي لتوصيل طلباتك',
-      title: 'العنوان الافتراضي',
-    );
+    if (AppEnv.enableMockData) {
+      _service.saveAddresses(
+        _service.markDefault(
+          addresses: addresses.toList(growable: false),
+          id: id,
+        ),
+      );
+      AppToast.success(
+        'تم تعيين العنوان كافتراضي لتوصيل طلباتك',
+        title: 'العنوان الافتراضي',
+      );
+    } else {
+      _setDefaultRemote(id);
+    }
+  }
+
+  Future<void> _setDefaultRemote(String id) async {
+    isLoading.value = true;
+    try {
+      await _service.setPrimary(id);
+      AppToast.success(
+        'تم تعيين العنوان كافتراضي لتوصيل طلباتك',
+        title: 'العنوان الافتراضي',
+      );
+    } catch (_) {
+      AppToast.error('تعذر تعيين العنوان الافتراضي', title: 'العنوان الافتراضي');
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   /// طلب تأكيد قبل الحذف لمنع الحذف العرضي
@@ -172,8 +249,22 @@ class AddressesController extends GetxController {
   /// وإذا تم حذف العنوان الافتراضي، نضمن أن يبقى هناك عنوان افتراضي
   /// إذا كانت القائمة لا تزال تحتوي على عناصر.
   void deleteAddress(String id) {
-    final next = addresses.where((e) => e.id != id).toList();
+    if (AppEnv.enableMockData) {
+      final next = addresses.where((e) => e.id != id).toList();
+      _service.saveAddresses(_service.buildDefaultAfterDelete(next));
+    } else {
+      _deleteAddressRemote(id);
+    }
+  }
 
-    _service.saveAddresses(_service.buildDefaultAfterDelete(next));
+  Future<void> _deleteAddressRemote(String id) async {
+    isLoading.value = true;
+    try {
+      await _service.removeAddress(id);
+    } catch (_) {
+      AppToast.error('تعذر حذف العنوان من الخادم', title: 'عناوين التوصيل');
+    } finally {
+      isLoading.value = false;
+    }
   }
 }

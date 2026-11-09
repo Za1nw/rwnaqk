@@ -6,6 +6,8 @@ import 'package:rwnaqk_frontend/modules/cart/controllers/cart_service.dart';
 import 'package:rwnaqk_frontend/modules/cart/controllers/cart_ui_controller.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_controller.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
+import 'package:rwnaqk_frontend/modules/orders/data/providers/fake_orders_repository.dart';
+import 'package:rwnaqk_frontend/modules/orders/data/repositories/orders_repository.dart';
 import 'package:rwnaqk_frontend/modules/checkout/controllers/payment_controller.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
@@ -20,6 +22,7 @@ import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart'
 import 'package:rwnaqk_frontend/modules/customer/data/models/shipping_address.dart';
 import 'package:rwnaqk_frontend/modules/checkout/data/models/shipping_option_model.dart';
 import 'package:rwnaqk_frontend/modules/checkout/data/models/wallet_transfer_account.dart';
+import 'package:rwnaqk_frontend/modules/cart/data/models/cart_quote_model.dart';
 
 /// هذا الملف هو الكنترولر الرئيسي لمنظومة السلة.
 ///
@@ -45,6 +48,7 @@ class CartController extends GetxController {
 
   /// مرجع العامل لمراقبة عناوين الملف الشخصي
   Worker? _addressesWorker;
+  Worker? _shippingAddressWorker;
 
   // =========================
   // CART DATA
@@ -68,15 +72,27 @@ class CartController extends GetxController {
   /// بيانات التواصل الحالية.
   late final Rx<ContactInfoModel> contactInfo;
 
-  /// إجمالي العناصر فقط بدون الشحن.
+  /// آخر عرض سعر محسوب وموثق من سيرفر Laravel
+  final Rxn<CartQuoteModel> serverQuote = Rxn<CartQuoteModel>();
+  final RxBool isQuoteLoading = false.obs;
+  final RxString quoteError = ''.obs;
+
+  /// إجمالي العناصر فقط بدون الشحن (من السيرفر أو محلياً)
   double get itemsSubtotal =>
+      serverQuote.value?.subtotal ??
       _service.computeItemsTotal(cartItems, itemQuantities);
 
-  /// رسوم الشحن حسب الخيار المختار.
-  double get shippingFee => _service.shippingFeeFor(
-    options: shippingOptions,
-    selectedId: selectedShippingId.value,
-  );
+  /// رسوم الشحن حسب الخيار المختار والتسعير الجغرافي
+  double get shippingFee {
+    final quote = serverQuote.value;
+    if (quote != null) {
+      return quote.shippingFee;
+    }
+    return _service.shippingFeeFor(
+      options: shippingOptions,
+      selectedId: selectedShippingId.value,
+    );
+  }
 
   // =========================
   // COUPON / PROMO CODE
@@ -88,18 +104,71 @@ class CartController extends GetxController {
 
   /// هل يوجد كود خصم نشط حالياً؟
   bool get hasCoupon =>
-      couponCode.value.isNotEmpty && couponDiscountPercent.value > 0;
+      couponCode.value.isNotEmpty &&
+      ((serverQuote.value != null && serverQuote.value!.couponDiscountTotal > 0) ||
+          couponDiscountPercent.value > 0);
 
   /// قيمة الخصم المالي الفعلي بالريال.
-  double get couponDiscountAmount =>
-      (itemsSubtotal * couponDiscountPercent.value / 100);
+  double get couponDiscountAmount {
+    final quote = serverQuote.value;
+    if (quote != null) {
+      return quote.couponDiscountTotal;
+    }
+    return (itemsSubtotal * couponDiscountPercent.value / 100);
+  }
+
+  /// تطبيق كود الخصم بالتحقق الشبكي
+  Future<bool> applyCouponOnline(String code) async {
+    final clean = code.trim().toUpperCase();
+    if (clean.isEmpty) return false;
+
+    if (AppEnv.enableMockData) {
+      return applyCoupon(clean);
+    }
+
+    try {
+      isQuoteLoading.value = true;
+      final result = await _service.validateCouponOnline(
+        couponCode: clean,
+        subtotal: itemsSubtotal,
+      );
+
+      final data = result['data'];
+      if (data is Map<String, dynamic> && data['valid'] == true) {
+        couponCode.value = clean;
+        couponDiscountPercent.value =
+            int.tryParse(data['discount_percent']?.toString() ?? '15') ?? 15;
+        await refreshServerQuote();
+        final msg = result['message']?.toString();
+        if (msg != null && msg.isNotEmpty) {
+          AppToast.success(msg);
+        }
+        return true;
+      } else {
+        final msg = result['message']?.toString() ?? 'كود الخصم غير صالح';
+        AppToast.error(msg);
+        return false;
+      }
+    } catch (e) {
+      AppToast.error(e.toString());
+      return false;
+    } finally {
+      isQuoteLoading.value = false;
+    }
+  }
 
   /// تطبيق كود الخصم
   bool applyCoupon(String code) {
     final clean = code.trim().toUpperCase();
-    if (clean == 'RAWNAQ' || clean == 'RWNAQK') {
+    if (clean == 'RAWNAQ' ||
+        clean == 'RWNAQK' ||
+        clean == 'RWNAQK15' ||
+        clean == 'WELCOME') {
       couponCode.value = clean;
-      couponDiscountPercent.value = 15;
+      couponDiscountPercent.value = clean == 'WELCOME' ? 20 : 15;
+      if (isPayment) {
+        refreshServerQuote();
+      }
       return true;
     }
     return false;
@@ -109,11 +178,20 @@ class CartController extends GetxController {
   void removeCoupon() {
     couponCode.value = '';
     couponDiscountPercent.value = 0;
+    if (isPayment) {
+      refreshServerQuote();
+    }
   }
 
   /// الإجمالي النهائي مع احتساب الخصم والشحن.
-  double get total => (itemsSubtotal - couponDiscountAmount + shippingFee)
-      .clamp(0.0, double.infinity);
+  double get total {
+    final quote = serverQuote.value;
+    if (quote != null) {
+      return quote.grandTotal;
+    }
+    return (itemsSubtotal - couponDiscountAmount + shippingFee)
+        .clamp(0.0, double.infinity);
+  }
 
   /// هل السلة فارغة؟
   bool get isEmpty => cartItems.isEmpty;
@@ -204,8 +282,67 @@ class CartController extends GetxController {
   /// الدول المتاحة في نموذج عنوان الشحن.
   List<String> get shippingCountries => _service.shippingCountries;
 
-  /// خيارات الشحن المتاحة في صفحة الدفع.
-  List<ShippingOptionModel> get shippingOptions => _service.shippingOptions;
+  /// خيارات الشحن المتاحة في صفحة الدفع (من السيرفر أو الافتراضية).
+  List<ShippingOptionModel> get shippingOptions {
+    final quote = serverQuote.value;
+    if (quote != null && quote.shippingOptions.isNotEmpty) {
+      return quote.shippingOptions.map((opt) {
+        return ShippingOptionModel(
+          id: opt.id,
+          priceText: opt.formattedFee,
+        );
+      }).toList(growable: false);
+    }
+    return _service.shippingOptions;
+  }
+
+  /// تحديث وإعادة احتساب عرض السعر من خادم Laravel
+  Future<void> refreshServerQuote() async {
+    if (AppEnv.enableMockData) return;
+
+    final addressId = int.tryParse(shippingAddress.value.id);
+    if (addressId == null || addressId <= 0 || cartItems.isEmpty) {
+      serverQuote.value = null;
+      return;
+    }
+
+    try {
+      isQuoteLoading.value = true;
+      quoteError.value = '';
+
+      final quoteItems = cartItems.map((item) {
+        final qty = quantityOf(item.id);
+        final prodId = int.tryParse(item.productId);
+        final varId = int.tryParse(item.id);
+        return <String, dynamic>{
+          if (varId != null && varId > 0) 'product_variation_id': varId,
+          if (prodId != null && prodId > 0) 'product_id': prodId,
+          'qty': qty,
+        };
+      }).toList();
+
+      final quote = await _service.requestCartQuote(
+        addressId: addressId,
+        items: quoteItems,
+        couponCode: couponCode.value.isNotEmpty ? couponCode.value : null,
+        shippingOptionId: selectedShippingId.value.isNotEmpty
+            ? selectedShippingId.value
+            : null,
+      );
+
+      if (quote != null) {
+        serverQuote.value = quote;
+        if (!quote.isServiceable && quote.message != null) {
+          AppToast.warning(quote.message!);
+        }
+      }
+    } catch (e) {
+      quoteError.value = e.toString();
+      debugPrint('[CartController.refreshServerQuote] error: $e');
+    } finally {
+      isQuoteLoading.value = false;
+    }
+  }
 
   // =========================
   // FLOW
@@ -214,6 +351,7 @@ class CartController extends GetxController {
     if (cartItems.isEmpty) return;
     _syncCheckoutDefaultsFromProfile();
     ui.openPayment();
+    refreshServerQuote();
   }
 
   /// هذه الدالة تعيد المستخدم إلى شاشة السلة.
@@ -282,6 +420,9 @@ class CartController extends GetxController {
   /// هذه الدالة تغيّر خيار الشحن المختار.
   void setShipping(String id) {
     ui.setShipping(id);
+    if (isPayment) {
+      refreshServerQuote();
+    }
   }
 
   // =========================
@@ -317,6 +458,8 @@ class CartController extends GetxController {
 
     if (cartItems.isEmpty && isPayment) {
       backToCart();
+    } else if (isPayment) {
+      refreshServerQuote();
     }
   }
 
@@ -328,6 +471,7 @@ class CartController extends GetxController {
     itemRatings.clear();
     itemReviewsCounts.clear();
     removeCoupon();
+    serverQuote.value = null;
 
     if (isPayment) {
       backToCart();
@@ -347,6 +491,9 @@ class CartController extends GetxController {
   void incrementQuantity(String id) {
     if (!cartItems.any((e) => e.id == id)) return;
     itemQuantities[id] = quantityOf(id) + 1;
+    if (isPayment) {
+      refreshServerQuote();
+    }
   }
 
   /// هذه الدالة تقلل كمية عنصر موجود أو تحذفه إذا أصبحت 0.
@@ -359,6 +506,9 @@ class CartController extends GetxController {
     }
 
     itemQuantities[id] = current - 1;
+    if (isPayment) {
+      refreshServerQuote();
+    }
   }
 
   /// هذه الدالة تضيف عنصرًا إلى السلة.
@@ -406,10 +556,13 @@ class CartController extends GetxController {
   }
 
   /// هذه الدالة تنفذ عملية الدفع الحالية وتحوّلها إلى Order جاهز وتعيده للواجهة.
-  OrderModel? payNow({
+  Future<OrderModel?> payNow({
     String? paymentMethodKey,
     WalletTransferAccount? walletAccount,
-  }) {
+    String? receiptImageUrl,
+    String? notes,
+    String? idempotencyKey,
+  }) async {
     if (cartItems.isEmpty) {
       AppToast.warning(
         Tk.cartValidationCartEmpty.tr,
@@ -435,11 +588,16 @@ class CartController extends GetxController {
     }
 
     final String resolvedPaymentMethodKey;
+    final bool isWallet;
     if (paymentMethodKey != null && paymentMethodKey.trim().isNotEmpty) {
       resolvedPaymentMethodKey = paymentMethodKey;
+      isWallet = paymentMethodKey == 'wallet' ||
+          (Get.isRegistered<PaymentController>() &&
+              Get.find<PaymentController>().isWalletPayment);
     } else if (Get.isRegistered<PaymentController>()) {
       final payment = Get.find<PaymentController>();
-      if (payment.isWalletPayment) {
+      isWallet = payment.isWalletPayment;
+      if (isWallet) {
         final acc = walletAccount ?? payment.selectedWalletAccount;
         if (acc == null ||
             acc.receiverName.trim().isEmpty ||
@@ -453,23 +611,100 @@ class CartController extends GetxController {
       }
       resolvedPaymentMethodKey = payment.paymentMethodLabel;
     } else {
+      isWallet = false;
       resolvedPaymentMethodKey = Tk.cartPaymentCodTitle.tr;
     }
 
-    final order = _service.buildCheckoutOrder(
-      items: cartItems.toList(growable: false),
-      quantities: Map<String, int>.from(itemQuantities),
-      itemsCount: itemsCount,
-      shippingFee: shippingFee,
-      discountAmount: couponDiscountAmount,
-      total: total,
-      address: shippingAddress.value,
-      contact: contactInfo.value,
-      shippingMethodKey: selectedShippingTitle,
-      paymentMethodKey: resolvedPaymentMethodKey,
-      status: 'pending',
+    if (AppEnv.enableMockData) {
+      final order = _service.buildCheckoutOrder(
+        items: cartItems.toList(growable: false),
+        quantities: Map<String, int>.from(itemQuantities),
+        itemsCount: itemsCount,
+        shippingFee: shippingFee,
+        discountAmount: couponDiscountAmount,
+        total: total,
+        address: shippingAddress.value,
+        contact: contactInfo.value,
+        shippingMethodKey: selectedShippingTitle,
+        paymentMethodKey: resolvedPaymentMethodKey,
+        status: 'pending',
+      );
+
+      if (Get.isRegistered<OrdersController>()) {
+        Get.find<OrdersController>().addOrder(order);
+      }
+
+      cartItems.clear();
+      itemQuantities.clear();
+      removeCoupon();
+      serverQuote.value = null;
+      ui.completeCheckout();
+
+      return order;
+    }
+
+    // التكامل الحقيقي مع خادم Laravel API
+    final addressId = int.tryParse(shippingAddress.value.id) ??
+        serverQuote.value?.addressId;
+
+    if (addressId == null || addressId <= 0) {
+      AppToast.warning(
+        'يرجى اختيار عنوان توصيل معتمد لإتمام الطلب.',
+        title: Tk.cartValidationShippingTitle.tr,
+      );
+      return null;
+    }
+
+    final quoteItems = cartItems.map((item) {
+      final qty = quantityOf(item.id);
+      final prodId = int.tryParse(item.productId);
+      final varId = int.tryParse(item.id);
+      return <String, dynamic>{
+        if (varId != null && varId > 0) 'product_variation_id': varId,
+        if (prodId != null && prodId > 0) 'product_id': prodId,
+        'qty': qty,
+      };
+    }).toList();
+
+    final backendPaymentMethod = isWallet ? 'wallet' : 'cash_on_delivery';
+
+    Map<String, dynamic>? backendWalletAccount;
+    if (isWallet) {
+      final acc = walletAccount ??
+          (Get.isRegistered<PaymentController>()
+              ? Get.find<PaymentController>().selectedWalletAccount
+              : null);
+      if (acc != null) {
+        backendWalletAccount = {
+          'company': acc.companyName,
+          'number': acc.walletNumber,
+          'name': acc.receiverName,
+        };
+      }
+    }
+
+    final IOrdersRepository ordersRepo = Get.isRegistered<IOrdersRepository>()
+        ? Get.find<IOrdersRepository>()
+        : (Get.isRegistered<OrdersController>()
+            ? Get.find<OrdersController>().repository
+            : FakeOrdersRepository());
+
+    final order = await ordersRepo.submitCheckout(
+      addressId: addressId,
+      items: quoteItems,
+      paymentMethod: backendPaymentMethod,
+      couponCode: couponCode.value.isNotEmpty ? couponCode.value : null,
+      shippingOptionId: selectedShippingId.value.isNotEmpty
+          ? selectedShippingId.value
+          : null,
+      expectedGrandTotal: total,
+      walletAccount: backendWalletAccount,
+      receiptImageUrl: receiptImageUrl,
+      notes: notes,
+      idempotencyKey: idempotencyKey,
     );
 
+    // تفريغ السلة فقط عند التأكد من نجاح إنشاء الطلب من السيرفر
     if (Get.isRegistered<OrdersController>()) {
       Get.find<OrdersController>().addOrder(order);
     }
@@ -477,6 +712,7 @@ class CartController extends GetxController {
     cartItems.clear();
     itemQuantities.clear();
     removeCoupon();
+    serverQuote.value = null;
     ui.completeCheckout();
 
     return order;
@@ -503,12 +739,19 @@ class CartController extends GetxController {
       }
     });
 
+    _shippingAddressWorker = ever<ShippingAddress>(shippingAddress, (addr) {
+      if (isPayment && !addr.isEmpty) {
+        refreshServerQuote();
+      }
+    });
+
     seedMockData();
   }
 
   @override
   void onClose() {
     _addressesWorker?.dispose();
+    _shippingAddressWorker?.dispose();
     super.onClose();
   }
 

@@ -1,10 +1,9 @@
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/controllers/login_controller.dart';
 import 'package:rwnaqk_frontend/modules/auth/controllers/login_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/controllers/two_factor_challenge_controller.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
-import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
-import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 
 /// حقن التبعيات الخاصة بشاشة تسجيل الدخول.
 class LoginBinding extends Bindings {
@@ -12,11 +11,8 @@ class LoginBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<LoginService>(
       () => LoginService(
-        Get.find<CustomerAuthApiService>(),
+        Get.find<IAuthRepository>(),
         Get.find<AuthSessionService>(),
-        authRepository: Get.isRegistered<IAuthRepository>()
-            ? Get.find<IAuthRepository>()
-            : null,
       ),
       fenix: true,
     );

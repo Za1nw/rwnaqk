@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_controller.dart';
 import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_service.dart';
-import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
-import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
+import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
 
 /// حقن التبعيات الخاصة بمنظومة استعادة كلمة المرور.
 class ForgotPasswordBinding extends Bindings {
@@ -10,7 +10,7 @@ class ForgotPasswordBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<ForgotPasswordService>(
       () => ForgotPasswordService(
-        Get.find<CustomerAuthApiService>(),
+        Get.find<IAuthRepository>(),
         Get.find<AuthSessionService>(),
       ),
       fenix: true,

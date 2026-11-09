@@ -56,11 +56,21 @@ class AuthRepositoryImpl implements IAuthRepository {
       await _tokenStorage.writeToken(token);
     }
 
+    CustomerModel? customer;
+    if (data['customer'] is Map<String, dynamic>) {
+      try {
+        customer =
+            CustomerModel.fromJson(data['customer'] as Map<String, dynamic>);
+      } catch (_) {}
+    }
+
     return LoginResult(
       isSuccess: true,
       requiresTwoFactor: false,
       requiresEmailVerification: data['requires_email_verification'] == true,
       message: data['message'] as String?,
+      token: token,
+      customer: customer,
     );
   }
 
@@ -107,11 +117,21 @@ class AuthRepositoryImpl implements IAuthRepository {
       await _tokenStorage.writeToken(token);
     }
 
+    CustomerModel? customer;
+    if (data['customer'] is Map<String, dynamic>) {
+      try {
+        customer =
+            CustomerModel.fromJson(data['customer'] as Map<String, dynamic>);
+      } catch (_) {}
+    }
+
     return LoginResult(
       isSuccess: true,
       requiresTwoFactor: false,
       requiresEmailVerification: data['requires_email_verification'] == true,
       message: data['message'] as String?,
+      token: token,
+      customer: customer,
     );
   }
 

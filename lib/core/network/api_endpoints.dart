@@ -29,5 +29,13 @@ class ApiEndpoints {
   static const String orders = '/api/v1/customer/orders';
   static String orderDetails(String id) => '/api/v1/customer/orders/$id';
   static String cancelOrder(String id) => '/api/v1/customer/orders/$id/cancel';
+
+  // Media & Uploads
+  static const String temporaryImages = '/api/temporary-images';
+
+  // Customer Addresses
+  static const String customerAddresses = '/api/v1/customer/addresses';
+  static String customerAddressDetails(String id) => '/api/v1/customer/addresses/$id';
+  static String customerAddressPrimary(String id) => '/api/v1/customer/addresses/$id/primary';
 }
 

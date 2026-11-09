@@ -42,6 +42,41 @@ class FakeOrdersRepository implements IOrdersRepository {
   }
 
   @override
+  Future<OrderModel> submitCheckout({
+    required int addressId,
+    required List<Map<String, dynamic>> items,
+    required String paymentMethod,
+    String? couponCode,
+    String? shippingOptionId,
+    double? expectedGrandTotal,
+    Map<String, dynamic>? walletAccount,
+    String? receiptImageUrl,
+    String? notes,
+    String? idempotencyKey,
+  }) async {
+    final order = OrderModel(
+      id: 'ORD-${DateTime.now().millisecondsSinceEpoch}',
+      createdAt: DateTime.now(),
+      total: expectedGrandTotal ?? 0,
+      itemsCount: items.length,
+      status: 'pending',
+    );
+    _inMemoryOrders.insert(0, order);
+    return order;
+  }
+
+  @override
+  Future<OrderModel> cancelOrder(String orderId) async {
+    final index = _inMemoryOrders.indexWhere((o) => o.id == orderId);
+    if (index != -1) {
+      final updated = _inMemoryOrders[index].copyWith(status: 'cancelled');
+      _inMemoryOrders[index] = updated;
+      return updated;
+    }
+    throw Exception('Order not found');
+  }
+
+  @override
   Future<void> clearLocalCache() async {
     _inMemoryOrders.clear();
   }

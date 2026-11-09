@@ -30,6 +30,9 @@ import 'package:rwnaqk_frontend/core/services/auth/auth_token_storage.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository_impl.dart';
+import 'package:rwnaqk_frontend/modules/customer/data/providers/fake_addresses_remote_data_source.dart';
+import 'package:rwnaqk_frontend/modules/customer/data/repositories/addresses_repository.dart';
+import 'package:rwnaqk_frontend/modules/customer/data/repositories/addresses_repository_impl.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/repositories/orders_repository_impl.dart';
 
 class InitialBinding extends Bindings {
@@ -125,11 +128,22 @@ class InitialBinding extends Bindings {
     Get.put<PaymentController>(PaymentController(), permanent: true);
     Get.put<CartUiController>(CartUiController(), permanent: true);
     Get.put<CartService>(
-      CartService(Get.find<ProfileStoreService>()),
+      CartService(
+        Get.find<ProfileStoreService>(),
+        apiClient: Get.find<ApiClient>(),
+      ),
       permanent: true,
     );
     Get.put<CartController>(
       CartController(Get.find<CartService>()),
+      permanent: true,
+    );
+
+    Get.put<IAddressesRepository>(
+      AddressesRepositoryImpl(
+        apiClient: Get.find<ApiClient>(),
+        fallbackRepository: FakeAddressesRepository(),
+      ),
       permanent: true,
     );
 

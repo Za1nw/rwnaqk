@@ -1,4 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/network/api_client.dart';
+import 'package:rwnaqk_frontend/core/network/api_endpoints.dart';
+import 'package:rwnaqk_frontend/modules/cart/data/models/cart_quote_model.dart';
 import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
@@ -16,13 +20,64 @@ import 'package:rwnaqk_frontend/modules/checkout/data/models/shipping_option_mod
 /// - خيارات الشحن
 /// - بيانات التواصل
 /// - الحسابات المساعدة
-///
-/// لاحقًا عند ربط API الحقيقي، سيكون هذا الملف هو المكان الطبيعي
-/// لاستبدال الـ mock data بطلبات الشبكة.
+/// - الاتصال مع واجهات Laravel API لإعادة التسعير الجغرافي والكوبونات
 class CartService {
-  CartService(this._profileStore);
+  CartService(this._profileStore, {this.apiClient});
 
   final ProfileStoreService _profileStore;
+  final ApiClient? apiClient;
+
+  ApiClient get _api =>
+      apiClient ??
+      (Get.isRegistered<ApiClient>() ? Get.find<ApiClient>() : ApiClient());
+
+  /// طلب إعادة تسعير وعرض سعر السلة من خادم Laravel
+  Future<CartQuoteModel?> requestCartQuote({
+    required int addressId,
+    required List<Map<String, dynamic>> items,
+    String? couponCode,
+    String? shippingOptionId,
+  }) async {
+    try {
+      final response = await _api.post<Map<String, dynamic>>(
+        ApiEndpoints.cartQuote,
+        data: {
+          'address_id': addressId,
+          'items': items,
+          if (couponCode != null && couponCode.isNotEmpty)
+            'coupon_code': couponCode,
+          if (shippingOptionId != null && shippingOptionId.isNotEmpty)
+            'shipping_option_id': shippingOptionId,
+        },
+      );
+
+      final data = response.data;
+      if (data != null && data['data'] is Map<String, dynamic>) {
+        return CartQuoteModel.fromJson(data['data'] as Map<String, dynamic>);
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('[CartService.requestCartQuote] Error: $e');
+      }
+      rethrow;
+    }
+  }
+
+  /// التحقق من كود الكوبون مع خادم Laravel
+  Future<Map<String, dynamic>> validateCouponOnline({
+    required String couponCode,
+    double subtotal = 0.0,
+  }) async {
+    final response = await _api.post<Map<String, dynamic>>(
+      ApiEndpoints.validateCoupon,
+      data: {
+        'coupon_code': couponCode,
+        'subtotal': subtotal,
+      },
+    );
+    return response.data ?? {};
+  }
 
   /// الدول المتاحة حاليًا في نموذج الشحن.
   List<String> get shippingCountries =>

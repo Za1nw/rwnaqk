@@ -102,6 +102,29 @@ class AddressCard extends StatelessWidget {
                   ),
                 ),
 
+                // شارة خارج نطاق التوصيل
+                if (!address.isServiceable)
+                  Container(
+                    margin: const EdgeInsetsDirectional.only(end: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      'خارج التغطية',
+                      style: AppTextTheme.cairo(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                  ),
+
                 // شارة العنوان الافتراضي
                 if (isDefault)
                   Container(

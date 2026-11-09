@@ -70,6 +70,30 @@ class OrderModel {
       if (deliveryPhone != null) 'delivery_phone': deliveryPhone,
     };
   }
+
+  OrderModel copyWith({
+    String? id,
+    DateTime? createdAt,
+    double? total,
+    int? itemsCount,
+    String? status,
+    String? addressLine,
+    String? deliveryName,
+    String? deliveryPhone,
+    OrderDetailsModel? details,
+  }) {
+    return OrderModel(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      total: total ?? this.total,
+      itemsCount: itemsCount ?? this.itemsCount,
+      status: status ?? this.status,
+      addressLine: addressLine ?? this.addressLine,
+      deliveryName: deliveryName ?? this.deliveryName,
+      deliveryPhone: deliveryPhone ?? this.deliveryPhone,
+      details: details ?? this.details,
+    );
+  }
 }
 
 class OrderStatusStep {

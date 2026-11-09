@@ -1,4 +1,8 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
+import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/main_controller.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_service.dart';
 import 'package:rwnaqk_frontend/modules/orders/controllers/orders_ui_controller.dart';
@@ -25,22 +29,30 @@ class OrdersController extends GetxController {
   final OrdersService _service;
   final IOrdersRepository _repository;
 
+  /// وصول مباشر للمستودع المعتمد
+  IOrdersRepository get repository => _repository;
+
   late final OrdersUiController ui;
 
   /// قائمة الطلبات الحالية.
   final orders = <OrderModel>[].obs;
+  final isLoading = false.obs;
 
   /// هذا bridge للإبقاء على نفس الاستدعاءات الحالية في الشاشة.
   Rx<OrdersFilter> get filter => ui.filter;
 
   @override
   /// هذه الدالة تُستدعى عند إنشاء الكنترولر لأول مرة.
-  /// نستخدمها لتهيئة الـ UI controller وتحميل البيانات التجريبية.
+  /// نستخدمها لتهيئة الـ UI controller وتحميل البيانات التجريبية أو الحقيقية.
   void onInit() {
     super.onInit();
 
     ui = Get.find<OrdersUiController>();
-    seedMockData();
+    if (AppEnv.enableMockData) {
+      seedMockData();
+    } else {
+      loadOrders();
+    }
   }
 
   /// هذه الدالة تغيّر الفلتر الحالي.
@@ -99,10 +111,49 @@ class OrdersController extends GetxController {
   }
 
   /// تحميل الطلبات من المستودع بطريقة غير متزامنة مع حماية الكنترولر المنتهي.
-  Future<void> loadOrders() async {
-    final list = await _repository.getOrders();
-    if (!isClosed) {
-      orders.assignAll(list);
+  Future<void> loadOrders({bool refresh = false}) async {
+    if (AppEnv.enableMockData) {
+      if (orders.isEmpty || refresh) {
+        seedMockData();
+      }
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+      final list = await _repository.getOrders();
+      if (!isClosed) {
+        orders.assignAll(list);
+      }
+    } catch (e) {
+      debugPrint('[OrdersController.loadOrders] error: $e');
+    } finally {
+      if (!isClosed) {
+        isLoading.value = false;
+      }
+    }
+  }
+
+  /// إلغاء الطلب من قبل العميل وتحديث حالته فورياً في القائمة
+  Future<bool> cancelOrder(String orderId) async {
+    try {
+      isLoading.value = true;
+      final updatedOrder = await _repository.cancelOrder(orderId);
+      final index = orders.indexWhere((o) => o.id == orderId);
+      if (index != -1) {
+        orders[index] = updatedOrder;
+        orders.refresh();
+      }
+      AppToast.success('تم إلغاء الطلب بنجاح واستعادة المخزون.');
+      return true;
+    } catch (e) {
+      final msg = e is DioException && e.response?.data is Map
+          ? (e.response!.data['message']?.toString() ?? e.toString())
+          : e.toString();
+      AppToast.error(msg, title: 'تعذر إلغاء الطلب');
+      return false;
+    } finally {
+      isLoading.value = false;
     }
   }
 }

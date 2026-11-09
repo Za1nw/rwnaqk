@@ -63,16 +63,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
           .map((json) => HomeProductItem.fromJson(json))
           .toList();
     } catch (_) {
-      // في حال تعذر الاتصال في بيئة التطوير، fallback آمن
-      if (AppEnv.isDevelopment) {
-        return _fallback.getProducts(
-          seed: seed,
-          limit: limit,
-          sort: sort,
-          minPrice: minPrice,
-          maxPrice: maxPrice,
-        );
-      }
+      // لا نفعّل الـ Mock Fallback تلقائياً عند فشل الـ API لضمان ظهور رسائل الخطأ الحقيقية
       rethrow;
     }
   }
@@ -94,9 +85,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
       }
       return null;
     } catch (_) {
-      if (AppEnv.isDevelopment) {
-        return _fallback.getProductById(id);
-      }
+      // لا نفعّل الـ Mock Fallback تلقائياً عند فشل الـ API
       rethrow;
     }
   }
@@ -127,9 +116,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
           .map((json) => ProductReview.fromJson(json))
           .toList();
     } catch (_) {
-      if (AppEnv.isDevelopment) {
-        return _fallback.getProductReviews(productId, rawReviews: rawReviews);
-      }
+      // لا نفعّل الـ Mock Fallback تلقائياً عند فشل الـ API
       rethrow;
     }
   }

@@ -1,6 +1,4 @@
-import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
-import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
 
@@ -10,24 +8,23 @@ class LoginResult {
     required this.requiresTwoFactor,
     required this.requiresEmailVerification,
     this.message,
+    this.token,
+    this.customer,
   });
 
   final bool isSuccess;
   final bool requiresTwoFactor;
   final bool requiresEmailVerification;
   final String? message;
+  final String? token;
+  final CustomerModel? customer;
 }
 
 class LoginService {
-  LoginService(
-    this._api,
-    this._session, {
-    this._authRepository,
-  });
+  LoginService(this._authRepository, this._session);
 
-  final CustomerAuthApiService _api;
+  final IAuthRepository _authRepository;
   final AuthSessionService _session;
-  final IAuthRepository? _authRepository;
 
   Future<LoginResult> login({
     required String email,
@@ -35,167 +32,44 @@ class LoginService {
     String? code,
     String? recoveryCode,
   }) async {
-    final repo = _authRepository;
-    if (repo != null && !AppEnv.enableMockData) {
-      final result = await repo.login(
-        email: email,
-        password: password,
-        code: code,
-        recoveryCode: recoveryCode,
-      );
-      if (result.isSuccess) {
-        try {
-          final customer = await repo.me();
-          _session.setCustomer(customer);
-        } catch (_) {}
-      }
-      return result;
-    }
-
-    final response = await _api.login(
-      email: email.trim(),
+    final result = await _authRepository.login(
+      email: email,
       password: password,
       code: code,
       recoveryCode: recoveryCode,
     );
 
-    final body = response.body;
+    if (result.isSuccess) {
+      CustomerModel? customer = result.customer;
+      if (customer == null) {
+        try {
+          customer = await _authRepository.me();
+        } catch (_) {}
+      }
 
-    if (response.statusCode == 202 && body is Map<String, dynamic>) {
-      return LoginResult(
-        isSuccess: false,
-        requiresTwoFactor: body['two_factor_required'] == true,
-        requiresEmailVerification: false,
-        message: body['message'] as String?,
+      _session.startSession(
+        accessToken: result.token ?? '',
+        customerPayload: customer,
+        emailVerificationRequired: result.requiresEmailVerification,
       );
     }
 
-    if (!response.isOk) {
-      throw AuthApiException.fromResponse(
-        response,
-        fallbackMessage: 'Unable to sign in right now.',
-      );
-    }
-
-    if (body is! Map<String, dynamic>) {
-      throw const AuthApiException(
-        message: 'Unexpected login response from server.',
-      );
-    }
-
-    final token = body['token'];
-
-    if (token is! String || token.trim().isEmpty) {
-      throw const AuthApiException(message: 'Missing token in login response.');
-    }
-
-    _session.startSession(
-      accessToken: token,
-      customerPayload: _parseCustomer(body['customer']),
-      emailVerificationRequired: body['requires_email_verification'] == true,
-    );
-
-    return LoginResult(
-      isSuccess: true,
-      requiresTwoFactor: false,
-      requiresEmailVerification: body['requires_email_verification'] == true,
-      message: body['message'] as String?,
-    );
+    return result;
   }
 
   Future<String> sendEmailVerificationNotification() async {
-    final token = _session.token.value;
-
-    if (token == null || token.isEmpty) {
-      throw const AuthApiException(message: 'No active authenticated session.');
-    }
-
-    final response = await _api.sendEmailVerification(token: token);
-
-    if (response.statusCode == 204) {
-      return 'Email already verified.';
-    }
-
-    if (!response.isOk) {
-      throw AuthApiException.fromResponse(
-        response,
-        fallbackMessage: 'Unable to send verification email.',
-      );
-    }
-
-    final body = response.body;
-
-    if (body is Map<String, dynamic> && body['message'] is String) {
-      return body['message'] as String;
-    }
-
+    await _authRepository.sendEmailVerificationCode();
     return 'Verification email sent.';
   }
 
   Future<String> sendEmailVerificationCode() async {
-    final token = _session.token.value;
-
-    if (token == null || token.isEmpty) {
-      throw const AuthApiException(message: 'No active authenticated session.');
-    }
-
-    final response = await _api.sendEmailVerificationCode(token: token);
-
-    if (response.statusCode == 204) {
-      return 'Email already verified.';
-    }
-
-    if (!response.isOk) {
-      throw AuthApiException.fromResponse(
-        response,
-        fallbackMessage: 'Unable to send verification code.',
-      );
-    }
-
-    final body = response.body;
-
-    if (body is Map<String, dynamic> && body['message'] is String) {
-      return body['message'] as String;
-    }
-
+    await _authRepository.sendEmailVerificationCode();
     return 'Verification code sent.';
   }
 
   Future<String> verifyEmailVerificationCode({required String code}) async {
-    final token = _session.token.value;
-
-    if (token == null || token.isEmpty) {
-      throw const AuthApiException(message: 'No active authenticated session.');
-    }
-
-    final response = await _api.verifyEmailVerificationCode(
-      token: token,
-      code: code.trim(),
-    );
-
-    if (!response.isOk) {
-      throw AuthApiException.fromResponse(
-        response,
-        fallbackMessage: 'Unable to verify email code.',
-      );
-    }
-
+    await _authRepository.verifyEmailCode(code: code);
     await _session.completeEmailVerification();
-
-    final body = response.body;
-
-    if (body is Map<String, dynamic> && body['message'] is String) {
-      return body['message'] as String;
-    }
-
     return 'Email verified successfully.';
-  }
-
-  CustomerModel? _parseCustomer(dynamic payload) {
-    if (payload is Map<String, dynamic>) {
-      return CustomerModel.fromJson(payload);
-    }
-
-    return null;
   }
 }

@@ -1,7 +1,5 @@
 import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
-import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 import 'package:rwnaqk_frontend/core/services/geo/geo_lookup_api_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
@@ -17,28 +15,16 @@ class RegisterResult {
 }
 
 /// هذا الملف مسؤول عن المنطق المساعد الخاص بشاشة إنشاء الحساب.
-///
-/// نستخدمه لفصل:
-/// - البيانات الثابتة مثل قائمة المحافظات
-/// - التحقق الأولي من صلاحية الإرسال
-///
-/// لاحقًا عند ربط الـ API، سيكون هذا الملف هو المكان الطبيعي لـ:
-/// - register
-/// - التحقق من رقم الهاتف
-/// - OTP
-/// - حفظ بيانات المستخدم
 class RegisterService {
   RegisterService(
-    this._api,
-    this._session,
-    this._geoLookupApiService, {
     this._authRepository,
-  });
+    this._session,
+    this._geoLookupApiService,
+  );
 
-  final CustomerAuthApiService _api;
+  final IAuthRepository _authRepository;
   final AuthSessionService _session;
   final GeoLookupApiService _geoLookupApiService;
-  final IAuthRepository? _authRepository;
 
   final RxList<String> governorates = <String>[].obs;
   String _defaultCountryName = 'اليمن';
@@ -70,8 +56,6 @@ class RegisterService {
   String defaultCountryName() => _defaultCountryName;
 
   /// هذه الدالة تتحقق من صلاحية عملية التسجيل قبل المتابعة.
-  ///
-  /// نستخدمها الآن لفصل قرار السماح بالإرسال عن الكنترولر الرئيسي.
   bool canRegister({
     required bool isFormValid,
     required String? governorate,
@@ -98,85 +82,37 @@ class RegisterService {
     required bool termsAccepted,
     required bool privacyPolicyAccepted,
   }) async {
-    final repo = _authRepository;
-    if (repo != null && !AppEnv.enableMockData) {
-      final result = await repo.register(
-        firstName: firstName,
-        lastName: lastName,
-        phone: phone,
-        email: email,
-        country: country,
-        governorate: governorate,
-        password: password,
-        passwordConfirmation: passwordConfirmation,
-        termsAccepted: termsAccepted,
-        privacyPolicyAccepted: privacyPolicyAccepted,
-      );
-      if (result.isSuccess) {
-        try {
-          final customer = await repo.me();
-          _session.setCustomer(customer);
-        } catch (_) {}
-      }
-      return RegisterResult(
-        message: result.message ?? 'Registered successfully.',
-        requiresEmailVerification: result.requiresEmailVerification,
-      );
-    }
-
-    final response = await _api.register(
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
-      phone: phone.trim(),
-      email: email.trim(),
-      country: country.trim(),
-      governorate: governorate.trim(),
+    final result = await _authRepository.register(
+      firstName: firstName,
+      lastName: lastName,
+      phone: phone,
+      email: email,
+      country: country,
+      governorate: governorate,
       password: password,
       passwordConfirmation: passwordConfirmation,
       termsAccepted: termsAccepted,
       privacyPolicyAccepted: privacyPolicyAccepted,
     );
 
-    if (!response.isOk) {
-      throw AuthApiException.fromResponse(
-        response,
-        fallbackMessage: 'Unable to create account right now.',
+    if (result.isSuccess) {
+      CustomerModel? customer = result.customer;
+      if (customer == null) {
+        try {
+          customer = await _authRepository.me();
+        } catch (_) {}
+      }
+
+      _session.startSession(
+        accessToken: result.token ?? '',
+        customerPayload: customer,
+        emailVerificationRequired: result.requiresEmailVerification,
       );
     }
-
-    final body = response.body;
-
-    if (body is! Map<String, dynamic>) {
-      throw const AuthApiException(
-        message: 'Unexpected register response from server.',
-      );
-    }
-
-    final token = body['token'];
-
-    if (token is! String || token.trim().isEmpty) {
-      throw const AuthApiException(
-        message: 'Missing token in register response.',
-      );
-    }
-
-    _session.startSession(
-      accessToken: token,
-      customerPayload: _parseCustomer(body['customer']),
-      emailVerificationRequired: body['requires_email_verification'] == true,
-    );
 
     return RegisterResult(
-      message: (body['message'] as String?) ?? 'Registered successfully.',
-      requiresEmailVerification: body['requires_email_verification'] == true,
+      message: result.message ?? 'Registered successfully.',
+      requiresEmailVerification: result.requiresEmailVerification,
     );
-  }
-
-  CustomerModel? _parseCustomer(dynamic payload) {
-    if (payload is Map<String, dynamic>) {
-      return CustomerModel.fromJson(payload);
-    }
-
-    return null;
   }
 }
