@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/support/widgets/support_frequent_questions.dart';
 

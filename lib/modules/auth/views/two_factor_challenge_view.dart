@@ -1,126 +1,151 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/auth/controllers/two_factor_challenge_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk_frontend/modules/auth/widgets/auth_centered_container.dart';
+import 'package:rwnaqk_frontend/modules/auth/providers/auth_flow_providers.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
+import 'package:rwnaqk_frontend/modules/auth/widgets/auth_centered_container.dart';
+import 'package:rwnaqk_frontend/routes/app_route_args.dart';
 
-class TwoFactorChallengeScreen extends GetView<TwoFactorChallengeController> {
+class TwoFactorChallengeScreen extends ConsumerStatefulWidget {
   const TwoFactorChallengeScreen({super.key});
 
   @override
+  ConsumerState<TwoFactorChallengeScreen> createState() =>
+      _TwoFactorChallengeScreenState();
+}
+
+class _TwoFactorChallengeScreenState
+    extends ConsumerState<TwoFactorChallengeScreen> {
+  String _loginEmail = '';
+  String _loginPassword = '';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map) {
+      _loginEmail = (args[AppRouteArgs.loginEmail] ?? '').toString().trim();
+      _loginPassword = (args[AppRouteArgs.loginPassword] ?? '').toString();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(twoFactorChallengeFlowProvider);
+    final notifier = ref.read(twoFactorChallengeFlowProvider.notifier);
+    final recoveryMode = state.showRecoveryInput;
+
     return Scaffold(
       backgroundColor: context.background,
       body: AuthBlobBackground(
         child: SafeArea(
           child: AuthCenteredContainer(
-            child: Obx(() {
-              final recoveryMode = controller.showRecoveryInput.value;
-
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    recoveryMode
-                        ? Tk.loginTwoFactorRecoveryTitle.tr
-                        : Tk.loginTwoFactorTitle.tr,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: context.foreground,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
-                    ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  recoveryMode
+                      ? Tk.loginTwoFactorRecoveryTitle.tr
+                      : Tk.loginTwoFactorTitle.tr,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.foreground,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    recoveryMode
-                        ? Tk.loginTwoFactorRecoveryHint.tr
-                        : Tk.fpAuthenticatorCodeHint.tr,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: context.mutedForeground,
-                      fontSize: 13,
-                      height: 1.35,
-                    ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  recoveryMode
+                      ? Tk.loginTwoFactorRecoveryHint.tr
+                      : Tk.fpAuthenticatorCodeHint.tr,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.mutedForeground,
+                    fontSize: 13,
+                    height: 1.35,
                   ),
-                  const SizedBox(height: 16),
-                  if (recoveryMode)
-                    TextField(
-                      enabled: !controller.isLoading.value,
-                      textInputAction: TextInputAction.done,
-                      onChanged: controller.setRecoveryCode,
-                      onSubmitted: (_) => controller.submit(),
-                      decoration: InputDecoration(
-                        hintText: Tk.loginTwoFactorRecoveryPlaceholder.tr,
-                        filled: true,
-                        fillColor: context.input,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(color: context.border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(color: context.border),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(color: context.primary),
-                        ),
+                ),
+                const SizedBox(height: 16),
+                if (recoveryMode)
+                  TextField(
+                    enabled: !state.isLoading,
+                    textInputAction: TextInputAction.done,
+                    onChanged: notifier.setRecoveryCode,
+                    onSubmitted: (_) => notifier.submit(
+                      loginEmail: _loginEmail,
+                      loginPassword: _loginPassword,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: Tk.loginTwoFactorRecoveryPlaceholder.tr,
+                      filled: true,
+                      fillColor: context.input,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: context.border),
                       ),
-                    )
-                  else
-                    Directionality(
-                      textDirection: TextDirection.ltr,
-                      child: _OtpCodeGrid(
-                        onChanged: controller.setCode,
-                        enabled: !controller.isLoading.value,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: context.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: context.primary),
                       ),
                     ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    height: 48,
-                    child: FilledButton(
-                      onPressed:
-                          controller.isLoading.value || !controller.canSubmit
-                          ? null
-                          : controller.submit,
-                      child: controller.isLoading.value
-                          ? SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: context.primaryForeground,
-                              ),
-                            )
-                          : Text(Tk.loginTwoFactorContinue.tr),
+                  )
+                else
+                  Directionality(
+                    textDirection: TextDirection.ltr,
+                    child: _OtpCodeGrid(
+                      onChanged: notifier.setCode,
+                      enabled: !state.isLoading,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: controller.isLoading.value
+                const SizedBox(height: 14),
+                SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: state.isLoading || !state.canSubmit
                         ? null
-                        : controller.toggleMode,
-                    child: Text(
-                      recoveryMode
-                          ? Tk.loginTwoFactorUseAuthCode.tr
-                          : Tk.loginTwoFactorUseRecoveryCode.tr,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: context.primary,
-                        fontWeight: FontWeight.w700,
-                        decoration: TextDecoration.underline,
-                      ),
+                        : () => notifier.submit(
+                              loginEmail: _loginEmail,
+                              loginPassword: _loginPassword,
+                            ),
+                    child: state.isLoading
+                        ? SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: context.primaryForeground,
+                            ),
+                          )
+                        : Text(Tk.loginTwoFactorContinue.tr),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: state.isLoading ? null : notifier.toggleMode,
+                  child: Text(
+                    recoveryMode
+                        ? Tk.loginTwoFactorUseAuthCode.tr
+                        : Tk.loginTwoFactorUseRecoveryCode.tr,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: context.primary,
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.underline,
                     ),
                   ),
-                ],
-              );
-            }),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -221,8 +246,8 @@ class _OtpCodeGridState extends State<_OtpCodeGrid> {
       final nextValue = i < startIndex
           ? _controllers[i].text
           : i - startIndex < digits.length
-          ? digits[i - startIndex]
-          : '';
+              ? digits[i - startIndex]
+              : '';
       _controllers[i].text = nextValue;
       _controllers[i].selection = TextSelection.collapsed(
         offset: nextValue.length,
@@ -248,7 +273,6 @@ class _OtpCodeGridState extends State<_OtpCodeGrid> {
     final digits = _normalizeVerificationDigits(value);
 
     if (digits.length > 1) {
-      // Always distribute pasted codes from the first box (left-to-right).
       _applyCode(digits, startIndex: 0);
       return;
     }
@@ -292,8 +316,8 @@ class _OtpCodeGridState extends State<_OtpCodeGrid> {
           color: isFocused
               ? context.primary
               : hasValue
-              ? context.primary.withValues(alpha: 0.45)
-              : context.border,
+                  ? context.primary.withValues(alpha: 0.45)
+                  : context.border,
           width: isFocused ? 1.7 : 1.05,
         ),
         boxShadow: [

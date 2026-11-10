@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_controller.dart';
 
 /// ورقة اختيار لغة التطبيق الفاخرة (Luxury Language Selection Bottom Sheet)
-class LanguageSelectionSheet extends StatelessWidget {
+class LanguageSelectionSheet extends ConsumerWidget {
   const LanguageSelectionSheet({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -39,9 +39,13 @@ class LanguageSelectionSheet extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final app = Get.find<AppSettingsController>();
+    final currentLocale = ref.watch(appLocaleProvider);
+    final localeNotifier = ref.read(appLocaleProvider.notifier);
+
+    final isArabic = currentLocale.languageCode == 'ar';
+    final isEnglish = currentLocale.languageCode == 'en';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
@@ -82,38 +86,32 @@ class LanguageSelectionSheet extends StatelessWidget {
           const SizedBox(height: 20),
 
           // خيار اللغة العربية
-          Obx(() {
-            final isArabic = app.locale.value.languageCode == 'ar';
-            return _LanguageOptionTile(
-              label: 'العربية',
-              sublabel: 'اللغة العربية (الافتراضية)',
-              symbol: 'ع',
-              isSelected: isArabic,
-              isDark: isDark,
-              onTap: () {
-                app.setLanguage('ar');
-                Navigator.pop(context);
-              },
-            );
-          }),
+          _LanguageOptionTile(
+            label: 'العربية',
+            sublabel: 'اللغة العربية (الافتراضية)',
+            symbol: 'ع',
+            isSelected: isArabic,
+            isDark: isDark,
+            onTap: () {
+              localeNotifier.setLocale(const Locale('ar', 'YE'));
+              Navigator.pop(context);
+            },
+          ),
 
           const SizedBox(height: 10),
 
           // خيار اللغة الإنجليزية
-          Obx(() {
-            final isEnglish = app.locale.value.languageCode == 'en';
-            return _LanguageOptionTile(
-              label: 'English',
-              sublabel: 'English (International Edition)',
-              symbol: 'EN',
-              isSelected: isEnglish,
-              isDark: isDark,
-              onTap: () {
-                app.setLanguage('en');
-                Navigator.pop(context);
-              },
-            );
-          }),
+          _LanguageOptionTile(
+            label: 'English',
+            sublabel: 'English (International Edition)',
+            symbol: 'EN',
+            isSelected: isEnglish,
+            isDark: isDark,
+            onTap: () {
+              localeNotifier.setLocale(const Locale('en', 'US'));
+              Navigator.pop(context);
+            },
+          ),
         ],
       ),
     );
@@ -139,42 +137,38 @@ class _LanguageOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeBorderColor = isDark ? BrandColors.gold : BrandColors.burgundy;
-    final activeBg = isDark
-        ? BrandColors.gold.withValues(alpha: 0.12)
-        : BrandColors.burgundy.withValues(alpha: 0.06);
-
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
         onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          duration: const Duration(milliseconds: 220),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? activeBg : Colors.transparent,
+            color: isSelected
+                ? (isDark
+                    ? BrandColors.gold.withValues(alpha: 0.15)
+                    : BrandColors.burgundy.withValues(alpha: 0.08))
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isSelected
-                  ? activeBorderColor
-                  : (isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.black.withValues(alpha: 0.06)),
-              width: isSelected ? 1.6 : 1,
+                  ? (isDark ? BrandColors.gold : BrandColors.burgundy)
+                  : (isDark ? Colors.white12 : Colors.black12),
+              width: isSelected ? 1.5 : 1,
             ),
           ),
           child: Row(
             children: [
-              // رمز اللغة
               Container(
-                width: 40,
-                height: 40,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? activeBorderColor.withValues(alpha: 0.18)
-                      : (isDark ? Colors.white10 : const Color(0xFFF2ECEF)),
-                  borderRadius: BorderRadius.circular(12),
+                      ? (isDark ? BrandColors.gold : BrandColors.burgundy)
+                      : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
                   child: Text(
@@ -183,15 +177,13 @@ class _LanguageOptionTile extends StatelessWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w900,
                       color: isSelected
-                          ? activeBorderColor
+                          ? Colors.white
                           : (isDark ? Colors.white70 : Colors.black87),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-
-              // اسم اللغة ووصفها
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,15 +193,13 @@ class _LanguageOptionTile extends StatelessWidget {
                       style: AppTextTheme.cairo(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w800,
-                        color: isDark
-                            ? Colors.white
-                            : AppColors.textPrimaryLight,
+                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
                       ),
                     ),
                     Text(
                       sublabel,
                       style: AppTextTheme.cairo(
-                        fontSize: 11,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.w600,
                         color: isDark
                             ? AppColors.textSecondaryDark
@@ -219,23 +209,11 @@ class _LanguageOptionTile extends StatelessWidget {
                   ],
                 ),
               ),
-
-              // شارة التحديد
               if (isSelected)
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: activeBorderColor,
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.check_rounded,
-                      size: 15,
-                      color: Colors.white,
-                    ),
-                  ),
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: isDark ? BrandColors.gold : BrandColors.burgundy,
+                  size: 22,
                 ),
             ],
           ),

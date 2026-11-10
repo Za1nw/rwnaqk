@@ -1,5 +1,5 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/utils/app_breakpoints.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
@@ -48,7 +48,7 @@ const ListingGridSliver({
 
                 return ProductCard(
                   item: item,
-                  onTap: (_) => Get.toNamed(
+                  onTap: (_) => AppNav.toNamed(
                     AppRoutes.product,
                     arguments: {'item': item},
                   ),

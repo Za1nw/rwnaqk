@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/profile_service.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/modules/customer/providers/customer_profile_providers.dart';
 
 /// بطاقة عرض تفاصيل المستخدم الشخصية مع إمكانية النسخ وحالة التوثيق
 class ProfileInfoTile extends StatelessWidget {

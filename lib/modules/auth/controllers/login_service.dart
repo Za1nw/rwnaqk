@@ -1,4 +1,4 @@
-import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
+import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
 
@@ -24,7 +24,7 @@ class LoginService {
   LoginService(this._authRepository, this._session);
 
   final IAuthRepository _authRepository;
-  final AuthSessionService _session;
+  final AuthSessionNotifier _session;
 
   Future<LoginResult> login({
     required String email,

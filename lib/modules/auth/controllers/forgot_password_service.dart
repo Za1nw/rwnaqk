@@ -1,4 +1,4 @@
-import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
+import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mask_utils.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
@@ -23,7 +23,7 @@ class ForgotPasswordService {
   ForgotPasswordService(this._authRepository, this._session);
 
   final IAuthRepository _authRepository;
-  final AuthSessionService _session;
+  final AuthSessionNotifier _session;
 
   /// هذه الدالة تعيد الهدف الحقيقي حسب وسيلة الاستعادة المختارة.
   String resolveTarget(RecoveryMethod method) {

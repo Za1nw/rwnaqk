@@ -1,23 +1,26 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
-import 'package:rwnaqk_frontend/routes/app_routes.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk_frontend/modules/auth/controllers/login_service.dart';
 import 'package:rwnaqk_frontend/core/utils/app_notifier.dart';
+import 'package:rwnaqk_frontend/modules/auth/providers/auth_providers.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_centered_container.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
-class EmailVerificationScreen extends StatefulWidget {
+class EmailVerificationScreen extends ConsumerStatefulWidget {
   const EmailVerificationScreen({super.key});
 
   @override
-  State<EmailVerificationScreen> createState() =>
+  ConsumerState<EmailVerificationScreen> createState() =>
       _EmailVerificationScreenState();
 }
 
-class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
+class _EmailVerificationScreenState
+    extends ConsumerState<EmailVerificationScreen> {
   static const String _arabicIndicDigits = '٠١٢٣٤٥٦٧٨٩';
   static const String _easternArabicDigits = '۰۱۲۳۴۵۶۷۸۹';
 
@@ -62,7 +65,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     });
 
     try {
-      final message = await Get.find<LoginService>()
+      final message = await ref.read(loginServiceProvider)
           .sendEmailVerificationCode();
       AppNotifier.success(message);
     } catch (error) {
@@ -86,10 +89,10 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     });
 
     try {
-      final message = await Get.find<LoginService>()
+      final message = await ref.read(loginServiceProvider)
           .verifyEmailVerificationCode(code: _verificationCode);
       AppNotifier.success(message);
-      Get.offAllNamed(AppRoutes.main);
+      AppNav.offAllNamed(AppRoutes.main);
     } catch (error) {
       AppNotifier.errorFrom(error);
     } finally {
@@ -114,7 +117,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final arguments = Get.arguments;
+    final arguments = ModalRoute.of(context)?.settings.arguments;
     final email = arguments is Map
         ? (arguments['email']?.toString().trim() ?? '')
         : '';
@@ -275,7 +278,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 ),
                 const SizedBox(height: 4),
                 TextButton(
-                  onPressed: () => Get.offAllNamed(AppRoutes.login),
+                  onPressed: () => AppNav.offAllNamed(AppRoutes.login),
                   child: Text(Tk.loginSignIn.tr),
                 ),
               ],

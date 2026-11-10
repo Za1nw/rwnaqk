@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 
 class AppPageLoading extends StatelessWidget {
@@ -19,22 +18,22 @@ class AppPageLoading extends StatelessWidget {
   });
 
   /// مؤشر تحميل افتراضي للمتجر
-  static Widget get defaultIndicator => SizedBox(
+  static Widget get defaultIndicator => const SizedBox(
         width: 34,
         height: 34,
         child: CircularProgressIndicator(
           strokeWidth: 2.8,
-          valueColor: AlwaysStoppedAnimation<Color>(Get.context!.primary),
+          valueColor: AlwaysStoppedAnimation<Color>(BrandColors.burgundy),
         ),
       );
 
   /// مؤشر تحميل للبطاقات (Product Cards)
-  static Widget get productCardIndicator => SizedBox(
+  static Widget get productCardIndicator => const SizedBox(
         width: 24,
         height: 24,
         child: CircularProgressIndicator(
           strokeWidth: 2.5,
-          valueColor: AlwaysStoppedAnimation<Color>(Get.context!.primary),
+          valueColor: AlwaysStoppedAnimation<Color>(BrandColors.burgundy),
         ),
       );
 

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_controller.dart';
+import 'package:rwnaqk_frontend/modules/customer/providers/customer_profile_providers.dart';
 
 /// ورقة اختيار مظهر التطبيق الفاخرة (Theme Mode Selection Bottom Sheet)
 /// تتيح الاختيار بين: نهاري (فاتح)، ليلي (داكن)، أو تلقائي (حسب إعدادات الجهاز)
-class ThemeModeSelectionSheet extends StatelessWidget {
+class ThemeModeSelectionSheet extends ConsumerWidget {
   const ThemeModeSelectionSheet({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -40,9 +40,10 @@ class ThemeModeSelectionSheet extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final app = Get.find<AppSettingsController>();
+    final currentMode = ref.watch(appThemeModeProvider);
+    final themeNotifier = ref.read(appThemeModeProvider.notifier);
 
     final themeOptions = [
       {
@@ -59,8 +60,8 @@ class ThemeModeSelectionSheet extends StatelessWidget {
       },
       {
         'mode': ThemeMode.system,
-        'title': 'تلقائي (حسب إعدادات الجهاز)',
-        'subtitle': 'يتطابق المظهر تلقائياً مع نظام هاتفك',
+        'title': 'تلقائي (حسب الجهاز)',
+        'subtitle': 'يتزامن تلقائياً مع نظام تشغيل هاتفك',
         'icon': Icons.brightness_auto_rounded,
       },
     ];
@@ -70,7 +71,7 @@ class ThemeModeSelectionSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // مقبض السحب
+          // مقبض السحب العلوي
           Container(
             width: 38,
             height: 4,
@@ -81,9 +82,9 @@ class ThemeModeSelectionSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // العنوان
+          // العنوان الرئيسي
           Text(
-            'المظهر ووضع العرض • Theme',
+            'مظهر التطبيق • Theme Mode',
             style: AppTextTheme.cairo(
               fontSize: 16.5,
               fontWeight: FontWeight.w900,
@@ -92,7 +93,7 @@ class ThemeModeSelectionSheet extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'اختر النمط المفضل لعينيك لتجربة تسوق راقية',
+            'اختر النمط البصري المفضل لتجربة تسوق مريحة',
             style: AppTextTheme.cairo(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -103,124 +104,127 @@ class ThemeModeSelectionSheet extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // الخيارات الثلاثة
+          // قائمة الخيارات الثلاثة
           ...themeOptions.map((opt) {
             final mode = opt['mode'] as ThemeMode;
-            final title = opt['title'] as String;
-            final subtitle = opt['subtitle'] as String;
-            final icon = opt['icon'] as IconData;
+            final isSelected = currentMode == mode;
 
-            return Obx(() {
-              final isSelected = app.themeMode.value == mode;
-              final activeBorderColor = isDark
-                  ? BrandColors.gold
-                  : BrandColors.burgundy;
-              final activeBg = isDark
-                  ? BrandColors.gold.withValues(alpha: 0.12)
-                  : BrandColors.burgundy.withValues(alpha: 0.06);
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () {
-                      app.setThemeMode(mode);
-                      Navigator.pop(context);
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected ? activeBg : Colors.transparent,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected
-                              ? activeBorderColor
-                              : (isDark
-                                    ? Colors.white.withValues(alpha: 0.08)
-                                    : Colors.black.withValues(alpha: 0.06)),
-                          width: isSelected ? 1.6 : 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? activeBorderColor.withValues(alpha: 0.18)
-                                  : (isDark
-                                        ? Colors.white10
-                                        : const Color(0xFFF2ECEF)),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              icon,
-                              size: 20,
-                              color: isSelected
-                                  ? activeBorderColor
-                                  : (isDark ? Colors.white70 : Colors.black87),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  title,
-                                  style: AppTextTheme.cairo(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: isDark
-                                        ? Colors.white
-                                        : AppColors.textPrimaryLight,
-                                  ),
-                                ),
-                                Text(
-                                  subtitle,
-                                  style: AppTextTheme.cairo(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark
-                                        ? AppColors.textSecondaryDark
-                                        : AppColors.textSecondaryLight,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (isSelected)
-                            Container(
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: activeBorderColor,
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.check_rounded,
-                                  size: 15,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            });
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _ThemeOptionTile(
+                title: opt['title'] as String,
+                subtitle: opt['subtitle'] as String,
+                icon: opt['icon'] as IconData,
+                isSelected: isSelected,
+                isDark: isDark,
+                onTap: () {
+                  themeNotifier.setThemeMode(mode);
+                  Navigator.pop(context);
+                },
+              ),
+            );
           }),
         ],
+      ),
+    );
+  }
+}
+
+class _ThemeOptionTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _ThemeOptionTile({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDark
+                    ? BrandColors.gold.withValues(alpha: 0.15)
+                    : BrandColors.burgundy.withValues(alpha: 0.08))
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? (isDark ? BrandColors.gold : BrandColors.burgundy)
+                  : (isDark ? Colors.white12 : Colors.black12),
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? (isDark ? BrandColors.gold : BrandColors.burgundy)
+                      : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark ? Colors.white70 : Colors.black87),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextTheme.cairo(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: AppTextTheme.cairo(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: isDark ? BrandColors.gold : BrandColors.burgundy,
+                  size: 22,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

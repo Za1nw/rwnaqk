@@ -1,66 +1,144 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
-import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'dart:async';
 
-import 'package:rwnaqk_frontend/modules/onboarding/controllers/onboarding_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
+import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_link_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_toggles.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
+import 'package:rwnaqk_frontend/modules/onboarding/controllers/onboarding_service.dart';
+import 'package:rwnaqk_frontend/modules/onboarding/providers/onboarding_providers.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
-class OnboardingScreen extends GetView<OnboardingController> {
+/// شاشة التهيئة الترحيبية للعميل [OnboardingScreen].
+///
+/// تمت هجرتها بنجاح إلى Riverpod 3 مع الحفاظ التام على دورة حياة المتحكمات والتصميم.
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+  late final PageController _pageCtrl;
+  int _pageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageCtrl = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onPageChanged(int index) {
+    if (!mounted) return;
+    setState(() {
+      _pageIndex = index;
+    });
+  }
+
+  void _onSkip(int totalSlides) {
+    if (totalSlides <= 0) return;
+    _pageCtrl.animateToPage(
+      totalSlides - 1,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _onNext(bool isLast) {
+    if (isLast) {
+      _onGetStarted();
+      return;
+    }
+
+    _pageCtrl.nextPage(
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _onGetStarted() {
+    unawaited(ref.read(onboardingCompletionProvider.notifier).completeOnboarding());
+
+    final isAuthenticated = ref.read(isAuthenticatedProvider);
+    final destination = isAuthenticated ? AppRoutes.main : AppRoutes.login;
+
+    AppNav.offAllNamed(destination);
+  }
+
+  void _onHaveAccount() {
+    unawaited(ref.read(onboardingCompletionProvider.notifier).completeOnboarding());
+    AppNav.toNamed(AppRoutes.login);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final service = ref.watch(onboardingServiceProvider);
+    final slides = service.slides;
+    final isLast = service.isLastPage(
+      currentIndex: _pageIndex,
+      totalSlides: slides.length,
+    );
+
     return Scaffold(
       backgroundColor: context.background,
       body: SafeArea(
         child: AuthBlobBackground(
-        child: _OnboardingShell(controller: controller),
-        ),
-      ),
-    );
-  }
-}
-
-/// =========================
-/// SHELL (Top / Content / Bottom) - no overlaps
-/// =========================
-class _OnboardingShell extends StatelessWidget {
-  final OnboardingController controller;
-
-  const _OnboardingShell({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox.expand( // ✅ يملأ الشاشة
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          decoration: BoxDecoration(
-            color: context.card.withValues(alpha: context.isDark ? .62 : .48),
-            // borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: context.border.withValues(alpha: .18)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: context.isDark ? .25 : .10),
-                offset: const Offset(0, 18),
-                blurRadius: 32,
+          child: SizedBox.expand(
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.card.withValues(alpha: context.isDark ? .62 : .48),
+                  border: Border.all(color: context.border.withValues(alpha: .18)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: context.isDark ? .25 : .10),
+                      offset: const Offset(0, 18),
+                      blurRadius: 32,
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+                  child: Column(
+                    children: [
+                      _TopBar(
+                        isLast: isLast,
+                        onSkip: () => _onSkip(slides.length),
+                      ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: _Content(
+                          pageCtrl: _pageCtrl,
+                          slides: slides,
+                          onPageChanged: _onPageChanged,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      _BottomBar(
+                        pageIndex: _pageIndex,
+                        totalSlides: slides.length,
+                        isLast: isLast,
+                        onNext: () => _onNext(isLast),
+                        onHaveAccount: _onHaveAccount,
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
-            child: Column(
-              children: [
-                _TopBar(controller: controller),
-                const SizedBox(height: 10),
-                Expanded(child: _Content(controller: controller)),
-                const SizedBox(height: 14),
-                _BottomBar(controller: controller),
-              ],
             ),
           ),
         ),
@@ -68,13 +146,16 @@ class _OnboardingShell extends StatelessWidget {
     );
   }
 }
-/// =========================
-/// TOP BAR: Toggles + Skip (aligned, no stacking)
-/// =========================
-class _TopBar extends StatelessWidget {
-  final OnboardingController controller;
 
-  const _TopBar({required this.controller});
+/// الشريط العلوي: أزرار التبديل + زر التخطي
+class _TopBar extends StatelessWidget {
+  final bool isLast;
+  final VoidCallback onSkip;
+
+  const _TopBar({
+    required this.isLast,
+    required this.onSkip,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -82,13 +163,11 @@ class _TopBar extends StatelessWidget {
       children: [
         const AppToggles(alignment: Alignment.centerLeft),
         const Spacer(),
-        Obx(() {
-          if (controller.isLast) {
-            // ✅ keeps layout stable
-            return const SizedBox(width: 86, height: 40);
-          }
-          return TextButton(
-            onPressed: controller.onSkip,
+        if (isLast)
+          const SizedBox(width: 86, height: 40)
+        else
+          TextButton(
+            onPressed: onSkip,
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               splashFactory: NoSplash.splashFactory,
@@ -98,20 +177,23 @@ class _TopBar extends StatelessWidget {
               Tk.onboardingSkip.tr,
               style: const TextStyle(fontWeight: FontWeight.w900),
             ),
-          );
-        }),
+          ),
       ],
     );
   }
 }
 
-/// =========================
-/// CONTENT: PageView only (centered, clean)
-/// =========================
+/// المحتوى الرئيسي: PageView للشرائح
 class _Content extends StatelessWidget {
-  final OnboardingController controller;
+  final PageController pageCtrl;
+  final List<OnboardingSlide> slides;
+  final ValueChanged<int> onPageChanged;
 
-  const _Content({required this.controller});
+  const _Content({
+    required this.pageCtrl,
+    required this.slides,
+    required this.onPageChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +201,6 @@ class _Content extends StatelessWidget {
       builder: (context, c) {
         final h = c.maxHeight;
 
-        // ✅ adaptive sizing based on available height
         final compact = h < 520;
         final iconSize = compact ? 108.0 : 140.0;
         final innerSize = compact ? 94.0 : 124.0;
@@ -127,11 +208,11 @@ class _Content extends StatelessWidget {
         final subSize = compact ? 13.8 : 15.0;
 
         return PageView.builder(
-          controller: controller.pageCtrl,
-          onPageChanged: controller.onPageChanged,
-          itemCount: controller.slides.length,
+          controller: pageCtrl,
+          onPageChanged: onPageChanged,
+          itemCount: slides.length,
           itemBuilder: (_, i) {
-            final s = controller.slides[i];
+            final s = slides[i];
 
             return _OnboardingPage(
               icon: s.icon,
@@ -183,7 +264,6 @@ class _OnboardingPage extends StatelessWidget {
               inner: iconInner,
             ),
             const SizedBox(height: 20),
-
             Text(
               title,
               textAlign: TextAlign.center,
@@ -196,7 +276,6 @@ class _OnboardingPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
@@ -217,7 +296,6 @@ class _OnboardingPage extends StatelessWidget {
   }
 }
 
-/// Badge icon (clean + consistent)
 class _IconBadge extends StatelessWidget {
   final IconData icon;
   final double size;
@@ -274,38 +352,39 @@ class _IconBadge extends StatelessWidget {
   }
 }
 
-/// =========================
-/// BOTTOM: Dots + Main button + Link
-/// =========================
+/// الشريط السفلي: نقاط المؤشر + زر الإجراء الرئيسي + رابط تسجيل الدخول
 class _BottomBar extends StatelessWidget {
-  final OnboardingController controller;
+  final int pageIndex;
+  final int totalSlides;
+  final bool isLast;
+  final VoidCallback onNext;
+  final VoidCallback onHaveAccount;
 
-  const _BottomBar({required this.controller});
+  const _BottomBar({
+    required this.pageIndex,
+    required this.totalSlides,
+    required this.isLast,
+    required this.onNext,
+    required this.onHaveAccount,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Obx(
-          () => _Dots(
-            count: controller.slides.length,
-            index: controller.pageIndex.value,
-          ),
+        _Dots(
+          count: totalSlides,
+          index: pageIndex,
         ),
         const SizedBox(height: 14),
-        Obx(
-          () => AppButton(
-            text: (controller.isLast
-                    ? Tk.onboardingGetStarted
-                    : Tk.onboardingNext)
-                .tr,
-            onPressed: controller.onNext,
-          ),
+        AppButton(
+          text: (isLast ? Tk.onboardingGetStarted : Tk.onboardingNext).tr,
+          onPressed: onNext,
         ),
         const SizedBox(height: 10),
         AppLinkButton(
           text: Tk.onboardingHaveAccount.tr,
-          onPressed: controller.onHaveAccount,
+          onPressed: onHaveAccount,
         ),
       ],
     );

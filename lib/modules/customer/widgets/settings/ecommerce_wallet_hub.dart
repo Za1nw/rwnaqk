@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
@@ -53,7 +53,7 @@ class EcommerceWalletHub extends StatelessWidget {
               value: walletBalance,
               icon: Icons.account_balance_wallet_outlined,
               accentColor: BrandColors.gold,
-              onTap: onWalletTap ?? () => Get.toNamed(AppRoutes.profile),
+              onTap: onWalletTap ?? () => AppNav.toNamed(AppRoutes.profile),
             ),
           ),
 
@@ -68,7 +68,7 @@ class EcommerceWalletHub extends StatelessWidget {
               accentColor: isDark
                   ? const Color(0xFF75D6A5)
                   : const Color(0xFF176B45),
-              onTap: onCouponsTap ?? () => Get.toNamed(AppRoutes.cart),
+              onTap: onCouponsTap ?? () => AppNav.toNamed(AppRoutes.cart),
             ),
           ),
 
@@ -81,7 +81,7 @@ class EcommerceWalletHub extends StatelessWidget {
               value: loyaltyPoints,
               icon: Icons.auto_awesome_outlined,
               accentColor: isDark ? AppColors.gold : AppColors.burgundy,
-              onTap: onPointsTap ?? () => Get.toNamed(AppRoutes.profile),
+              onTap: onPointsTap ?? () => AppNav.toNamed(AppRoutes.profile),
             ),
           ),
         ],

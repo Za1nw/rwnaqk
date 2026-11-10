@@ -1,4 +1,3 @@
-import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 
 class TwoFactorSettingsState {
@@ -20,13 +19,13 @@ class TwoFactorSettingsState {
 }
 
 class TwoFactorSettingsService {
-  TwoFactorSettingsService(this._api, this._session);
+  TwoFactorSettingsService(this._api, {this._getToken});
 
   final CustomerAuthApiService _api;
-  final AuthSessionService _session;
+  final String Function()? _getToken;
 
   String _tokenOrThrow() {
-    final token = (_session.token.value ?? '').trim();
+    final token = (_getToken?.call() ?? '').trim();
     if (token.isEmpty) {
       throw const AuthApiException(message: 'No active authenticated session.');
     }

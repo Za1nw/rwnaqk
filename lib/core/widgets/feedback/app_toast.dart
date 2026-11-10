@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 
@@ -112,6 +113,11 @@ abstract final class RawnaqkToast {
     );
   }
 
+  /// إغلاق أي إشعار حالي
+  static void closeCurrent() {
+    appScaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+  }
+
   /// إشعار كبسولة عائم وصغير للأحداث السريعة (Micro Pill Toast)
   static void pill(
     String message, {
@@ -121,30 +127,17 @@ abstract final class RawnaqkToast {
     RawnaqkToastPosition position = RawnaqkToastPosition.top,
   }) {
     _triggerHaptic(RawnaqkToastType.success);
+    closeCurrent();
 
-    if (Get.isSnackbarOpen) {
-      Get.closeCurrentSnackbar();
-    }
-
-    final snackPosition = position == RawnaqkToastPosition.top
-        ? SnackPosition.TOP
-        : SnackPosition.BOTTOM;
-
-    Get.showSnackbar(
-      GetSnackBar(
-        snackPosition: snackPosition,
+    appScaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
         backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
         padding: EdgeInsets.zero,
         margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        borderRadius: 24,
         duration: duration,
-        animationDuration: const Duration(milliseconds: 320),
-        forwardAnimationCurve: Curves.easeOutBack,
-        reverseAnimationCurve: Curves.easeInCubic,
-        isDismissible: true,
-        dismissDirection: DismissDirection.horizontal,
-        boxShadows: const [],
-        messageText: RawnaqkPillToastCard(
+        content: RawnaqkPillToastCard(
           message: message,
           icon: icon,
           accentColor: accentColor,
@@ -164,35 +157,18 @@ abstract final class RawnaqkToast {
     String? actionLabel,
     RawnaqkToastPosition position = RawnaqkToastPosition.top,
   }) {
-    if (Get.overlayContext == null) {
-      return;
-    }
-
     _triggerHaptic(type);
+    closeCurrent();
 
-    if (Get.isSnackbarOpen) {
-      Get.closeCurrentSnackbar();
-    }
-
-    final snackPosition = position == RawnaqkToastPosition.top
-        ? SnackPosition.TOP
-        : SnackPosition.BOTTOM;
-
-    Get.showSnackbar(
-      GetSnackBar(
-        snackPosition: snackPosition,
+    appScaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
         backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
         padding: EdgeInsets.zero,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        borderRadius: 18,
         duration: duration,
-        animationDuration: const Duration(milliseconds: 360),
-        forwardAnimationCurve: Curves.easeOutBack,
-        reverseAnimationCurve: Curves.easeInCubic,
-        isDismissible: true,
-        dismissDirection: DismissDirection.horizontal,
-        boxShadows: const [],
-        messageText: RawnaqkToastCard(
+        content: RawnaqkToastCard(
           message: message,
           title: title,
           type: type,
@@ -396,7 +372,7 @@ class RawnaqkToastCard extends StatelessWidget {
                       InkWell(
                         onTap: () {
                           onAction!();
-                          if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
+                          RawnaqkToast.closeCurrent();
                         },
                         borderRadius: BorderRadius.circular(16),
                         child: Container(
@@ -430,7 +406,7 @@ class RawnaqkToastCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     GestureDetector(
                       onTap: () {
-                        if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
+                        RawnaqkToast.closeCurrent();
                       },
                       behavior: HitTestBehavior.opaque,
                       child: Container(

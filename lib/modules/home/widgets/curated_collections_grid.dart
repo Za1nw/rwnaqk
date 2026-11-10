@@ -1,58 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
-import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
+import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_category_item.dart';
 
-class CuratedCollectionsGrid extends GetView<HomeController> {
+class CuratedCollectionsGrid extends ConsumerWidget {
   const CuratedCollectionsGrid({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(homeContentProvider);
+    final notifier = ref.read(homeContentProvider.notifier);
+
+    final items = state.categories;
+    if (items.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppSectionHeader(
           title: 'المجموعات والأقسام المميزة',
           actionText: 'عرض الكل',
-          onActionTap: controller.onSeeAllCategories,
+          onActionTap: notifier.onSeeAllCategories,
         ),
         const SizedBox(height: 12),
-        Obx(() {
-          final items = controller.categories.toList();
-          if (items.isEmpty) return const SizedBox.shrink();
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            final crossAxisCount = w >= 600 ? 4 : 2;
+            final aspectRatio = crossAxisCount == 2 ? 1.35 : 1.25;
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final w = constraints.maxWidth;
-              final crossAxisCount = w >= 600 ? 4 : 2;
-              final aspectRatio = crossAxisCount == 2 ? 1.35 : 1.25;
+            // Take up to 4 featured collections
+            final displayItems = items.take(4).toList();
 
-              // Take up to 4 featured collections
-              final displayItems = items.take(4).toList();
-
-              return GridView.builder(
-                itemCount: displayItems.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: aspectRatio,
-                ),
-                itemBuilder: (context, i) {
-                  return _CollectionCard(
-                    item: displayItems[i],
-                    index: i,
-                    onTap: () => controller.openCategory(displayItems[i]),
-                  );
-                },
-              );
-            },
-          );
-        }),
+            return GridView.builder(
+              itemCount: displayItems.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: aspectRatio,
+              ),
+              itemBuilder: (context, i) {
+                return _CollectionCard(
+                  item: displayItems[i],
+                  index: i,
+                  onTap: () => notifier.openCategory(displayItems[i]),
+                );
+              },
+            );
+          },
+        ),
       ],
     );
   }

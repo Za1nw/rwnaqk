@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_utils/src/extensions/internacionalization.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 class ProductAvatarRow extends StatelessWidget {

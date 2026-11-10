@@ -17,7 +17,10 @@ class ApiClient {
     Dio? dio,
     IAuthTokenStorage? tokenStorage,
     String? baseUrl,
-    this._onUnauthorized,
+    this.onUnauthorized,
+    this.onUnauthorizedWithToken,
+    this.onUnauthorizedWithDetails,
+    this.getSessionGeneration,
   })  : _tokenStorage = tokenStorage ?? SecureAuthTokenStorage() {
     _dio = dio ??
         Dio(
@@ -38,7 +41,11 @@ class ApiClient {
 
   late final Dio _dio;
   final IAuthTokenStorage _tokenStorage;
-  final void Function()? _onUnauthorized;
+  final void Function()? onUnauthorized;
+  final void Function(String failedToken)? onUnauthorizedWithToken;
+  final void Function(String? failedToken, int? sessionGeneration)?
+      onUnauthorizedWithDetails;
+  final int? Function()? getSessionGeneration;
 
   Dio get dio => _dio;
 
@@ -46,11 +53,23 @@ class ApiClient {
     _dio.interceptors.add(
       QueuedInterceptorsWrapper(
         onRequest: (options, handler) async {
+          // تسجيل رقم الجيل الحالي والتوكن عند لحظة إنشاء الطلب (Request-Creation Time Capture)
+          if (getSessionGeneration != null) {
+            options.extra['requestSessionGeneration'] =
+                getSessionGeneration?.call();
+          }
+
           // إضافة التوكن إن لم يكن مضافاً يدوياً
           if (!options.headers.containsKey('Authorization')) {
             final token = await _tokenStorage.readToken();
             if (token != null && token.isNotEmpty) {
               options.headers['Authorization'] = 'Bearer $token';
+              options.extra['requestToken'] = token;
+            }
+          } else {
+            final authHeader = options.headers['Authorization'] as String?;
+            if (authHeader != null && authHeader.startsWith('Bearer ')) {
+              options.extra['requestToken'] = authHeader.substring(7).trim();
             }
           }
 
@@ -94,7 +113,25 @@ class ApiClient {
 
     switch (statusCode) {
       case 401:
-        _onUnauthorized?.call();
+        final authHeader =
+            error.requestOptions.headers['Authorization'] as String?;
+        final failedToken = (authHeader != null &&
+                authHeader.startsWith('Bearer '))
+            ? authHeader.substring(7).trim()
+            : error.requestOptions.extra['requestToken'] as String?;
+        final requestGen =
+            error.requestOptions.extra['requestSessionGeneration'] as int?;
+
+        // إذا تم تزويد رد نداء مع التفاصيل الدقيقة (التوكن + الجيل الملتقط لحظة إنشاء الطلب)
+        if (onUnauthorizedWithDetails != null) {
+          onUnauthorizedWithDetails?.call(failedToken, requestGen);
+        } else if (onUnauthorizedWithToken != null) {
+          if (failedToken != null && failedToken.isNotEmpty) {
+            onUnauthorizedWithToken?.call(failedToken);
+          }
+        } else {
+          onUnauthorized?.call();
+        }
         return UnauthorizedException(
           message: errorMessage,
           statusCode: 401,

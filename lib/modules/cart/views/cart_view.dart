@@ -1,49 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
-import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
+import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/address_section.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/cart_checkout_stepper.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/cart_items_list.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/cart_total_bar.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/cart_wishlist_section.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/free_shipping_meter.dart';
-import 'package:rwnaqk_frontend/modules/cart/widgets/shipping_address_sheet.dart';
-import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
+import 'package:rwnaqk_frontend/modules/customer/providers/addresses_providers.dart';
+import 'package:rwnaqk_frontend/modules/wishlist/providers/wishlist_providers.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
-class CartScreen extends GetView<CartController> {
+class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
-  void _openShippingSheet(BuildContext context, {required bool isEdit}) {
-    if (isEdit) {
-      controller.prepareEditShipping();
-    } else {
-      controller.prepareAddShipping();
-    }
-
-    ShippingAddressSheet.showShipping(
-      context,
-      addressController: controller.shippingAddressCtrl,
-      cityController: controller.shippingCityCtrl,
-      postcodeController: controller.shippingPostcodeCtrl,
-      country: controller.selectedShippingCountryLabel,
-      countries: controller.shippingCountries,
-      onCountryChanged: (value) {
-        if (value != null) {
-          controller.setShippingCountry(value);
-        }
-      },
-      onSave: () {
-        controller.saveShippingFromForm();
-        Navigator.pop(context);
-      },
-    );
-  }
-
-  void _confirmClearCart(BuildContext context) {
+  void _confirmClearCart(BuildContext context, WidgetRef ref) {
     final isDark = context.isDark;
     showDialog(
       context: context,
@@ -107,7 +84,7 @@ class CartScreen extends GetView<CartController> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              controller.clearCart();
+              ref.read(cartProvider.notifier).clearCart();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFEF4444),
@@ -131,9 +108,46 @@ class CartScreen extends GetView<CartController> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final wishlistController = Get.find<WishlistController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cartState = ref.watch(cartProvider);
+    final cartNotifier = ref.read(cartProvider.notifier);
+    final quoteState = ref.watch(cartQuoteProvider);
+    final wishlistState = ref.watch(wishlistProvider);
+    final selectedAddress = ref.watch(selectedAddressProvider) ??
+        ref.watch(defaultAddressProvider);
+
     final isDark = context.isDark;
+    final isEmpty = cartState.isEmpty;
+    final hasWishlist = wishlistState.items.isNotEmpty;
+
+    final cartItems =
+        cartState.items.map((line) => line.originalProduct).toList();
+    final quantities = {
+      for (final line in cartState.items) line.originalProduct.id: line.quantity
+    };
+    final variantTexts = {
+      for (final line in cartState.items)
+        if (line.variantText != null) line.originalProduct.id: line.variantText!
+    };
+    final ratings = {
+      for (final line in cartState.items)
+        if (line.rating != null) line.originalProduct.id: line.rating!
+    };
+    final reviewsCounts = {
+      for (final line in cartState.items)
+        if (line.reviewsCount != null)
+          line.originalProduct.id: line.reviewsCount!
+    };
+
+    final subtotal = cartState.subtotal;
+    final hasCoupon = quoteState.couponCode != null &&
+        quoteState.couponCode!.isNotEmpty &&
+        quoteState.discountAmount > 0;
+    final couponDiscount = quoteState.discountAmount;
+    final shippingFee = quoteState.shippingFee;
+    final finalTotal = quoteState.isValid
+        ? quoteState.grandTotal
+        : (subtotal - couponDiscount + shippingFee);
 
     return Scaffold(
       backgroundColor: isDark
@@ -143,164 +157,154 @@ class CartScreen extends GetView<CartController> {
         child: Column(
           children: [
             // Top App Bar
-            _buildTopAppBar(context),
+            _buildTopAppBar(context, ref, cartState.totalQuantity, isEmpty),
 
             // Stepper Indicator (Step 1: Cart)
             const CartCheckoutStepper(currentStep: 1),
 
             // Main Body Content
             Expanded(
-              child: Obx(() {
-                final isEmpty = controller.cartItems.isEmpty;
-                final hasWishlist = wishlistController.wishlist.isNotEmpty;
-                final quantities = Map<String, int>.from(
-                  controller.itemQuantities,
-                );
-                final variantTexts = Map<String, String>.from(
-                  controller.itemVariantTexts,
-                );
-                final ratings = Map<String, double>.from(
-                  controller.itemRatings,
-                );
-                final reviewsCounts = Map<String, int>.from(
-                  controller.itemReviewsCounts,
-                );
-
-                if (isEmpty) {
-                  return SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsetsDirectional.fromSTEB(
-                      16,
-                      16,
-                      16,
-                      100,
-                    ),
-                    child: Column(
-                      children: [
-                        _buildEmptyState(context),
-                        if (hasWishlist) ...[
-                          const SizedBox(height: 24),
-                          CartWishlistSection(onAdd: controller.addToCart),
-                        ],
-                      ],
-                    ),
-                  );
-                }
-
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsetsDirectional.fromSTEB(16, 6, 16, 110),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Free Shipping Progress Meter
-                      FreeShippingMeter(
-                        currentSubtotal: controller.itemsSubtotal,
+              child: isEmpty
+                  ? SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                        16,
+                        16,
+                        16,
+                        100,
                       ),
-
-                      const SizedBox(height: 14),
-
-                      // Shipping Address Card
-                      AddressSection(
-                        title: Tk.cartShippingAddress.tr,
-                        address: controller.hasShippingAddress
-                            ? controller.shippingAddressText
-                            : '',
-                        onEdit: () => _openShippingSheet(
-                          context,
-                          isEdit: controller.hasShippingAddress,
-                        ),
-                        allowAddWhenEmpty: true,
-                        emptyHint: Tk.cartAddShippingDetails.tr,
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // Reassurance Trust Badges Strip
-                      _buildTrustBadgesStrip(context),
-
-                      const SizedBox(height: 16),
-
-                      // Cart Items Header Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
                         children: [
-                          Text(
-                            'عناصر السلة (${controller.itemsCount})',
-                            style: TextStyle(
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF1E0A17),
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.w800,
-                              fontFamily: 'Cairo',
-                            ),
-                          ),
-                          Text(
-                            'توصيل سريع متاح',
-                            style: TextStyle(
-                              color: isDark
-                                  ? BrandColors.gold
-                                  : BrandColors.burgundy,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'Cairo',
-                            ),
-                          ),
+                          _buildEmptyState(context),
+                          if (hasWishlist) ...[
+                            const SizedBox(height: 24),
+                            CartWishlistSection(onAdd: cartNotifier.addToCart),
+                          ],
                         ],
                       ),
+                    )
+                  : SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding:
+                          const EdgeInsetsDirectional.fromSTEB(16, 6, 16, 110),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Free Shipping Progress Meter
+                          FreeShippingMeter(currentSubtotal: subtotal),
 
-                      const SizedBox(height: 10),
+                          const SizedBox(height: 14),
 
-                      // Cart Items List
-                      CartItemsList(
-                        items: controller.cartItems,
-                        quantities: quantities,
-                        variantTexts: variantTexts,
-                        ratings: ratings,
-                        reviewsCounts: reviewsCounts,
-                        onRemove: controller.removeFromCart,
-                        onIncrement: controller.incrementQuantity,
-                        onDecrement: controller.decrementQuantity,
+                          // Shipping Address Card
+                          AddressSection(
+                            title: Tk.cartShippingAddress.tr,
+                            address: selectedAddress?.formatted ?? '',
+                            onEdit: () =>
+                                AppNav.toNamed(AppRoutes.addresses),
+                            allowAddWhenEmpty: true,
+                            emptyHint: Tk.cartAddShippingDetails.tr,
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          // Reassurance Trust Badges Strip
+                          _buildTrustBadgesStrip(context),
+
+                          const SizedBox(height: 16),
+
+                          // Cart Items Header Row
+                          Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'عناصر السلة (${cartState.totalQuantity})',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF1E0A17),
+                                  fontSize: 15.5,
+                                  fontWeight: FontWeight.w800,
+                                  fontFamily: 'Cairo',
+                                ),
+                              ),
+                              Text(
+                                'توصيل سريع متاح',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? BrandColors.gold
+                                      : BrandColors.burgundy,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: 'Cairo',
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          // Cart Items List
+                          CartItemsList(
+                            items: cartItems,
+                            quantities: quantities,
+                            variantTexts: variantTexts,
+                            ratings: ratings,
+                            reviewsCounts: reviewsCounts,
+                            onRemove: cartNotifier.removeFromCart,
+                            onIncrement: cartNotifier.incrementQuantity,
+                            onDecrement: cartNotifier.decrementQuantity,
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          // Promo Code Card
+                          _buildPromoCodeCard(
+                            context,
+                            ref,
+                            quoteState,
+                            selectedAddress?.id,
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          // Bill / Financial Summary Card
+                          _buildBillSummaryCard(
+                            context,
+                            subtotal: subtotal,
+                            hasCoupon: hasCoupon,
+                            couponCode: quoteState.couponCode ?? '',
+                            couponDiscount: couponDiscount,
+                            shippingFee: shippingFee,
+                            finalTotal: finalTotal,
+                          ),
+
+                          if (hasWishlist) ...[
+                            const SizedBox(height: 24),
+                            CartWishlistSection(onAdd: cartNotifier.addToCart),
+                          ],
+
+                          const SizedBox(height: 40),
+                        ],
                       ),
-
-                      const SizedBox(height: 18),
-
-                      // Promo Code Card
-                      _buildPromoCodeCard(context),
-
-                      const SizedBox(height: 18),
-
-                      // Bill / Financial Summary Card
-                      _buildBillSummaryCard(context),
-
-                      if (hasWishlist) ...[
-                        const SizedBox(height: 24),
-                        CartWishlistSection(onAdd: controller.addToCart),
-                      ],
-
-                      const SizedBox(height: 40),
-                    ],
-                  ),
-                );
-              }),
+                    ),
             ),
 
             // Fixed Bottom Checkout Bar
-            Obx(
-              () => CartTotalBar(
-                total: controller.total,
-                enabled: controller.canCheckout,
-                totalLabel: Tk.cartTotal.tr,
-                helperText: controller.cartItems.isEmpty
-                    ? Tk.cartStartCheckout.tr
-                    : Tk.cartCheckoutReady.trParams({
-                        'count': '${controller.itemsCount}',
-                      }),
-                checkoutText: Tk.cartCheckout.tr,
-                checkoutIcon: Icons.arrow_forward_rounded,
-                onCheckout: controller.openPayment,
-              ),
+            CartTotalBar(
+              total: finalTotal,
+              enabled: !isEmpty,
+              totalLabel: Tk.cartTotal.tr,
+              helperText: isEmpty
+                  ? Tk.cartStartCheckout.tr
+                  : Tk.cartCheckoutReady.trParams({
+                      'count': '${cartState.totalQuantity}',
+                    }),
+              checkoutText: Tk.cartCheckout.tr,
+              checkoutIcon: Icons.arrow_forward_rounded,
+              onCheckout: () {
+                AppNav.toNamed(AppRoutes.payment);
+              },
             ),
           ],
         ),
@@ -309,7 +313,12 @@ class CartScreen extends GetView<CartController> {
   }
 
   /// Top App Bar with Branding and Clear Cart action
-  Widget _buildTopAppBar(BuildContext context) {
+  Widget _buildTopAppBar(
+    BuildContext context,
+    WidgetRef ref,
+    int itemsCount,
+    bool isEmpty,
+  ) {
     final isDark = context.isDark;
 
     return Container(
@@ -359,26 +368,24 @@ class CartScreen extends GetView<CartController> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Obx(
-                  () => Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? BrandColors.gold.withValues(alpha: 0.15)
-                          : BrandColors.burgundy.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '${controller.itemsCount}',
-                      style: TextStyle(
-                        color: isDark ? BrandColors.gold : BrandColors.burgundy,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 12,
-                        fontFamily: 'Cairo',
-                      ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? BrandColors.gold.withValues(alpha: 0.15)
+                        : BrandColors.burgundy.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '$itemsCount',
+                    style: TextStyle(
+                      color: isDark ? BrandColors.gold : BrandColors.burgundy,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                      fontFamily: 'Cairo',
                     ),
                   ),
                 ),
@@ -387,13 +394,13 @@ class CartScreen extends GetView<CartController> {
           ),
 
           // Clear Cart action button
-          Obx(() {
-            if (controller.cartItems.isEmpty) return const SizedBox.shrink();
-            return InkWell(
-              onTap: () => _confirmClearCart(context),
+          if (!isEmpty)
+            InkWell(
+              onTap: () => _confirmClearCart(context, ref),
               borderRadius: BorderRadius.circular(10),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -419,8 +426,7 @@ class CartScreen extends GetView<CartController> {
                   ],
                 ),
               ),
-            );
-          }),
+            ),
         ],
       ),
     );
@@ -504,234 +510,163 @@ class CartScreen extends GetView<CartController> {
   }
 
   /// Promo Code / Coupon Card
-  Widget _buildPromoCodeCard(BuildContext context) {
+  Widget _buildPromoCodeCard(
+    BuildContext context,
+    WidgetRef ref,
+    CartQuoteState quoteState,
+    String? addressIdStr,
+  ) {
     final isDark = context.isDark;
+    final hasCoupon = quoteState.couponCode != null &&
+        quoteState.couponCode!.isNotEmpty &&
+        quoteState.discountAmount > 0;
+    final addressId = int.tryParse(addressIdStr ?? '1') ?? 1;
 
-    return Obx(() {
-      final hasCoupon = controller.hasCoupon;
-
-      return Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF24111F) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: hasCoupon
-                ? const Color(0xFF10B981).withValues(alpha: 0.4)
-                : (isDark
-                      ? BrandColors.gold.withValues(alpha: 0.15)
-                      : const Color(0xFFEDE3EA)),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF24111F) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: hasCoupon
+              ? const Color(0xFF10B981).withValues(alpha: 0.4)
+              : (isDark
+                  ? BrandColors.gold.withValues(alpha: 0.15)
+                  : const Color(0xFFEDE3EA)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.confirmation_number_outlined,
-                  size: 18,
-                  color: hasCoupon
-                      ? const Color(0xFF10B981)
-                      : (isDark ? BrandColors.gold : BrandColors.burgundy),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  hasCoupon ? 'كوبون الخصم مفعّل' : 'كوبون الخصم',
-                  style: TextStyle(
-                    color: isDark ? Colors.white : const Color(0xFF1E0A17),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    fontFamily: 'Cairo',
-                  ),
-                ),
-                const Spacer(),
-                if (hasCoupon)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      'خصم ${controller.couponDiscountPercent.value}%',
-                      style: const TextStyle(
-                        color: Color(0xFF10B981),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: 'Cairo',
-                      ),
-                    ),
-                  )
-                else
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 7,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? BrandColors.gold.withValues(alpha: 0.15)
-                          : BrandColors.burgundy.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      'كود: RAWNAQ',
-                      style: TextStyle(
-                        color: isDark ? BrandColors.gold : BrandColors.burgundy,
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: 'Cairo',
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            if (hasCoupon) ...[
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.25),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.check_circle_rounded,
-                      color: Color(0xFF10B981),
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'كود (${controller.couponCode.value}) مفعّل بنجاح!',
-                        style: TextStyle(
-                          color: isDark
-                              ? const Color(0xFF34D399)
-                              : const Color(0xFF065F46),
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w800,
-                          fontFamily: 'Cairo',
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        controller.removeCoupon();
-                        AppToast.info(
-                          'تم إلغاء تفعيل كوبون الخصم',
-                          title: 'كوبون الخصم',
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(6),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 3,
-                        ),
-                        child: Text(
-                          'إلغاء',
-                          style: TextStyle(
-                            color: isDark
-                                ? const Color(0xFFFCA5A5)
-                                : const Color(0xFFDC2626),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            fontFamily: 'Cairo',
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.confirmation_number_outlined,
+                size: 18,
+                color: hasCoupon
+                    ? const Color(0xFF10B981)
+                    : (isDark ? BrandColors.gold : BrandColors.burgundy),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                hasCoupon ? 'كوبون الخصم مفعّل' : 'كوبون الخصم',
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF1E0A17),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: 'Cairo',
                 ),
               ),
-            ] else ...[
-              Row(
+              const Spacer(),
+              if (hasCoupon)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'خصم ${AppMoneyUtils.riyal(quoteState.discountAmount)}',
+                    style: const TextStyle(
+                      color: Color(0xFF10B981),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? BrandColors.gold.withValues(alpha: 0.15)
+                        : BrandColors.burgundy.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'كود: RAWNAQ',
+                    style: TextStyle(
+                      color: isDark ? BrandColors.gold : BrandColors.burgundy,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (hasCoupon) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
                 children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF10B981),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Container(
-                      height: 42,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
+                    child: Text(
+                      'كود (${quoteState.couponCode}) مفعّل بنجاح!',
+                      style: TextStyle(
                         color: isDark
-                            ? const Color(0xFF1B0B17)
-                            : const Color(0xFFF9F5F8),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white12
-                              : const Color(0xFFE2D6DF),
-                        ),
-                      ),
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        'RAWNAQ',
-                        style: TextStyle(
-                          color: isDark
-                              ? Colors.white70
-                              : const Color(0xFF1E0A17),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Cairo',
-                          letterSpacing: 1.2,
-                        ),
+                            ? const Color(0xFF34D399)
+                            : const Color(0xFF065F46),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'Cairo',
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
                   InkWell(
-                    onTap: () {
-                      final success = controller.applyCoupon('RAWNAQ');
-                      if (success) {
-                        AppToast.success(
-                          'تم تطبيق كود الخصم (RAWNAQ) بنجاح! خصم %15',
-                          title: 'كوبون الخصم',
-                        );
-                      }
+                    onTap: () async {
+                      await ref
+                          .read(cartQuoteProvider.notifier)
+                          .removeCoupon(addressId: addressId);
+                      AppToast.info(
+                        'تم إلغاء تفعيل كوبون الخصم',
+                        title: 'كوبون الخصم',
+                      );
                     },
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      height: 42,
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: isDark
-                              ? [
-                                  const Color(0xFFFAAD01),
-                                  const Color(0xFFE59C00),
-                                ]
-                              : [
-                                  const Color(0xFF8E0542),
-                                  const Color(0xFF6E0131),
-                                ],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(6),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
                       ),
-                      alignment: Alignment.center,
                       child: Text(
-                        'تطبيق',
+                        'إلغاء',
                         style: TextStyle(
                           color: isDark
-                              ? const Color(0xFF1E0A17)
-                              : Colors.white,
-                          fontSize: 13,
+                              ? const Color(0xFFFCA5A5)
+                              : const Color(0xFFDC2626),
+                          fontSize: 12,
                           fontWeight: FontWeight.w800,
                           fontFamily: 'Cairo',
                         ),
@@ -740,15 +675,106 @@ class CartScreen extends GetView<CartController> {
                   ),
                 ],
               ),
-            ],
+            ),
+          ] else ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    height: 42,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF1B0B17)
+                          : const Color(0xFFF9F5F8),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white12
+                            : const Color(0xFFE2D6DF),
+                      ),
+                    ),
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      'RAWNAQ',
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.white70
+                            : const Color(0xFF1E0A17),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Cairo',
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                InkWell(
+                  onTap: () async {
+                    final success = await ref
+                        .read(cartQuoteProvider.notifier)
+                        .applyCoupon(
+                          code: 'RAWNAQ',
+                          addressId: addressId,
+                        );
+                    if (success) {
+                      AppToast.success(
+                        'تم تطبيق كود الخصم (RAWNAQ) بنجاح!',
+                        title: 'كوبون الخصم',
+                      );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    height: 42,
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isDark
+                            ? [
+                                const Color(0xFFFAAD01),
+                                const Color(0xFFE59C00),
+                              ]
+                            : [
+                                const Color(0xFF8E0542),
+                                const Color(0xFF6E0131),
+                              ],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      'تطبيق',
+                      style: TextStyle(
+                        color: isDark
+                            ? const Color(0xFF1E0A17)
+                            : Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
-        ),
-      );
-    });
+        ],
+      ),
+    );
   }
 
   /// Bill / Cost Breakdown Card
-  Widget _buildBillSummaryCard(BuildContext context) {
+  Widget _buildBillSummaryCard(
+    BuildContext context, {
+    required double subtotal,
+    required bool hasCoupon,
+    required String couponCode,
+    required double couponDiscount,
+    required double shippingFee,
+    required double finalTotal,
+  }) {
     final isDark = context.isDark;
 
     return Container(
@@ -798,17 +824,16 @@ class CartScreen extends GetView<CartController> {
           // Subtotal
           _summaryRow(
             title: Tk.cartSubtotal.tr,
-            value: AppMoneyUtils.riyal(controller.itemsSubtotal),
+            value: AppMoneyUtils.riyal(subtotal),
             isDark: isDark,
           ),
 
           // Coupon discount if applied
-          if (controller.hasCoupon) ...[
+          if (hasCoupon) ...[
             const SizedBox(height: 8),
             _summaryRow(
-              title: 'خصم الكوبون (${controller.couponCode.value})',
-              value:
-                  '- ${AppMoneyUtils.riyal(controller.couponDiscountAmount)}',
+              title: 'خصم الكوبون ($couponCode)',
+              value: '- ${AppMoneyUtils.riyal(couponDiscount)}',
               isHighlight: true,
               isDark: isDark,
             ),
@@ -819,10 +844,10 @@ class CartScreen extends GetView<CartController> {
           // Shipping Fee
           _summaryRow(
             title: 'رسوم التوصيل',
-            value: controller.shippingFee <= 0
+            value: shippingFee <= 0
                 ? 'مجاني'
-                : AppMoneyUtils.riyal(controller.shippingFee),
-            isHighlight: controller.shippingFee <= 0,
+                : AppMoneyUtils.riyal(shippingFee),
+            isHighlight: shippingFee <= 0,
             isDark: isDark,
           ),
 
@@ -852,7 +877,7 @@ class CartScreen extends GetView<CartController> {
                 ),
               ),
               Text(
-                AppMoneyUtils.riyal(controller.total),
+                AppMoneyUtils.riyal(finalTotal),
                 style: TextStyle(
                   color: isDark ? BrandColors.gold : BrandColors.burgundy,
                   fontSize: 18,
@@ -986,7 +1011,7 @@ class CartScreen extends GetView<CartController> {
 
             // Start Shopping CTA
             InkWell(
-              onTap: controller.goToHome,
+              onTap: () => AppNav.toNamed(AppRoutes.main),
               borderRadius: BorderRadius.circular(14),
               child: Container(
                 padding: const EdgeInsets.symmetric(

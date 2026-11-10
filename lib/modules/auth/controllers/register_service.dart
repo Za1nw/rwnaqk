@@ -1,5 +1,4 @@
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
+import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
 import 'package:rwnaqk_frontend/core/services/geo/geo_lookup_api_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
@@ -23,10 +22,10 @@ class RegisterService {
   );
 
   final IAuthRepository _authRepository;
-  final AuthSessionService _session;
+  final AuthSessionNotifier _session;
   final GeoLookupApiService _geoLookupApiService;
 
-  final RxList<String> governorates = <String>[].obs;
+  final List<String> governorates = <String>[];
   String _defaultCountryName = 'اليمن';
 
   Future<void> loadGovernorates() async {
@@ -40,7 +39,9 @@ class RegisterService {
       _defaultCountryName = yemenLookup.countryName;
     }
 
-    governorates.assignAll(yemenLookup.governorates.map((item) => item.name));
+    governorates
+      ..clear()
+      ..addAll(yemenLookup.governorates.map((item) => item.name));
   }
 
   String? defaultGovernorate() {

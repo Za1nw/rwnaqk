@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
-import 'package:rwnaqk_frontend/modules/home/widgets/flash_sale_header.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_horizontal_list.dart';
+import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
+import 'package:rwnaqk_frontend/modules/home/widgets/flash_sale_header.dart';
 
-class HomeFlashSaleSection extends GetView<HomeController> {
+class HomeFlashSaleSection extends ConsumerWidget {
   final double itemWidth;
   final double height;
 
@@ -15,30 +15,27 @@ class HomeFlashSaleSection extends GetView<HomeController> {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(homeContentProvider);
+    final notifier = ref.read(homeContentProvider.notifier);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Obx(
-          () => FlashSaleHeader(
-            hh: controller.hh.value,
-            mm: controller.mm.value,
-            ss: controller.ss.value,
-            onSeeAll: controller.openFlashSaleScreen,
-          ),
+        FlashSaleHeader(
+          hh: state.hh,
+          mm: state.mm,
+          ss: state.ss,
+          onSeeAll: notifier.openFlashSaleScreen,
         ),
         const SizedBox(height: 12),
-        Obx(() {
-          final items = controller.flashSale.toList();
-          if (items.isEmpty) return const SizedBox.shrink();
-
-          return ProductHorizontalList(
-            items: items,
+        if (state.flashSale.isNotEmpty)
+          ProductHorizontalList(
+            items: state.flashSale,
             itemWidth: itemWidth,
             height: height,
-            onTap: controller.openProduct,
-          );
-        }),
+            onTap: notifier.openProduct,
+          ),
       ],
     );
   }

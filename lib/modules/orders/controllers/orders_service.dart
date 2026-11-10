@@ -1,7 +1,7 @@
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk_frontend/modules/orders/controllers/orders_ui_controller.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_details_model.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
+import 'package:rwnaqk_frontend/modules/orders/models/orders_state.dart';
 
 /// هذا الملف مسؤول عن منطق البيانات الخاص بمنظومة الطلبات.
 class OrdersService {

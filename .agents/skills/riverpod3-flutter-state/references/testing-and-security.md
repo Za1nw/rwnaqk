@@ -1,31 +1,54 @@
-# Riverpod testing and commerce safety
+# Riverpod 3.5 provider testing, lifecycle, and commerce security
 
-## Provider test pattern (Riverpod 3)
+## Provider unit tests: isolated containers
 
 ```dart
-final container = ProviderContainer.test(
-  overrides: [
-    productsRepositoryProvider.overrideWithValue(fakeRepository),
-  ],
-);
-final sub = container.listen(featuredProductsProvider, (_, _) {});
-final products = await container.read(featuredProductsProvider.future);
+final container = ProviderContainer.test(overrides: [
+  productsRepositoryProvider.overrideWith((ref) => fakeRepository),
+]);
+final subscription = container.listen(productsProvider, (_, _) {});
+final products = await container.read(productsProvider.future);
 expect(products, isNotEmpty);
-sub.close();
+subscription.close();
 ```
 
-Create a **new container per test**, avoid shared global provider state. For widget tests use `ProviderScope(overrides: [...], child: MaterialApp(home: ...))`. Use `tester.container()` when needed. Verify overrides match actual project types.
+This example depends on a `FutureProvider` or `AsyncNotifierProvider` named productsProvider and actual project repository types. Tests must not share containers or mutate global providers.
 
-## Mandatory regression scenarios
+## Widget tests
 
-- App launch, routing, login, registration, email verification required, errors 401/422, logout/user switch.
-- Catalog loads, empty, search debounce, cancellation, pagination, variant IDs and images.
-- Cart line identity per `product_variation_id`, quantity changes, coupon, address-dependent quote.
-- Orders: 409 price drift, idempotency key reuse after timeout, **no automatic duplicated POST**, cart retained until confirmed order, app restart/resume.
-- Wallet proof privacy, never mark manual payment paid on upload.
-- Provider disposed during request; late response doesn't update another user/session.
-- Real API E2E, not Fake alone. Keep existing Laravel contract and tests unchanged unless approved.
+```dart
+await tester.pumpWidget(ProviderScope(
+  overrides: [productsRepositoryProvider.overrideWith((ref) => fakeRepository)],
+  child: const MaterialApp(home: CatalogView()),
+));
+```
+
+`ProviderScope` stays as the root DI boundary. Keep `GetMaterialApp` underneath temporarily in the real app. `ProviderContainer.test()` is supported by Riverpod 3 and handles disposal in tests.
+
+## Lifecycle
+
+- Async code: `if (!ref.mounted) return;` before using notifier `state`/`ref` after `await`.
+- Cancel Dio requests/listeners using `ref.onDispose` where ownership permits.
+- `AsyncError` from server != `ProviderDisposedException` from cancellation. Avoid exposing disposal exceptions as business failures.
+- Always guard stale search/catalog responses and session changes.
+
+## Automatic retry distinction
+
+- Provider computation failure is retried automatically in Riverpod 3 unless configured.
+- Mutation/action callbacks must be explicit: never trigger order creation in provider build; retain the same idempotency key on retry.
+- Loading/error states via AsyncValue; do not conflate `409` price drift with generic connectivity.
+
+## Commerce & privacy gates
+
+- Auth: token via SecureAuthTokenStorage, no raw token exposure in widgets; preserve 2FA, email verification, and 401 behaviors.
+- Catalog: filter/debounce/variant ID stable; avoid stale result overwrites.
+- Cart: separate lines by real product variation; quantity and quote server-authoritative.
+- Checkout: `X-Idempotency-Key` stable for one attempt; no double POST; preserve cart when unknown outcome.
+- Logout: invalidate user-scoped providers, clear local caches and credentials, do not delete server orders.
+- Wallet: proof upload stays unpaid pending verification; avoid insecure link access.
 
 ## Deletion gate
 
-Before removing any GetX file after migration: all imports/references to that file and GetX routes/bindings are gone or consciously retained; unit/widget/E2E tests green; API and state behavior parity shown; Git commit/rollback point exists. Never remove GetX from `pubspec.yaml` while **any** GetX references remain anywhere in application or tests. Never delete whole modules/folders as a cleanup shortcut.
+Before removing GetX files: run a full project symbol/import/route/binding search, then pass `flutter analyze`, `flutter test`, and relevant real Staging E2E; retest after deletion.
+
+Reference: https://riverpod.dev/docs/how_to/testing and https://riverpod.dev/docs/concepts2/overrides

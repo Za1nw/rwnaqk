@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
@@ -52,7 +53,7 @@ class SettingsQuickHub extends StatelessWidget {
               title: Tk.settingsOrders.tr,
               subtitle: '$ordersCount شحنة',
               accentColor: isDark ? AppColors.gold : AppColors.burgundy,
-              onTap: onOrdersTap ?? () => Get.toNamed(AppRoutes.orders),
+              onTap: onOrdersTap ?? () => AppNav.toNamed(AppRoutes.orders),
             ),
           ),
           _HubDivider(isDark: isDark),
@@ -68,7 +69,7 @@ class SettingsQuickHub extends StatelessWidget {
               accentColor: isDark
                   ? const Color(0xFF75D6A5)
                   : const Color(0xFF176B45),
-              onTap: onAddressesTap ?? () => Get.toNamed(AppRoutes.addresses),
+              onTap: onAddressesTap ?? () => AppNav.toNamed(AppRoutes.addresses),
             ),
           ),
           _HubDivider(isDark: isDark),
@@ -80,7 +81,7 @@ class SettingsQuickHub extends StatelessWidget {
               title: 'المحفظة',
               subtitle: walletBalance,
               accentColor: BrandColors.gold,
-              onTap: onOrdersTap ?? () => Get.toNamed(AppRoutes.profile),
+              onTap: onOrdersTap ?? () => AppNav.toNamed(AppRoutes.profile),
             ),
           ),
         ],

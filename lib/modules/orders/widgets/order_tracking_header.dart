@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_status_pill.dart';
@@ -28,7 +29,7 @@ class OrderTrackingHeader extends StatelessWidget {
       children: [
         // Back Button
         InkWell(
-          onTap: Get.back,
+          onTap: AppNav.back,
           borderRadius: BorderRadius.circular(12),
           child: Container(
             width: 42,

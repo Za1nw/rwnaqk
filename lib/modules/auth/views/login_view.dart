@@ -1,40 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_validators.dart';
-
-import 'package:rwnaqk_frontend/modules/auth/controllers/login_controller.dart';
-import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_input_field.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_password_field.dart';
-import 'package:rwnaqk_frontend/modules/auth/widgets/auth_form_page_layout.dart';
+import 'package:rwnaqk_frontend/modules/auth/providers/auth_flow_providers.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
+import 'package:rwnaqk_frontend/modules/auth/widgets/auth_form_page_layout.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  late final GlobalKey<FormState> _formKey;
-
-  @override
-  void initState() {
-    super.initState();
-    _formKey = GlobalKey<FormState>();
-    if (Get.isRegistered<LoginController>()) {
-      Get.find<LoginController>().formKey = _formKey;
-    }
-  }
-
-  LoginController get controller => Get.find<LoginController>();
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(loginFormProvider);
+    final notifier = ref.read(loginFormProvider.notifier);
     final isDark = context.isDark;
 
     final cardShadows = isDark
@@ -108,11 +92,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     boxShadow: cardShadows,
                   ),
                   child: Form(
-                    key: _formKey,
+                    key: notifier.formKey,
                     child: Column(
                       children: [
                         AppInputField(
-                          controller: controller.emailController,
+                          controller: notifier.emailController,
                           label: Tk.loginEmailLabel.tr,
                           hint: Tk.loginEmailHint.tr,
                           prefixIcon: Icons.mail_outline_rounded,
@@ -121,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 14),
                         AppPasswordField(
-                          controller: controller.passwordController,
+                          controller: notifier.passwordController,
                           label: Tk.loginPasswordLabel.tr,
                           hint: Tk.loginPasswordHint.tr,
                           prefixIcon: Icons.lock_outline_rounded,
@@ -132,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Align(
                           alignment: AlignmentDirectional.centerStart,
                           child: TextButton(
-                            onPressed: controller.goToForgotPassword,
+                            onPressed: notifier.goToForgotPassword,
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 2,
@@ -152,19 +136,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Obx(() {
-                          return AppButton(
-                            text: controller.isLoading.value
-                                ? '...'
-                                : Tk.loginSignIn.tr,
-                            icon: Icons.login_rounded,
-                            isLoading: controller.isLoading.value,
-                            onPressed: controller.isLoading.value
-                                ? null
-                                : controller.login,
-                            height: 52,
-                          );
-                        }),
+                        AppButton(
+                          text: state.isLoading
+                              ? '...'
+                              : Tk.loginSignIn.tr,
+                          icon: Icons.login_rounded,
+                          isLoading: state.isLoading,
+                          onPressed: state.isLoading ? null : notifier.login,
+                          height: 52,
+                        ),
                       ],
                     ),
                   ),
@@ -176,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: AppButton(
                         text: 'Google',
                         icon: Icons.g_mobiledata,
-                        onPressed: controller.loginWithGoogle,
+                        onPressed: notifier.loginWithGoogle,
                         outlined: true,
                         height: 48,
                       ),
@@ -186,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: AppButton(
                         text: 'Apple',
                         icon: Icons.apple,
-                        onPressed: controller.loginWithApple,
+                        onPressed: notifier.loginWithApple,
                         outlined: true,
                         height: 48,
                       ),
@@ -197,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 AppButton(
                   text: 'Facebook',
                   icon: Icons.facebook,
-                  onPressed: controller.loginWithFacebook,
+                  onPressed: notifier.loginWithFacebook,
                   outlined: true,
                   height: 48,
                 ),
@@ -205,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // زر تجاوز تسجيل الدخول للدخول في وضع التصميم كزائر
                 OutlinedButton.icon(
-                  onPressed: controller.continueAsGuest,
+                  onPressed: notifier.continueAsGuest,
                   icon: Icon(
                     Icons.explore_outlined,
                     size: 19,
@@ -246,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(width: 8),
                     InkWell(
                       borderRadius: BorderRadius.circular(6),
-                      onTap: controller.goToRegister,
+                      onTap: notifier.goToRegister,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 4,

@@ -40,8 +40,8 @@ class AppEnv {
 
   // Features & Mock Data
   static bool get enableMockData {
-    // في بيئة الإنتاج الحقيقي: يمنع منعاً باتاً تفعيل البيانات التجريبية أياً كان وضع البناء أو الإعدادات
-    if (isProduction) return false;
+    // في وضع الإصدار النهائي (Release Mode) أو بيئة الإنتاج: يُحظر تماماً تفعيل الموك
+    if (kReleaseMode || isProduction) return false;
 
     final configured = _safeGet('ENABLE_MOCK_DATA', '').toLowerCase();
     if (configured == 'true') return true;

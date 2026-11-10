@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/profile_avatar.dart';
@@ -71,7 +72,7 @@ class SettingsUserHeader extends StatelessWidget {
           ],
         ),
         child: InkWell(
-          onTap: onTap ?? () => Get.toNamed(AppRoutes.profile),
+          onTap: onTap ?? () => AppNav.toNamed(AppRoutes.profile),
           borderRadius: BorderRadius.circular(22),
           child: Padding(
             padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 14),
@@ -181,7 +182,7 @@ class SettingsUserHeader extends StatelessWidget {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap:
-                            onEdit ?? () => Get.toNamed(AppRoutes.editProfile),
+                            onEdit ?? () => AppNav.toNamed(AppRoutes.editProfile),
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
                           padding: const EdgeInsets.symmetric(

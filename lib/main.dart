@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:get/get.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'core/bindings/initial_binding.dart';
 import 'core/constants/app_env.dart';
 import 'core/constants/local_storage_keys.dart';
+import 'core/di/core_providers.dart';
+import 'core/localization/app_localizations.dart';
+import 'core/routing/app_nav.dart';
 import 'core/services/auth/auth_token_storage.dart';
-import 'routes/app_pages.dart';
-import 'routes/app_routes.dart';
-import 'core/translations/app_translations.dart';
-
-import 'core/theme/light_theme.dart';
 import 'core/theme/dark_theme.dart';
+import 'core/theme/light_theme.dart';
+import 'modules/customer/providers/customer_profile_providers.dart';
+import 'routes/app_router.dart';
+import 'routes/app_routes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,11 +36,26 @@ Future<void> main() async {
     persistedToken: persistedToken,
   );
 
-  runApp(MyApp(
-    initialRoute: initialRoute,
-    initialAccessToken: persistedToken,
-    tokenStorage: tokenStorage,
-  ));
+  final container = ProviderContainer(
+    overrides: [
+      sharedPreferencesInstanceProvider.overrideWithValue(prefs),
+    ],
+  );
+  globalProviderContainer = container;
+
+  // Bootstrap authentication session natively in Riverpod
+  await container.read(authSessionProvider.notifier).bootstrapSession(
+        initialToken: persistedToken,
+      );
+
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: MyApp(
+        initialRoute: initialRoute,
+      ),
+    ),
+  );
 }
 
 String _resolveInitialRoute({
@@ -50,47 +67,40 @@ String _resolveInitialRoute({
   }
 
   final hasToken = (persistedToken ?? '').trim().isNotEmpty;
-
   return hasToken ? AppRoutes.main : AppRoutes.login;
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({
     super.key,
     this.initialRoute = AppRoutes.onboarding,
-    this.initialAccessToken,
-    this.tokenStorage,
   });
 
   final String initialRoute;
-  final String? initialAccessToken;
-  final IAuthTokenStorage? tokenStorage;
 
   @override
-  Widget build(BuildContext context) {
-    return GetMaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(appThemeModeProvider);
+    final locale = ref.watch(appLocaleProvider);
+
+    return MaterialApp(
+      navigatorKey: appNavigatorKey,
+      scaffoldMessengerKey: appScaffoldMessengerKey,
       title: AppEnv.appName,
       debugShowCheckedModeBanner: false,
-
-      // Bindings عامة
-      initialBinding: InitialBinding(
-        initialAccessToken: initialAccessToken,
-        tokenStorage: tokenStorage,
-      ),
-
-      // Routes
       initialRoute: initialRoute,
-      getPages: AppPages.routes,
-
-      // Theme
+      onGenerateRoute: AppRouter.onGenerateRoute,
       theme: lightTheme,
       darkTheme: darkTheme,
-      themeMode: ThemeMode.system,
-
-      // Translations
-      translations: AppTranslations(),
-      locale: const Locale('ar', 'YE'),
-      fallbackLocale: const Locale('en', 'US'),
+      themeMode: themeMode,
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }

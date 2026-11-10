@@ -77,14 +77,15 @@ class SecureAuthTokenStorage implements IAuthTokenStorage {
         value: normalized,
       );
     } catch (e) {
-      debugPrint('[SecureStorage] Warning writing to secure storage: $e');
-      // في بيئة الاختبارات أو الأجهزة التي لا تدعم Keystore، كتابة كاحتياط
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(LocalStorageKeys.authToken, normalized);
+      debugPrint('[SecureStorage] Error writing to secure storage: $e');
+      // لا نقوم إطلاقاً بكتابة التوكن كـ plaintext في SharedPreferences لحماية أمان الإنتاج
+      if (kReleaseMode) {
+        rethrow;
+      }
       return;
     }
 
-    // تنظيف SharedPreferences لضمان عدم بقاء نسخة غير مشفرة
+    // تنظيف SharedPreferences لضمان عدم بقاء نسخة قديمة غير مشفرة
     try {
       final prefs = await SharedPreferences.getInstance();
       if (prefs.containsKey(LocalStorageKeys.authToken)) {

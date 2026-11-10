@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_action_icon_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/favorite_added_dialog.dart';
+import 'package:rwnaqk_frontend/modules/checkout/widgets/product_discount_ribbon.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
+import 'package:rwnaqk_frontend/modules/wishlist/providers/wishlist_providers.dart';
 
-import 'product_discount_ribbon.dart';
-
-class ProductCardImageSection extends StatelessWidget {
+class ProductCardImageSection extends ConsumerWidget {
   final HomeProductItem item;
   final String imageUrl;
   final double radius;
@@ -21,8 +20,9 @@ class ProductCardImageSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<WishlistController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wishlist = ref.watch(wishlistProvider);
+    final isFav = wishlist.isInWishlist(item.id);
     final hasDiscount = (item.discountPercent ?? 0) > 0;
 
     return AspectRatio(
@@ -38,19 +38,11 @@ class ProductCardImageSection extends StatelessWidget {
                 topRight: Radius.circular(radius),
               ),
               child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      context.primary.withValues(alpha: 0.08),
-                      context.card,
-                    ],
-                  ),
-                ),
+                color: context.isDark
+                    ? const Color(0xFF190C18)
+                    : const Color(0xFFF7F1F5),
                 child: Image.network(
                   imageUrl,
-                  width: double.infinity,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, progress) {
                     if (progress == null) return child;
@@ -100,30 +92,25 @@ class ProductCardImageSection extends StatelessWidget {
           PositionedDirectional(
             top: 8,
             end: 8,
-            child: Obx(() {
-              final isFav = controller.isInWishlist(item.id);
+            child: AppActionIconButton(
+              icon: isFav
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
+              onTap: () {
+                final wasFav = wishlist.isInWishlist(item.id);
+                ref.read(wishlistProvider.notifier).toggle(item);
 
-              return AppActionIconButton(
-                icon: isFav
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
-                onTap: () {
-                  final wasFav = controller.isInWishlist(item.id);
-                  controller.toggleWishlist(item);
-
-                  if (!wasFav) {
-                    FavoriteAddedDialog.show(context);
-                  }
-                },
-                size: 32,
-                iconSize: 16,
-                backgroundColor: context.background.withValues(alpha: 0.92),
-                borderColor: context.border.withValues(alpha: 0.25),
-                iconColor: isFav
-                    ? context.destructive
-                    : context.mutedForeground,
-              );
-            }),
+                if (!wasFav) {
+                  FavoriteAddedDialog.show(context);
+                }
+              },
+              size: 32,
+              iconSize: 16,
+              backgroundColor: context.background.withValues(alpha: 0.92),
+              iconColor: isFav
+                  ? const Color(0xFFD32F2F)
+                  : context.foreground.withValues(alpha: 0.75),
+            ),
           ),
         ],
       ),

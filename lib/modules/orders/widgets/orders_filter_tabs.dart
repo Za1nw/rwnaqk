@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk_frontend/modules/orders/controllers/orders_ui_controller.dart';
+import 'package:rwnaqk_frontend/modules/orders/models/orders_state.dart';
 
 class OrdersFilterTabs extends StatelessWidget {
   final OrdersFilter value;
@@ -16,7 +16,7 @@ class OrdersFilterTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = context.isDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     Widget chip({
       required String text,

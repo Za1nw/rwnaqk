@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
-import 'package:rwnaqk_frontend/modules/catalog/controllers/product_details_controller.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_size_guide.dart';
 
 enum _GuideViewMode { table, card }
@@ -29,11 +28,8 @@ class ProductSizeGuideSheet extends StatefulWidget {
   }) {
     HapticFeedback.lightImpact();
 
-    ProductSizeGuide? resolvedGuide = sizeGuide;
-    if (resolvedGuide == null && Get.isRegistered<ProductDetailsController>()) {
-      resolvedGuide = Get.find<ProductDetailsController>().sizeGuide;
-    }
-    resolvedGuide ??= ProductSizeGuide.defaultClothingGuide();
+    final resolvedGuide =
+        sizeGuide ?? ProductSizeGuide.defaultClothingGuide();
 
     return showModalBottomSheet(
       context: context,
@@ -92,9 +88,6 @@ class _ProductSizeGuideSheetState extends State<ProductSizeGuideSheet> {
     HapticFeedback.mediumImpact();
     setState(() => _activeSize = size);
     widget.onSizeSelected?.call(size);
-    if (Get.isRegistered<ProductDetailsController>()) {
-      Get.find<ProductDetailsController>().setSelectedSize(size);
-    }
     AppToast.success(
       Tk.productDetailsSizeSelected.trParams({'size': size}),
       title: Tk.productDetailsSizeGuideTitle.tr,

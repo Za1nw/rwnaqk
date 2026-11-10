@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_action_icon_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
+import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 import 'product_card_image_section.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends ConsumerWidget {
   final HomeProductItem item;
   final ValueChanged<HomeProductItem> onTap;
   final double radius;
@@ -23,16 +24,13 @@ class ProductCard extends StatelessWidget {
     this.showAddToCart = true,
   });
 
-  void _addToCart(BuildContext context) {
-    if (Get.isRegistered<CartController>()) {
-      final cartController = Get.find<CartController>();
-      cartController.addToCart(item);
-    }
+  void _addToCart(BuildContext context, WidgetRef ref) {
+    ref.read(cartProvider.notifier).addToCart(item);
     CartAddedDialog.show(context);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final hasDiscount = (item.discountPercent ?? 0) > 0;
     final originalPrice = item.price;
     final discountedPrice = hasDiscount
@@ -62,16 +60,20 @@ class ProductCard extends StatelessWidget {
             onTap: () => onTap(item),
             child: Container(
               decoration: BoxDecoration(
-                color: context.card,
+                color: context.isDark
+                    ? const Color(0xFF24111F)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(radius),
                 border: Border.all(
-                  color: context.border.withValues(alpha: 0.35),
-                  width: 1.0,
+                  color: context.isDark
+                      ? BrandColors.gold.withValues(alpha: 0.18)
+                      : const Color(0xFFEBE0E6),
+                  width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: context.shadow.withValues(
-                      alpha: context.isDark ? 0.16 : 0.05,
+                    color: Colors.black.withValues(
+                      alpha: context.isDark ? 0.25 : 0.04,
                     ),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
@@ -81,137 +83,113 @@ class ProductCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 1. Image Section (with Discount ribbon & Wishlist button)
                   ProductCardImageSection(
                     item: item,
                     imageUrl: item.imageUrl,
                     radius: radius,
                   ),
+
+                  // 2. Info Section (Brand, Title, Price, Add to Cart)
                   Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      cardPadding,
-                      8,
-                      cardPadding,
-                      8,
-                    ),
+                    padding: EdgeInsets.all(cardPadding),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Brand Name
+                        // Brand Name (Direction-Safe start aligned)
                         if (brandName.isNotEmpty) ...[
                           Text(
                             brandName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: brandSize,
+                              color: context.isDark
+                                  ? BrandColors.gold
+                                  : BrandColors.burgundy,
                               fontWeight: FontWeight.w700,
-                              color: context.primary.withValues(alpha: 0.85),
+                              fontSize: brandSize,
                               fontFamily: 'Cairo',
-                              height: 1.0,
+                              letterSpacing: 0.2,
                             ),
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 2),
                         ],
 
-                        // Title
+                        // Product Title
                         Text(
                           item.title.tr,
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: titleSize,
+                            color: context.isDark
+                                ? Colors.white
+                                : const Color(0xFF1E0A17),
                             fontWeight: FontWeight.w800,
-                            color: context.foreground,
+                            fontSize: titleSize,
                             fontFamily: 'Cairo',
-                            height: 1.2,
+                            height: 1.25,
                           ),
                         ),
 
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
 
-                        // Rating row (clean, no awkward yellow box)
+                        // Price & Action Button Row
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              size: 14,
-                              color: BrandColors.gold,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              '4.8',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                color: context.foreground,
-                                fontFamily: 'Cairo',
-                              ),
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              '(120+)',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: context.mutedForeground,
-                                fontFamily: 'Cairo',
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 6),
-
-                        // Price and Add to Cart Row
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
+                            // Prices Column
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
                                 children: [
+                                  // Discounted / Current Price
                                   Text(
-                                    AppMoneyUtils.riyal(discountedPrice),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    AppMoneyUtils.formatCurrency(
+                                      discountedPrice,
+                                    ),
                                     style: TextStyle(
-                                      fontSize: priceSize,
+                                      color: context.isDark
+                                          ? const Color(0xFFFAAD01)
+                                          : const Color(0xFF6E0131),
                                       fontWeight: FontWeight.w900,
-                                      color: context.foreground,
+                                      fontSize: priceSize,
                                       fontFamily: 'Cairo',
-                                      height: 1.0,
                                     ),
                                   ),
-                                  if (hasDiscount) ...[
-                                    const SizedBox(height: 2),
+
+                                  // Original Price (if discounted)
+                                  if (hasDiscount)
                                     Text(
-                                      AppMoneyUtils.riyal(originalPrice),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                      AppMoneyUtils.formatCurrency(
+                                        originalPrice,
+                                      ),
                                       style: TextStyle(
+                                        color: context.isDark
+                                            ? Colors.white38
+                                            : const Color(0xFF9E8E98),
+                                        decoration: TextDecoration.lineThrough,
                                         fontSize: oldPriceSize,
                                         fontWeight: FontWeight.w600,
-                                        color: context.mutedForeground,
-                                        decoration: TextDecoration.lineThrough,
                                         fontFamily: 'Cairo',
-                                        height: 1.0,
                                       ),
                                     ),
-                                  ],
                                 ],
                               ),
                             ),
+
+                            // Add To Cart Quick Action
                             if (showAddToCart)
                               AppActionIconButton(
-                                icon: Icons.shopping_bag_outlined,
-                                onTap: () => _addToCart(context),
-                                size: 30,
-                                iconSize: 15,
-                                backgroundColor: context.primary,
-                                iconColor: Colors.white,
-                                borderColor: Colors.transparent,
-                                radius: 8,
+                                icon: Icons.add_shopping_cart_rounded,
+                                onTap: () => _addToCart(context, ref),
+                                size: 32,
+                                iconSize: 16,
+                                backgroundColor: context.isDark
+                                    ? BrandColors.gold
+                                    : BrandColors.burgundy,
+                                iconColor: context.isDark
+                                    ? const Color(0xFF1E0A17)
+                                    : Colors.white,
                               ),
                           ],
                         ),

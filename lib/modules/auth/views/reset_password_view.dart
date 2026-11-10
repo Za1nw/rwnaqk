@@ -1,41 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_validators.dart';
-
-import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_controller.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_input_field.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_password_field.dart';
-import 'package:rwnaqk_frontend/modules/auth/widgets/auth_centered_container.dart';
+import 'package:rwnaqk_frontend/modules/auth/providers/auth_flow_providers.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
+import 'package:rwnaqk_frontend/modules/auth/widgets/auth_centered_container.dart';
 
-class ResetPasswordScreen extends StatefulWidget {
+class ResetPasswordScreen extends ConsumerWidget {
   const ResetPasswordScreen({super.key});
 
   @override
-  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
-}
-
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  late final GlobalKey<FormState> _formKey;
-
-  @override
-  void initState() {
-    super.initState();
-    _formKey = GlobalKey<FormState>();
-    if (Get.isRegistered<ForgotPasswordController>()) {
-      Get.find<ForgotPasswordController>().formKey = _formKey;
-    }
-  }
-
-  ForgotPasswordController get controller =>
-      Get.find<ForgotPasswordController>();
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(forgotPasswordFlowProvider);
+    final notifier = ref.read(forgotPasswordFlowProvider.notifier);
     final isDark = context.isDark;
 
     return Scaffold(
@@ -65,7 +49,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 ],
               ),
               child: Form(
-                key: _formKey,
+                key: notifier.resetFormKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -75,7 +59,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     ),
                     const SizedBox(height: 18),
                     AppInputField(
-                      controller: controller.targetController,
+                      controller: notifier.emailController,
                       label: Tk.loginEmailLabel.tr,
                       hint: Tk.loginEmailHint.tr,
                       prefixIcon: Icons.email_outlined,
@@ -83,17 +67,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       validator: AppValidators.email,
                     ),
                     const SizedBox(height: 14),
-                    AppInputField(
-                      controller: controller.resetTokenController,
-                      label: 'Reset Token',
-                      hint: 'Paste token from reset link',
-                      prefixIcon: Icons.key_outlined,
-                      validator: (v) =>
-                          AppValidators.required(v, Tk.fpResetTokenRequired.tr),
-                    ),
-                    const SizedBox(height: 14),
                     AppPasswordField(
-                      controller: controller.passwordController,
+                      controller: notifier.passwordController,
                       label: Tk.fpNewPassword.tr,
                       hint: Tk.fpNewPassword.tr,
                       prefixIcon: Icons.lock_outline_rounded,
@@ -106,35 +81,31 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     ),
                     const SizedBox(height: 14),
                     AppPasswordField(
-                      controller: controller.confirmController,
+                      controller: notifier.confirmPasswordController,
                       label: Tk.fpNewConfirm.tr,
                       hint: Tk.fpNewConfirm.tr,
                       prefixIcon: Icons.lock_reset_rounded,
                       textInputAction: TextInputAction.done,
                       validator: (v) => AppValidators.confirmPassword(
                         v,
-                        controller.passwordController.text,
+                        notifier.passwordController.text,
                         requiredMsg: Tk.fpNewShort.tr,
                         mismatchMsg: Tk.fpNewMismatch.tr,
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Obx(() {
-                      return AppButton(
-                        text: controller.isLoading.value
-                            ? '...'
-                            : Tk.fpNewSave.tr,
-                        icon: Icons.save_rounded,
-                        isLoading: controller.isLoading.value,
-                        onPressed: controller.isLoading.value
-                            ? null
-                            : controller.saveNewPassword,
-                        height: 52,
-                      );
-                    }),
+                    AppButton(
+                      text: state.isLoading ? '...' : Tk.fpNewSave.tr,
+                      icon: Icons.save_rounded,
+                      isLoading: state.isLoading,
+                      onPressed: state.isLoading
+                          ? null
+                          : () => notifier.resetPassword(code: state.otp),
+                      height: 52,
+                    ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: controller.cancel,
+                      onPressed: () => AppNav.back(),
                       child: Text(
                         Tk.fpCancel.tr,
                         style: TextStyle(

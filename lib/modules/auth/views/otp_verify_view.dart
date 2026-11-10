@@ -1,18 +1,27 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-
-import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_controller.dart';
+import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_service.dart';
+import 'package:rwnaqk_frontend/modules/auth/providers/auth_flow_providers.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_centered_container.dart';
 
-class OtpVerifyScreen extends GetView<ForgotPasswordController> {
+class OtpVerifyScreen extends ConsumerWidget {
   const OtpVerifyScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(forgotPasswordFlowProvider);
+    final notifier = ref.read(forgotPasswordFlowProvider.notifier);
+
+    final isEmail = state.method == RecoveryMethod.email;
+    final subtitle = isEmail
+        ? Tk.fpVerifySubtitleEmail.tr
+        : Tk.fpVerifySubtitleSms.tr;
+
     return Scaffold(
       backgroundColor: context.background,
       body: AuthBlobBackground(
@@ -34,7 +43,7 @@ class OtpVerifyScreen extends GetView<ForgotPasswordController> {
                     ),
                   ),
                   child: Text(
-                    controller.isTwoFactorFlow ? 'تحقق آمن' : 'استعادة آمنة',
+                    'استعادة آمنة',
                     style: TextStyle(
                       color: context.primary,
                       fontSize: 11,
@@ -44,41 +53,26 @@ class OtpVerifyScreen extends GetView<ForgotPasswordController> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Obx(() {
-                  return Text(
-                    controller.isTwoFactorFlow
-                        ? Tk.fpTwoFactorTitle.tr
-                        : Tk.fpVerifyTitle.tr,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: context.foreground,
-                      fontSize: 23,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.6,
-                    ),
-                  );
-                }),
+                Text(
+                  Tk.fpVerifyTitle.tr,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.foreground,
+                    fontSize: 23,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.6,
+                  ),
+                ),
                 const SizedBox(height: 5),
-                Obx(() {
-                  final isEmail =
-                      controller.method.value == RecoveryMethod.email;
-
-                  final subtitle = controller.isTwoFactorFlow
-                      ? Tk.fpAuthenticatorCodeHint.tr
-                      : (isEmail
-                            ? Tk.fpVerifySubtitleEmail.tr
-                            : Tk.fpVerifySubtitleSms.tr);
-
-                  return Text(
-                    '$subtitle\n${controller.maskedTarget.value}',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: context.mutedForeground,
-                      height: 1.3,
-                      fontSize: 12,
-                    ),
-                  );
-                }),
+                Text(
+                  '$subtitle\n${state.target}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.mutedForeground,
+                    height: 1.3,
+                    fontSize: 12,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 Container(
                   width: double.infinity,
@@ -135,59 +129,48 @@ class OtpVerifyScreen extends GetView<ForgotPasswordController> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      _OtpBoxes(onChanged: controller.setOtp),
+                      _OtpBoxes(onChanged: notifier.setOtp),
                     ],
                   ),
                 ),
                 const SizedBox(height: 10),
-                Obx(() {
-                  return SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: FilledButton(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : controller.verifyOtp,
-                      child: controller.isLoading.value
-                          ? SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: context.primaryForeground,
-                              ),
-                            )
-                          : Text(Tk.fpNext.tr),
-                    ),
-                  );
-                }),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: FilledButton(
+                    onPressed: state.isLoading || state.otp.length < 4
+                        ? null
+                        : () => notifier.verifyOtp(state.otp),
+                    child: state.isLoading
+                        ? SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: context.primaryForeground,
+                            ),
+                          )
+                        : Text(Tk.fpNext.tr),
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Obx(() {
-                  final enabled = controller.canResend.value;
-                  final seconds = controller.resendSeconds.value;
-
-                  return SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: OutlinedButton(
-                      onPressed: enabled ? controller.resendCode : null,
-                      child: Text(
-                        enabled
-                            ? Tk.fpVerifyResend.tr
-                            : Tk.fpVerifyResendIn.trParams({'s': '$seconds'}),
-                        style: TextStyle(
-                          color: enabled
-                              ? context.primary
-                              : context.mutedForeground,
-                          fontWeight: FontWeight.w700,
-                        ),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton(
+                    onPressed: state.isLoading ? null : notifier.sendCode,
+                    child: Text(
+                      Tk.fpVerifyResend.tr,
+                      style: TextStyle(
+                        color: context.primary,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                  );
-                }),
+                  ),
+                ),
                 const SizedBox(height: 4),
                 TextButton(
-                  onPressed: controller.cancel,
+                  onPressed: () => AppNav.back(),
                   child: Text(
                     Tk.fpCancel.tr,
                     style: TextStyle(color: context.mutedForeground),

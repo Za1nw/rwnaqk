@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/di/core_providers.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
-import 'package:rwnaqk_frontend/modules/home/controllers/main_controller.dart';
+import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
@@ -31,10 +32,13 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
   void initState() {
     super.initState();
 
-    final args = Get.arguments;
-    if (args is OrderModel) {
-      _order = args;
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is OrderModel) {
+        setState(() => _order = args);
+      }
+    });
 
     _animController = AnimationController(
       vsync: this,
@@ -69,17 +73,17 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen>
   }
 
   void _goToHome() {
-    if (Get.isRegistered<MainController>()) {
-      Get.find<MainController>().changeTab(0);
-    }
-    Get.offAllNamed(AppRoutes.main);
+    try {
+      globalProviderContainer.read(mainNavigationProvider.notifier).changeTab(0);
+    } catch (_) {}
+    AppNav.offAllNamed(AppRoutes.main);
   }
 
   void _goToTracking() {
     if (_order != null) {
-      Get.toNamed(AppRoutes.orderTracking, arguments: _order);
+      AppNav.toNamed(AppRoutes.orderTracking, arguments: _order);
     } else {
-      Get.offAllNamed(AppRoutes.orders);
+      AppNav.offAllNamed(AppRoutes.orders);
     }
   }
 

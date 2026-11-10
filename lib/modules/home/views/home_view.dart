@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
-import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
-import 'package:rwnaqk_frontend/routes/app_routes.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_breakpoints.dart';
-import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
+import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
+import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/curated_collections_grid.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/home_banner_section.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/home_categories_section.dart';
@@ -17,16 +19,15 @@ import 'package:rwnaqk_frontend/modules/home/widgets/home_top_products_section.d
 import 'package:rwnaqk_frontend/modules/home/widgets/shop_top_bar.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/store_perks_strip.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/vip_club_banner.dart';
-import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
-class HomeScreen extends GetView<HomeController> {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final cartController = Get.isRegistered<CartController>()
-        ? Get.find<CartController>()
-        : null;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(homeContentProvider.notifier);
+    final cartCount = ref.watch(cartProvider).itemCount;
 
     return Scaffold(
       backgroundColor: context.background,
@@ -44,7 +45,7 @@ class HomeScreen extends GetView<HomeController> {
               color: context.primary,
               backgroundColor: context.card,
               onRefresh: () async {
-                controller.onInit();
+                notifier.refreshHome();
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(
@@ -61,23 +62,19 @@ class HomeScreen extends GetView<HomeController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 1. Prestigious Top Header (Brand, Location, Search, Actions)
-                    Obx(() {
-                      final cartCount = cartController?.cartItems.length ?? 0;
-
-                      return ShopTopBar(
-                        title: Tk.homeTitle.tr,
-                        searchHint: 'ابحث عن منتجات، ماركات، عطور...',
-                        controller: controller.searchC,
-                        onTapField: () => Get.toNamed(AppRoutes.search),
-                        onCamera: controller.openCamera,
-                        showBrandHeader: true,
-                        locationText: 'التوصيل إلى: صنعاء / عدن',
-                        onLocationTap: () => Get.toNamed(AppRoutes.addresses),
-                        onNotifications: () => Get.toNamed(AppRoutes.settings),
-                        onCart: () => Get.toNamed(AppRoutes.cart),
-                        cartCount: cartCount,
-                      );
-                    }),
+                    ShopTopBar(
+                      title: Tk.homeTitle.tr,
+                      searchHint: 'ابحث عن منتجات، ماركات، عطور...',
+                      controller: notifier.searchController,
+                      onTapField: () => AppNav.toNamed(AppRoutes.search),
+                      onCamera: notifier.openCamera,
+                      showBrandHeader: true,
+                      locationText: 'التوصيل إلى: صنعاء / عدن',
+                      onLocationTap: () => AppNav.toNamed(AppRoutes.addresses),
+                      onNotifications: () => AppNav.toNamed(AppRoutes.settings),
+                      onCart: () => AppNav.toNamed(AppRoutes.cart),
+                      cartCount: cartCount,
+                    ),
 
                     const SizedBox(height: 14),
 

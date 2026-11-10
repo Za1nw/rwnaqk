@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 
 /// أدوات مركزية وموحدة للتحقق من صحة المدخلات في جميع نماذج التطبيق.
@@ -24,7 +24,8 @@ class AppValidators {
     if (text.isEmpty) {
       return requiredMsg ?? Tk.loginEmailRequired.tr;
     }
-    if (!GetUtils.isEmail(text)) {
+    final emailRegex = RegExp(r'^[\w\.-]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(text)) {
       return invalidMsg ?? Tk.loginEmailInvalid.tr;
     }
     return null;

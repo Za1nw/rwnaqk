@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:rwnaqk_frontend/core/constants/local_storage_keys.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// هذا الموديل يمثل شريحة واحدة داخل شاشة الـ Onboarding.
-///
-/// نستخدمه لتعريف:
-/// - الأيقونة
-/// - مفتاح العنوان
-/// - مفتاح الوصف
+/// نموذج شريحة العرض التقديمي في شاشة التهيئة [OnboardingScreen].
 class OnboardingSlide {
   final IconData icon;
   final String titleKey;
@@ -19,16 +16,46 @@ class OnboardingSlide {
   });
 }
 
-/// هذا الملف مسؤول عن منطق البيانات الخاص بشاشة الـ Onboarding.
-///
-/// نستخدمه لفصل:
-/// - الشرائح الثابتة
-/// - التحقق من الصفحة الأخيرة
-///
-/// لاحقًا إذا أردت جعل الـ onboarding ديناميكيًا أو قادمًا من إعدادات،
-/// فهذا هو المكان الطبيعي لذلك.
+/// خدمة بيانات ومنطق شاشة التهيئة والتحقق من حفظ حالة الإتمام.
 class OnboardingService {
-  /// الشرائح الحالية المعروضة في شاشة الـ Onboarding.
+  OnboardingService({SharedPreferences? preferences}) : _prefs = preferences;
+
+  final SharedPreferences? _prefs;
+
+  Future<SharedPreferences> _getPrefs() async {
+    return _prefs ?? await SharedPreferences.getInstance();
+  }
+
+  /// التحقق هل أكمل العميل شاشة التهيئة مسبقاً (قراءة متزامنة عند توفر كائن التفضيلات).
+  bool hasSeenOnboardingSync() {
+    try {
+      return _prefs?.getBool(LocalStorageKeys.onboardingSeen) ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// التحقق هل أكمل العميل شاشة التهيئة مسبقاً.
+  Future<bool> hasSeenOnboarding() async {
+    try {
+      final prefs = await _getPrefs();
+      return prefs.getBool(LocalStorageKeys.onboardingSeen) ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// تسجيل إتمام شاشة التهيئة وحفظها في التخزين المحلي الدائم.
+  Future<bool> markOnboardingAsSeen() async {
+    try {
+      final prefs = await _getPrefs();
+      return await prefs.setBool(LocalStorageKeys.onboardingSeen, true);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// الشرائح المعروضة في شاشة التهيئة.
   List<OnboardingSlide> get slides => const <OnboardingSlide>[
         OnboardingSlide(
           icon: Icons.shopping_bag_rounded,
@@ -47,7 +74,7 @@ class OnboardingService {
         ),
       ];
 
-  /// هذه الدالة تتحقق هل الصفحة الحالية هي الأخيرة أم لا.
+  /// التحقق هل الفهرس الحالي يمثل الشريحة الأخيرة.
   bool isLastPage({
     required int currentIndex,
     required int totalSlides,

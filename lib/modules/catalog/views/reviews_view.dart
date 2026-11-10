@@ -1,15 +1,23 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
-import 'package:rwnaqk_frontend/modules/catalog/controllers/reviews_controller.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
 
-class ReviewsScreen extends GetView<ReviewsController> {
+class ReviewsScreen extends StatelessWidget {
   const ReviewsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    List<ProductReview> reviews = const [];
+    if (args is Map && args['reviews'] is List<ProductReview>) {
+      reviews = args['reviews'] as List<ProductReview>;
+    } else if (args is List<ProductReview>) {
+      reviews = args;
+    }
+
     return Scaffold(
       backgroundColor: context.background,
       body: SafeArea(
@@ -21,8 +29,11 @@ class ReviewsScreen extends GetView<ReviewsController> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () => Get.back(),
-                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.foreground),
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: context.foreground,
+                    ),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -37,23 +48,19 @@ class ReviewsScreen extends GetView<ReviewsController> {
                 ],
               ),
               const SizedBox(height: 14),
-
               Expanded(
-                child: Obx(() {
-                  final reviews = controller.reviews;
-                  return ListView.separated(
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: reviews.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 14),
-                    itemBuilder: (_, i) => _ReviewTile(
-                      name: reviews[i].name,
-                      rating: reviews[i].rating,
-                      text: reviews[i].text,
-                      avatarUrl: reviews[i].avatarUrl,
-                      dateText: reviews[i].dateText,
-                    ),
-                  );
-                }),
+                child: ListView.separated(
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: reviews.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 14),
+                  itemBuilder: (_, i) => _ReviewTile(
+                    name: reviews[i].name,
+                    rating: reviews[i].rating,
+                    text: reviews[i].text,
+                    avatarUrl: reviews[i].avatarUrl,
+                    dateText: reviews[i].dateText,
+                  ),
+                ),
               ),
             ],
           ),
@@ -88,7 +95,8 @@ class _ReviewTile extends StatelessWidget {
         border: Border.all(color: context.border.withValues(alpha: 0.35)),
         boxShadow: [
           BoxShadow(
-            color: context.shadow.withValues(alpha: context.isDark ? 0.14 : 0.06),
+            color:
+                context.shadow.withValues(alpha: context.isDark ? 0.14 : 0.06),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -156,7 +164,9 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final letter = name.trim().isNotEmpty ? name.trim().characters.first.toUpperCase() : '?';
+    final letter = name.trim().isNotEmpty
+        ? name.trim().characters.first.toUpperCase()
+        : '?';
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(999),
@@ -193,12 +203,15 @@ class _StarsRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (i) {
         if (i < full) {
-          return const Icon(Icons.star_rounded, size: 18, color: Color(0xFFF59E0B));
+          return const Icon(Icons.star_rounded,
+              size: 18, color: Color(0xFFF59E0B));
         }
         if (i == full && hasHalf) {
-          return const Icon(Icons.star_half_rounded, size: 18, color: Color(0xFFF59E0B));
+          return const Icon(Icons.star_half_rounded,
+              size: 18, color: Color(0xFFF59E0B));
         }
-        return Icon(Icons.star_rounded, size: 18, color: context.border.withValues(alpha: 0.8));
+        return Icon(Icons.star_rounded,
+            size: 18, color: context.border.withValues(alpha: 0.8));
       }),
     );
   }

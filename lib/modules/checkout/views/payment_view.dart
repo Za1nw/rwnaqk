@@ -1,12 +1,18 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_checkout_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_empty_state.dart';
-import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
+import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
+import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/address_section.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/cart_checkout_stepper.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/cart_total_bar.dart';
@@ -15,216 +21,248 @@ import 'package:rwnaqk_frontend/modules/cart/widgets/payment_contact_section.dar
 import 'package:rwnaqk_frontend/modules/cart/widgets/payment_items_header.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/payment_method_section.dart';
 import 'package:rwnaqk_frontend/modules/cart/widgets/payment_receipt_upload_card.dart';
-import 'package:rwnaqk_frontend/modules/cart/widgets/shipping_address_sheet.dart';
-import 'package:rwnaqk_frontend/modules/cart/widgets/shipping_method_selector.dart';
-import 'package:rwnaqk_frontend/modules/checkout/controllers/payment_controller.dart';
+import 'package:rwnaqk_frontend/modules/checkout/providers/checkout_providers.dart';
+import 'package:rwnaqk_frontend/modules/customer/providers/addresses_providers.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 /// شاشة إتمام الطلب والدفع (Checkout & Payment Screen)
-/// مرتبطة منطقياً وتصميمياً بـ CartController و PaymentController
-class PaymentScreen extends GetView<PaymentController> {
+/// معتمدة كلياً على Riverpod 3.5.0 وخالية تماماً من GetX
+class PaymentScreen extends ConsumerWidget {
   const PaymentScreen({super.key});
 
-  void _openShippingSheet(BuildContext context, {required bool isEdit}) {
-    final cart = Get.find<CartController>();
-    if (isEdit) {
-      cart.prepareEditShipping();
-    } else {
-      cart.prepareAddShipping();
+  Future<void> _pickReceipt(WidgetRef ref) async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (picked != null) {
+        ref
+            .read(checkoutFlowProvider.notifier)
+            .setReceiptImage(File(picked.path));
+      }
+    } catch (e) {
+      AppToast.error('تعذر اختيار الصورة: $e', title: 'خطأ');
     }
-
-    ShippingAddressSheet.showShipping(
-      context,
-      addressController: cart.shippingAddressCtrl,
-      cityController: cart.shippingCityCtrl,
-      postcodeController: cart.shippingPostcodeCtrl,
-      country: cart.selectedShippingCountryLabel,
-      countries: cart.shippingCountries,
-      onCountryChanged: (v) {
-        if (v != null) cart.setShippingCountry(v);
-      },
-      onSave: () {
-        cart.saveShippingFromForm();
-        Navigator.pop(context);
-      },
-    );
   }
 
-  void _openContactSheet(BuildContext context) {
-    final cart = Get.find<CartController>();
-    cart.prepareEditContact();
+  bool _validatePrerequisites({
+    required CartState cart,
+    required dynamic address,
+    required CheckoutState checkout,
+  }) {
+    if (cart.isEmpty) {
+      AppToast.warning(
+        Tk.cartValidationCartEmpty.tr,
+        title: Tk.cartValidationCartTitle.tr,
+      );
+      return false;
+    }
 
-    ShippingAddressSheet.showContact(
-      context,
-      phoneController: cart.contactPhoneCtrl,
-      emailController: cart.contactEmailCtrl,
-      onSave: () {
-        cart.saveContactFromForm();
-        Navigator.pop(context);
-      },
-    );
+    if (address == null || address.isEmpty) {
+      AppToast.warning(
+        Tk.cartValidationShippingMissing.tr,
+        title: Tk.cartValidationShippingTitle.tr,
+      );
+      return false;
+    }
+
+    if (!address.isServiceable) {
+      AppToast.warning(
+        'العنوان المختار خارج نطاق التوصيل المدعوم حالياً. يرجى اختيار أو إضافة عنوان آخر.',
+        title: 'خارج نطاق التوصيل',
+      );
+      return false;
+    }
+
+    if (checkout.isWalletPayment && !checkout.hasReceipt) {
+      AppToast.warning(
+        'يرجى إرفاق صورة سند أو إشعار التحويل للانتقال لمرحلة التأكيد',
+        title: 'سند التحويل مطلوب',
+      );
+      return false;
+    }
+
+    return true;
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = context.isDark;
-    final cart = Get.find<CartController>();
+    final cart = ref.watch(cartProvider);
+    final quote = ref.watch(cartQuoteProvider);
+    final checkout = ref.watch(checkoutFlowProvider);
+    final checkoutNotifier = ref.read(checkoutFlowProvider.notifier);
+    final address = ref.watch(selectedAddressProvider) ??
+        ref.watch(defaultAddressProvider);
+    final contact = ref.watch(customerContactInfoProvider);
+
+    final finalTotal = quote.isValid
+        ? quote.grandTotal
+        : (cart.subtotal + quote.shippingFee - quote.discountAmount);
+
+    final isWallet = checkout.isWalletPayment;
+    final hasReceipt = checkout.hasReceipt;
+    final canCheckout = cart.isNotEmpty &&
+        address != null &&
+        !address.isEmpty &&
+        (!isWallet || hasReceipt);
+
+    String? helper;
+    if (isWallet && !hasReceipt) {
+      helper = 'يرجى إرفاق صورة السند للمتابعة';
+    } else if (quote.discountAmount > 0) {
+      helper = 'شامل الخصم (${quote.couponCode ?? "كوبون"})';
+    } else {
+      helper = AppCheckoutUtils.inlineSummary([
+        'توصيل قياسي',
+        checkout.paymentMethodLabel,
+      ]);
+    }
 
     return Scaffold(
       backgroundColor: isDark
           ? const Color(0xFF140A13)
           : const Color(0xFFFBF8FA),
-      bottomNavigationBar: Obx(() {
-        final isWallet = controller.isWalletPayment;
-        final hasReceipt = controller.hasReceipt;
-        final canCheckout = controller.canConfirmOrder;
-        final isSubmitting = controller.isSubmitting.value;
-
-        String? helper;
-        if (isWallet && !hasReceipt) {
-          helper = 'يرجى إرفاق صورة السند للمتابعة';
-        } else if (cart.hasCoupon) {
-          helper =
-              'شامل خصم ${cart.couponDiscountPercent.value}% (${cart.couponCode.value})';
-        } else {
-          helper = AppCheckoutUtils.inlineSummary([
-            cart.selectedShippingTitle,
-            controller.paymentMethodLabel,
-          ]);
-        }
-
-        return CartTotalBar(
-          total: cart.total,
-          enabled: canCheckout && !isSubmitting,
-          totalLabel: Tk.cartTotal.tr,
-          helperText: helper,
-          checkoutText: 'مراجعة وتأكيد الطلب',
-          checkoutIcon: Icons.arrow_back_rounded,
-          buttonWidth: 175,
-          onCheckout: () {
-            controller.proceedToConfirmation();
-          },
-        );
-      }),
-      body: SafeArea(
-        child: Obx(() {
-          if (cart.cartItems.isEmpty) {
-            return _PaymentEmptyState(onBack: cart.backToCart);
+      bottomNavigationBar: CartTotalBar(
+        total: finalTotal,
+        enabled: canCheckout && !checkout.isSubmitting,
+        totalLabel: Tk.cartTotal.tr,
+        helperText: helper,
+        checkoutText: 'مراجعة وتأكيد الطلب',
+        checkoutIcon: Icons.arrow_back_rounded,
+        buttonWidth: 175,
+        onCheckout: () {
+          if (_validatePrerequisites(
+            cart: cart,
+            address: address,
+            checkout: checkout,
+          )) {
+            AppNav.toNamed(AppRoutes.orderConfirmation);
           }
+        },
+      ),
+      body: SafeArea(
+        child: cart.isEmpty
+            ? _PaymentEmptyState(onBack: () => Navigator.of(context).pop())
+            : Column(
+                children: [
+                  // Custom Top Header
+                  _buildTopBar(context, cart.totalQuantity),
 
-          return Column(
-            children: [
-              // Custom Top Header
-              _buildTopBar(context, cart),
+                  // Checkout Stepper (Step 2: Shipping & Payment)
+                  const CartCheckoutStepper(currentStep: 2),
 
-              // Checkout Stepper (Step 2: Shipping & Payment)
-              const CartCheckoutStepper(currentStep: 2),
+                  // Scrollable content
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding:
+                          const EdgeInsetsDirectional.fromSTEB(16, 6, 16, 120),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Security Guarantee Banner
+                          _buildSecurityBanner(context),
 
-              // Scrollable content
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsetsDirectional.fromSTEB(16, 6, 16, 120),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Security Guarantee Banner
-                      _buildSecurityBanner(context),
+                          const SizedBox(height: 14),
 
-                      const SizedBox(height: 14),
-
-                      // Delivery Address Section
-                      AddressSection(
-                        title: Tk.cartShippingAddress.tr,
-                        address: cart.shippingAddressText,
-                        onEdit: () => _openShippingSheet(
-                          context,
-                          isEdit: cart.hasShippingAddress,
-                        ),
-                        allowAddWhenEmpty: true,
-                        emptyHint: Tk.cartAddShippingDetails.tr,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Contact Information Section
-                      PaymentContactSection(
-                        lines: cart.contactLines,
-                        onEdit: () => _openContactSheet(context),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Order Items Preview Section
-                      PaymentItemsHeader(
-                        title: Tk.cartPaymentItems.tr,
-                        count: cart.itemsCount,
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      _buildItemsPreviewCard(context, cart),
-
-                      const SizedBox(height: 18),
-
-                      // Shipping Delivery Options (Standard vs Express)
-                      ShippingMethodSelector(
-                        headerTitle: Tk.cartPaymentShippingOptions.tr,
-                        selectedId: cart.selectedShippingId.value,
-                        onChanged: cart.setShipping,
-                        options: cart.shippingOptions
-                            .map(AppCheckoutUtils.cartShippingTileData)
-                            .toList(growable: false),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      // Payment Method Section (COD vs Wallets)
-                      const _PaymentMethodBlock(),
-
-                      // Upload Receipt Card (if wallet payment)
-                      Obx(() {
-                        if (!controller.isWalletPayment) {
-                          return const SizedBox.shrink();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 16.0),
-                          child: PaymentReceiptUploadCard(
-                            imageFile: controller.receiptImage.value,
-                            onPickImage: controller.pickReceiptImage,
-                            onRemoveImage: controller.removeReceiptImage,
+                          // Delivery Address Section
+                          AddressSection(
+                            title: Tk.cartShippingAddress.tr,
+                            address: address?.formatted ?? '',
+                            onEdit: () =>
+                                AppNav.toNamed(AppRoutes.addresses),
+                            allowAddWhenEmpty: true,
+                            emptyHint: Tk.cartAddShippingDetails.tr,
                           ),
-                        );
-                      }),
 
-                      const SizedBox(height: 18),
+                          const SizedBox(height: 12),
 
-                      // Final Order Payment Summary Card
-                      _PaymentSummaryCard(
-                        subtotal: cart.itemsSubtotal,
-                        hasCoupon: cart.hasCoupon,
-                        couponCode: cart.couponCode.value,
-                        couponDiscountAmount: cart.couponDiscountAmount,
-                        shippingFeeText: cart.shippingFeeText,
-                        shippingFee: cart.shippingFee,
-                        total: cart.total,
-                        shippingTitle: cart.selectedShippingTitle,
-                        paymentMethod: controller.paymentMethodLabel,
+                          // Contact Information Section
+                          PaymentContactSection(
+                            lines: contact.lines,
+                            onEdit: () =>
+                                AppNav.toNamed(AppRoutes.editProfile),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Order Items Preview Section
+                          PaymentItemsHeader(
+                            title: Tk.cartPaymentItems.tr,
+                            count: cart.totalQuantity,
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          _buildItemsPreviewCard(context, cart),
+
+                          const SizedBox(height: 18),
+
+                          // Payment Method Section (COD vs Wallets)
+                          PaymentMethodSection(
+                            titleText: Tk.cartPaymentMethod.tr,
+                            cashTitle: Tk.cartPaymentCodTitle.tr,
+                            cashSubtitle: Tk.cartPaymentCodSubtitle.tr,
+                            walletTitle: Tk.cartPaymentWalletTitle.tr,
+                            walletSubtitle: Tk.cartPaymentWalletSubtitle.tr,
+                            receiverNameLabel: Tk.cartPaymentReceiverName.tr,
+                            walletNumberLabel: Tk.cartPaymentWalletNumber.tr,
+                            walletAccounts: checkout.walletAccounts,
+                            selectedId: checkout.paymentMethodId,
+                            onChanged: checkoutNotifier.setPaymentMethod,
+                            selectedWalletAccountIndex:
+                                checkout.selectedWalletAccountIndex,
+                            onWalletAccountChanged:
+                                checkoutNotifier.selectWalletAccount,
+                            infoMessage: checkout.isWalletPayment
+                                ? Tk.cartPaymentWalletInfoMessage.tr
+                                : Tk.cartPaymentCodInfoMessage.tr,
+                          ),
+
+                          // Upload Receipt Card (if wallet payment)
+                          if (checkout.isWalletPayment)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 16.0),
+                              child: PaymentReceiptUploadCard(
+                                imageFile: checkout.receiptImage,
+                                onPickImage: () => _pickReceipt(ref),
+                                onRemoveImage: checkoutNotifier.clearReceipt,
+                              ),
+                            ),
+
+                          const SizedBox(height: 18),
+
+                          // Final Order Payment Summary Card
+                          _PaymentSummaryCard(
+                            subtotal: cart.subtotal,
+                            hasCoupon: quote.discountAmount > 0,
+                            couponCode: quote.couponCode ?? '',
+                            couponDiscountAmount: quote.discountAmount,
+                            shippingFeeText: quote.shippingFee <= 0
+                                ? 'مجاني'
+                                : AppMoneyUtils.riyal(quote.shippingFee),
+                            shippingFee: quote.shippingFee,
+                            total: finalTotal,
+                            shippingTitle: 'توصيل قياسي',
+                            paymentMethod: checkout.paymentMethodLabel,
+                          ),
+
+                          const SizedBox(height: 30),
+                        ],
                       ),
-
-                      const SizedBox(height: 30),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          );
-        }),
       ),
     );
   }
 
   /// Top Bar with back button to Cart
-  Widget _buildTopBar(BuildContext context, CartController cart) {
+  Widget _buildTopBar(BuildContext context, int count) {
     final isDark = context.isDark;
 
     return Container(
@@ -244,7 +282,7 @@ class PaymentScreen extends GetView<PaymentController> {
         children: [
           // Back button
           InkWell(
-            onTap: cart.backToCart,
+            onTap: () => Navigator.of(context).pop(),
             borderRadius: BorderRadius.circular(10),
             child: Container(
               padding: const EdgeInsets.all(8),
@@ -287,7 +325,7 @@ class PaymentScreen extends GetView<PaymentController> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              '${cart.itemsCount} عناصر',
+              '$count عناصر',
               style: TextStyle(
                 color: isDark ? BrandColors.gold : BrandColors.burgundy,
                 fontWeight: FontWeight.w800,
@@ -370,7 +408,7 @@ class PaymentScreen extends GetView<PaymentController> {
   }
 
   /// Order Items Preview Card
-  Widget _buildItemsPreviewCard(BuildContext context, CartController cart) {
+  Widget _buildItemsPreviewCard(BuildContext context, CartState cart) {
     final isDark = context.isDark;
 
     return Container(
@@ -387,20 +425,18 @@ class PaymentScreen extends GetView<PaymentController> {
       padding: const EdgeInsets.all(8),
       child: Column(
         children: [
-          for (var i = 0; i < cart.cartItems.length; i++) ...[
+          for (var i = 0; i < cart.items.length; i++) ...[
             MiniItemPriceTile(
-              imageUrl: cart.cartItems[i].imageUrl,
-              badgeCount: cart.quantityOf(cart.cartItems[i].id),
-              title: cart.cartItems[i].title.tr,
+              imageUrl: cart.items[i].imageUrl,
+              badgeCount: cart.items[i].quantity,
+              title: cart.items[i].title.tr,
               subtitle: AppCheckoutUtils.paymentItemSubtitle(
-                cart.cartItems[i],
-                quantity: cart.quantityOf(cart.cartItems[i].id),
+                cart.items[i].originalProduct,
+                quantity: cart.items[i].quantity,
               ),
-              priceText: AppMoneyUtils.riyal(
-                cart.lineTotalOf(cart.cartItems[i]),
-              ),
+              priceText: AppMoneyUtils.riyal(cart.items[i].lineTotal),
             ),
-            if (i != cart.cartItems.length - 1)
+            if (i != cart.items.length - 1)
               Divider(
                 height: 1,
                 thickness: 1,
@@ -412,35 +448,6 @@ class PaymentScreen extends GetView<PaymentController> {
         ],
       ),
     );
-  }
-}
-
-class _PaymentMethodBlock extends StatelessWidget {
-  const _PaymentMethodBlock();
-
-  @override
-  Widget build(BuildContext context) {
-    final payment = Get.find<PaymentController>();
-
-    return Obx(() {
-      return PaymentMethodSection(
-        titleText: Tk.cartPaymentMethod.tr,
-        cashTitle: Tk.cartPaymentCodTitle.tr,
-        cashSubtitle: Tk.cartPaymentCodSubtitle.tr,
-        walletTitle: Tk.cartPaymentWalletTitle.tr,
-        walletSubtitle: Tk.cartPaymentWalletSubtitle.tr,
-        receiverNameLabel: Tk.cartPaymentReceiverName.tr,
-        walletNumberLabel: Tk.cartPaymentWalletNumber.tr,
-        walletAccounts: payment.walletAccounts,
-        selectedId: payment.paymentMethodId.value,
-        onChanged: payment.setPaymentMethodId,
-        selectedWalletAccountIndex: payment.selectedWalletAccountIndex.value,
-        onWalletAccountChanged: payment.setSelectedWalletAccountIndex,
-        infoMessage: payment.isWalletPayment
-            ? Tk.cartPaymentWalletInfoMessage.tr
-            : Tk.cartPaymentCodInfoMessage.tr,
-      );
-    });
   }
 }
 

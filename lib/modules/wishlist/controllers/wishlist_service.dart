@@ -10,6 +10,37 @@ class WishlistService {
     return sampleProducts(6, seed: 800);
   }
 
+  List<HomeProductItem> initialWishlistItems() => seedWishlist();
+
+  List<HomeProductItem> initialRecentlyViewedItems() => seedRecentlyViewed();
+
+  List<HomeProductItem> toggleItem({
+    required List<HomeProductItem> currentList,
+    required HomeProductItem item,
+  }) {
+    final exists = currentList.any((e) => e.id == item.id);
+    if (exists) {
+      return currentList.where((e) => e.id != item.id).toList();
+    } else {
+      return [item, ...currentList];
+    }
+  }
+
+  List<HomeProductItem> removeItem({
+    required List<HomeProductItem> currentList,
+    required HomeProductItem item,
+  }) {
+    return currentList.where((e) => e.id != item.id).toList();
+  }
+
+  List<HomeProductItem> addRecent({
+    required List<HomeProductItem> currentList,
+    required HomeProductItem item,
+  }) {
+    final filtered = currentList.where((e) => e.id != item.id).toList();
+    return [item, ...filtered];
+  }
+
   List<HomeProductItem> sampleProducts(
     int count, {
     required int seed,

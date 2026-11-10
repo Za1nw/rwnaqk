@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
-import 'package:rwnaqk_frontend/core/utils/app_validators.dart';
-import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
+import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-
-import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_controller.dart';
-import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
+import 'package:rwnaqk_frontend/core/utils/app_validators.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_input_field.dart';
+import 'package:rwnaqk_frontend/modules/auth/controllers/forgot_password_service.dart';
+import 'package:rwnaqk_frontend/modules/auth/providers/auth_flow_providers.dart';
+import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_centered_container.dart';
 
-class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
+class ForgotPasswordMethodScreen extends ConsumerWidget {
   const ForgotPasswordMethodScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(forgotPasswordFlowProvider);
+    final notifier = ref.read(forgotPasswordFlowProvider.notifier);
     final isDark = context.isDark;
 
     return Scaffold(
@@ -65,27 +68,23 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
                 ),
                 const SizedBox(height: 18),
 
-                Obx(() {
-                  return _ChoiceCard(
-                    selected: controller.method.value == RecoveryMethod.sms,
-                    title: Tk.fpSms.tr,
-                    icon: Icons.sms_outlined,
-                    onTap: () => controller.selectMethod(RecoveryMethod.sms),
-                  );
-                }),
+                _ChoiceCard(
+                  selected: state.method == RecoveryMethod.sms,
+                  title: Tk.fpSms.tr,
+                  icon: Icons.sms_outlined,
+                  onTap: () => notifier.setMethod(RecoveryMethod.sms),
+                ),
                 const SizedBox(height: 10),
-                Obx(() {
-                  return _ChoiceCard(
-                    selected: controller.method.value == RecoveryMethod.email,
-                    title: Tk.fpEmail.tr,
-                    icon: Icons.email_outlined,
-                    onTap: () => controller.selectMethod(RecoveryMethod.email),
-                  );
-                }),
+                _ChoiceCard(
+                  selected: state.method == RecoveryMethod.email,
+                  title: Tk.fpEmail.tr,
+                  icon: Icons.email_outlined,
+                  onTap: () => notifier.setMethod(RecoveryMethod.email),
+                ),
 
                 const SizedBox(height: 14),
                 AppInputField(
-                  controller: controller.targetController,
+                  controller: notifier.emailController,
                   label: Tk.loginEmailLabel.tr,
                   hint: Tk.loginEmailHint.tr,
                   prefixIcon: Icons.email_outlined,
@@ -95,21 +94,17 @@ class ForgotPasswordMethodScreen extends GetView<ForgotPasswordController> {
 
                 const SizedBox(height: 20),
 
-                Obx(() {
-                  return AppButton(
-                    text: controller.isLoading.value ? '...' : Tk.fpNext.tr,
-                    icon: Icons.arrow_forward_rounded,
-                    isLoading: controller.isLoading.value,
-                    onPressed: controller.isLoading.value
-                        ? null
-                        : controller.goNextFromMethod,
-                    height: 52,
-                  );
-                }),
+                AppButton(
+                  text: state.isLoading ? '...' : Tk.fpNext.tr,
+                  icon: Icons.arrow_forward_rounded,
+                  isLoading: state.isLoading,
+                  onPressed: state.isLoading ? null : notifier.sendCode,
+                  height: 52,
+                ),
                 const SizedBox(height: 10),
 
                 TextButton(
-                  onPressed: controller.cancel,
+                  onPressed: () => AppNav.back(),
                   child: Text(
                     Tk.fpCancel.tr,
                     style: TextStyle(

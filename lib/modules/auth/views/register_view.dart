@@ -1,41 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/utils/app_notifier.dart';
 import 'package:rwnaqk_frontend/core/utils/app_validators.dart';
-import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import 'package:rwnaqk_frontend/modules/auth/controllers/register_controller.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_input_field.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_password_field.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_select_field.dart';
-import 'package:rwnaqk_frontend/modules/auth/widgets/auth_form_page_layout.dart';
+import 'package:rwnaqk_frontend/modules/auth/providers/auth_flow_providers.dart';
 import 'package:rwnaqk_frontend/modules/auth/widgets/auth_blob_background.dart';
+import 'package:rwnaqk_frontend/modules/auth/widgets/auth_form_page_layout.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerWidget {
   const RegisterScreen({super.key});
-
-  @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
-}
-
-class _RegisterScreenState extends State<RegisterScreen> {
-  late final GlobalKey<FormState> _formKey;
-
-  @override
-  void initState() {
-    super.initState();
-    _formKey = GlobalKey<FormState>();
-    if (Get.isRegistered<RegisterController>()) {
-      Get.find<RegisterController>().formKey = _formKey;
-    }
-  }
-
-  RegisterController get controller => Get.find<RegisterController>();
 
   static String get _resolvedApiBaseUrl => AppEnv.apiBaseUrl;
 
@@ -51,12 +33,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final uri = _buildLegalUri(path);
     final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!opened) {
-      AppToast.error(Tk.commonUnexpectedError.tr, title: Tk.commonError.tr);
+      AppNotifier.error(Tk.commonUnexpectedError.tr, title: Tk.commonError.tr);
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(registerFormProvider);
+    final notifier = ref.read(registerFormProvider.notifier);
     final isDark = context.isDark;
 
     final cardShadows = isDark
@@ -135,7 +119,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     boxShadow: cardShadows,
                   ),
                   child: Form(
-                    key: _formKey,
+                    key: notifier.formKey,
                     child: Column(
                       children: [
                         // الاسم واللقب في سطر واحد متناسق
@@ -144,7 +128,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           children: [
                             Expanded(
                               child: AppInputField(
-                                controller: controller.firstNameController,
+                                controller: notifier.firstNameController,
                                 label: Tk.registerFirstNameLabel.tr,
                                 hint: Tk.registerFirstNameHint.tr,
                                 prefixIcon: Icons.person_outline_rounded,
@@ -157,7 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: AppInputField(
-                                controller: controller.lastNameController,
+                                controller: notifier.lastNameController,
                                 label: Tk.registerLastNameLabel.tr,
                                 hint: Tk.registerLastNameHint.tr,
                                 prefixIcon: Icons.badge_outlined,
@@ -173,7 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         // حقل رقم الهاتف
                         AppInputField(
-                          controller: controller.phoneController,
+                          controller: notifier.phoneController,
                           label: Tk.registerPhoneLabel.tr,
                           hint: Tk.registerPhoneHint.tr,
                           prefixIcon: Icons.phone_outlined,
@@ -184,7 +168,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         // حقل البريد الإلكتروني
                         AppInputField(
-                          controller: controller.emailController,
+                          controller: notifier.emailController,
                           label: Tk.registerEmailLabel.tr,
                           hint: Tk.registerEmailHint.tr,
                           prefixIcon: Icons.mail_outline_rounded,
@@ -198,31 +182,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 14),
 
                         // حقل اختيار المحافظة
-                        Obx(() {
-                          final governorates = controller.governorates;
-                          final governorateItems = governorates.toList(
-                            growable: false,
-                          );
-
-                          return AppSelectField<String>(
-                            label: Tk.registerGovernorateLabel.tr,
-                            hint: Tk.registerGovernorateHint.tr,
-                            items: governorateItems,
-                            value: controller.governorate.value,
-                            prefixIcon: Icons.location_on_outlined,
-                            itemLabel: (e) => e,
-                            onChanged: (v) => controller.governorate.value = v,
-                            validator: (v) => AppValidators.requiredSelection(
-                              v,
-                              Tk.registerGovernorateRequired.tr,
-                            ),
-                          );
-                        }),
+                        AppSelectField<String>(
+                          label: Tk.registerGovernorateLabel.tr,
+                          hint: Tk.registerGovernorateHint.tr,
+                          items: state.governorates,
+                          value: state.selectedGovernorate,
+                          prefixIcon: Icons.location_on_outlined,
+                          itemLabel: (e) => e,
+                          onChanged: notifier.selectGovernorate,
+                          validator: (v) => AppValidators.requiredSelection(
+                            v,
+                            Tk.registerGovernorateRequired.tr,
+                          ),
+                        ),
                         const SizedBox(height: 14),
 
                         // حقل كلمة المرور
                         AppPasswordField(
-                          controller: controller.passwordController,
+                          controller: notifier.passwordController,
                           label: Tk.registerPasswordLabel.tr,
                           hint: Tk.registerPasswordHint.tr,
                           prefixIcon: Icons.lock_outline_rounded,
@@ -237,14 +214,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                         // حقل تأكيد كلمة المرور
                         AppPasswordField(
-                          controller: controller.confirmPasswordController,
+                          controller: notifier.confirmPasswordController,
                           label: Tk.registerConfirmPasswordLabel.tr,
                           hint: Tk.registerConfirmPasswordHint.tr,
                           prefixIcon: Icons.lock_reset_rounded,
                           textInputAction: TextInputAction.done,
                           validator: (v) => AppValidators.confirmPassword(
                             v,
-                            controller.passwordController.text,
+                            notifier.passwordController.text,
                             requiredMsg: Tk.registerConfirmPasswordRequired.tr,
                             mismatchMsg: Tk.registerPasswordMismatch.tr,
                           ),
@@ -252,145 +229,137 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 16),
 
                         // الموافقة على الشروط وسياسة الخصوصية
-                        Obx(() {
-                          final isAgreed = controller.agreed.value;
-
-                          return InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: controller.toggleAgreed,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 6,
-                                horizontal: 2,
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    curve: Curves.easeInOut,
-                                    width: 22,
-                                    height: 22,
-                                    margin: const EdgeInsets.only(top: 2),
-                                    decoration: BoxDecoration(
-                                      color: isAgreed
+                        InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => notifier.toggleAgreement(!state.isAgree),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 6,
+                              horizontal: 2,
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeInOut,
+                                  width: 22,
+                                  height: 22,
+                                  margin: const EdgeInsets.only(top: 2),
+                                  decoration: BoxDecoration(
+                                    color: state.isAgree
+                                        ? context.primary
+                                        : (isDark
+                                            ? const Color(0xFF190C18)
+                                            : Colors.white),
+                                    borderRadius: BorderRadius.circular(7),
+                                    border: Border.all(
+                                      color: state.isAgree
                                           ? context.primary
                                           : (isDark
-                                                ? const Color(0xFF190C18)
-                                                : Colors.white),
-                                      borderRadius: BorderRadius.circular(7),
-                                      border: Border.all(
-                                        color: isAgreed
-                                            ? context.primary
-                                            : (isDark
-                                                  ? AppColors.borderDark
-                                                  : AppColors.borderLight),
-                                        width: 1.5,
-                                      ),
-                                      boxShadow: isAgreed && isDark
-                                          ? [
-                                              BoxShadow(
-                                                color: context.primary
-                                                    .withValues(alpha: 0.35),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ]
-                                          : null,
+                                              ? AppColors.borderDark
+                                              : AppColors.borderLight),
+                                      width: 1.5,
                                     ),
-                                    child: isAgreed
-                                        ? Icon(
-                                            Icons.check_rounded,
-                                            size: 16,
-                                            color: context.primaryForeground,
-                                          )
+                                    boxShadow: state.isAgree && isDark
+                                        ? [
+                                            BoxShadow(
+                                              color: context.primary
+                                                  .withValues(alpha: 0.35),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ]
                                         : null,
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          Tk.registerTermsText.tr,
-                                          style: TextStyle(
-                                            fontFamily: AppTextTheme.fontFamily,
-                                            color: context.mutedForeground,
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 13,
-                                            height: 1.4,
+                                  child: state.isAgree
+                                      ? Icon(
+                                          Icons.check_rounded,
+                                          size: 16,
+                                          color: context.primaryForeground,
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        Tk.registerTermsText.tr,
+                                        style: TextStyle(
+                                          fontFamily: AppTextTheme.fontFamily,
+                                          color: context.mutedForeground,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 13,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Wrap(
+                                        spacing: 12,
+                                        runSpacing: 4,
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () => _openLegalPage(
+                                              AppEnv.termsUrl,
+                                            ),
+                                            child: Text(
+                                              Tk.registerTermsLink.tr,
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    AppTextTheme.fontFamily,
+                                                color: context.primary,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 12.5,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                decorationColor:
+                                                    context.primary,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Wrap(
-                                          spacing: 12,
-                                          runSpacing: 4,
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () => _openLegalPage(
-                                                AppEnv.termsUrl,
-                                              ),
-                                              child: Text(
-                                                Tk.registerTermsLink.tr,
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      AppTextTheme.fontFamily,
-                                                  color: context.primary,
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 12.5,
-                                                  decoration:
-                                                      TextDecoration.underline,
-                                                  decorationColor:
-                                                      context.primary,
-                                                ),
+                                          GestureDetector(
+                                            onTap: () => _openLegalPage(
+                                              AppEnv.privacyPolicyUrl,
+                                            ),
+                                            child: Text(
+                                              Tk.registerPrivacyLink.tr,
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    AppTextTheme.fontFamily,
+                                                color: context.primary,
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 12.5,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                                decorationColor:
+                                                    context.primary,
                                               ),
                                             ),
-                                            GestureDetector(
-                                              onTap: () => _openLegalPage(
-                                                AppEnv.privacyPolicyUrl,
-                                              ),
-                                              child: Text(
-                                                Tk.registerPrivacyLink.tr,
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      AppTextTheme.fontFamily,
-                                                  color: context.primary,
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 12.5,
-                                                  decoration:
-                                                      TextDecoration.underline,
-                                                  decorationColor:
-                                                      context.primary,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          );
-                        }),
+                          ),
+                        ),
                         const SizedBox(height: 20),
 
                         // زر إنشاء الحساب
-                        Obx(() {
-                          return AppButton(
-                            text: controller.isLoading.value
-                                ? '...'
-                                : Tk.registerSubmit.tr,
-                            icon: Icons.person_add_alt_1_rounded,
-                            isLoading: controller.isLoading.value,
-                            onPressed: controller.isLoading.value
-                                ? null
-                                : controller.register,
-                            height: 52,
-                          );
-                        }),
+                        AppButton(
+                          text: state.isLoading
+                              ? '...'
+                              : Tk.registerSubmit.tr,
+                          icon: Icons.person_add_alt_1_rounded,
+                          isLoading: state.isLoading,
+                          onPressed: state.isLoading ? null : notifier.register,
+                          height: 52,
+                        ),
                       ],
                     ),
                   ),
@@ -412,7 +381,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(width: 8),
                     InkWell(
                       borderRadius: BorderRadius.circular(6),
-                      onTap: controller.goToLogin,
+                      onTap: notifier.goToLogin,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 4,
@@ -434,7 +403,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 12),
                 Center(
                   child: TextButton.icon(
-                    onPressed: controller.continueAsGuest,
+                    onPressed: notifier.continueAsGuest,
                     icon: Icon(
                       Icons.explore_outlined,
                       size: 18,
