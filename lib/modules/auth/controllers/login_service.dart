@@ -1,4 +1,4 @@
-import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
+import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
 
@@ -7,6 +7,7 @@ class LoginResult {
     required this.isSuccess,
     required this.requiresTwoFactor,
     required this.requiresEmailVerification,
+    this.isBanned = false,
     this.message,
     this.token,
     this.customer,
@@ -15,6 +16,7 @@ class LoginResult {
   final bool isSuccess;
   final bool requiresTwoFactor;
   final bool requiresEmailVerification;
+  final bool isBanned;
   final String? message;
   final String? token;
   final CustomerModel? customer;
@@ -24,7 +26,7 @@ class LoginService {
   LoginService(this._authRepository, this._session);
 
   final IAuthRepository _authRepository;
-  final AuthSessionService _session;
+  final AuthSessionNotifier _session;
 
   Future<LoginResult> login({
     required String email,
@@ -38,6 +40,14 @@ class LoginService {
       code: code,
       recoveryCode: recoveryCode,
     );
+
+    if (result.isBanned || result.customer?.isBanned == true) {
+      _session.markAsBanned(
+        customerPayload: result.customer,
+        reason: result.message,
+      );
+      return result;
+    }
 
     if (result.isSuccess) {
       CustomerModel? customer = result.customer;

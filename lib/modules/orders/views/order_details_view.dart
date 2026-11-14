@@ -1,37 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/orders/controllers/orders_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
-import 'package:rwnaqk_frontend/routes/app_routes.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_date_utils.dart';
-import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_back_header.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/review_dialog.dart';
+import 'package:rwnaqk_frontend/modules/orders/controllers/orders_service.dart';
+import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
+import 'package:rwnaqk_frontend/modules/orders/providers/orders_providers.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_details_info_card.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_details_items_card.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_details_summary_card.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_tracking_summary_card.dart';
-import 'package:rwnaqk_frontend/core/widgets/dialogs/review_dialog.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
-class OrderDetailsScreen extends GetView<OrdersController> {
+class OrderDetailsScreen extends ConsumerWidget {
   const OrderDetailsScreen({super.key});
 
-  OrderModel? _getOrderFromArgs() {
-    final args = Get.arguments;
+  OrderModel? _getOrderFromArgs(BuildContext context, WidgetRef ref) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final orders = ref.watch(ordersProvider).orders;
+
     if (args is OrderModel) {
-      return controller.orders.firstWhereOrNull((item) => item.id == args.id) ??
-          args;
+      final found = orders.where((item) => item.id == args.id).firstOrNull;
+      return found ?? args;
     }
     if (args is String) {
-      return controller.orders.firstWhereOrNull((item) => item.id == args);
+      return orders.where((item) => item.id == args).firstOrNull;
     }
     return null;
   }
 
   @override
-  Widget build(BuildContext context) {
-    final order = _getOrderFromArgs();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final order = _getOrderFromArgs(context, ref);
 
     if (order == null) {
       return Scaffold(
@@ -76,7 +81,8 @@ class OrderDetailsScreen extends GetView<OrdersController> {
       );
     }
 
-    final details = controller.buildOrderDetails(order);
+    final service = OrdersService();
+    final details = service.buildOrderDetails(order);
 
     return Scaffold(
       backgroundColor: context.background,
@@ -86,10 +92,10 @@ class OrderDetailsScreen extends GetView<OrdersController> {
           children: [
             AppBackHeader(
               title: Tk.ordersDetailsTitle.tr,
-              onBack: Get.back,
+              onBack: AppNav.back,
               trailingIcon: Icons.local_shipping_outlined,
               onTrailingTap: () =>
-                  Get.toNamed(AppRoutes.orderTracking, arguments: order),
+                  AppNav.toNamed(AppRoutes.orderTracking, arguments: order),
             ),
             const SizedBox(height: 12),
             OrderTrackingSummaryCard(
@@ -179,7 +185,7 @@ class OrderDetailsScreen extends GetView<OrdersController> {
                 text: Tk.ordersDetailsTrackOrder.tr,
                 icon: Icons.local_shipping_outlined,
                 onPressed: () =>
-                    Get.toNamed(AppRoutes.orderTracking, arguments: order),
+                    AppNav.toNamed(AppRoutes.orderTracking, arguments: order),
               ),
             ],
           ],

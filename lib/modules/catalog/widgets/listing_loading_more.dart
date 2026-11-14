@@ -1,34 +1,30 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/catalog/controllers/products_listing_controller.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_page_loading.dart';
 
 class ListingLoadingMoreSliver extends StatelessWidget {
-  final ProductsListingController controller;
+  final bool isLoadingMore;
 
   const ListingLoadingMoreSliver({
     super.key,
-    required this.controller,
+    this.isLoadingMore = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Obx(() {
-        if (!controller.hasMore.value || !controller.isLoadingMore.value) {
-          return const SizedBox.shrink();
-        }
+    if (!isLoadingMore) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Center(
-            child: AppPageLoading(
-              expanded: false,
-              customIndicator: AppPageLoading.productCardIndicator,
-            ),
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Center(
+          child: AppPageLoading(
+            expanded: false,
+            customIndicator: AppPageLoading.productCardIndicator,
           ),
-        );
-      }),
+        ),
+      ),
     );
   }
 }

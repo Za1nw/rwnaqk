@@ -13,7 +13,7 @@ class ProductHorizontalList extends StatelessWidget {
     required this.items,
     required this.onTap,
     this.itemWidth = 165,
-    this.height = 245,
+    this.height = 285,
   });
 
   @override

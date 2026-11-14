@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/di/core_providers.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_input_field.dart';
@@ -78,7 +79,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
 
   void _submit() {
     widget.onSubmit(_rating, _commentCtrl.text.trim());
-    Get.back();
+    AppNav.back();
   }
 
   @override
@@ -132,14 +133,17 @@ class _ReviewTargetInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     // جلب اسم المستخدم من الكنترولر الخاص بالبروفايل إذا لم يتم تمريره
     String? displayName = userName;
-    if (displayName == null) {
+    if (displayName == null || displayName.trim().isEmpty) {
       try {
-        // جلب الاسم من ProfileStoreService
-        final profileStore = Get.find<ProfileStoreService>();
-        displayName = profileStore.displayName;
+        final customer = globalProviderContainer.read(authSessionProvider).customer;
+        final fullName = customer?.fullName;
+        displayName = (fullName != null && fullName.isNotEmpty)
+            ? fullName
+            : customer?.firstName;
       } catch (_) {}
     }
-    final hasName = (displayName ?? '').trim().isNotEmpty;
+    displayName ??= 'عميل رَوْنَقُك';
+    final hasName = displayName.trim().isNotEmpty;
     final hasOrder = (orderId ?? '').trim().isNotEmpty;
 
     return Row(
@@ -152,7 +156,7 @@ class _ReviewTargetInfo extends StatelessWidget {
             children: [
               if (hasName)
                 Text(
-                  displayName!,
+                  displayName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

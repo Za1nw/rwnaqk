@@ -1,34 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
-import 'package:rwnaqk_frontend/modules/catalog/controllers/product_details_controller.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_attribute_group.dart';
+import 'package:rwnaqk_frontend/modules/catalog/providers/catalog_providers.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_size_guide_sheet.dart';
 
-class ProductVariantsSheet extends StatelessWidget {
-  const ProductVariantsSheet({super.key});
+class ProductVariantsSheet extends ConsumerWidget {
+  final String productId;
 
-  static Future<void> show(BuildContext context) {
+  const ProductVariantsSheet({
+    super.key,
+    required this.productId,
+  });
+
+  static Future<void> show(
+    BuildContext context, {
+    required String productId,
+  }) {
     HapticFeedback.lightImpact();
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => const ProductVariantsSheet(),
+      builder: (_) => ProductVariantsSheet(productId: productId),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    final controller = Get.find<ProductDetailsController>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(productDetailsFamily(productId));
+    final notifier = ref.read(productDetailsFamily(productId).notifier);
     final maxH = MediaQuery.of(context).size.height * 0.88;
 
-    return Obx(() {
-      final groups = controller.attributeGroups;
-      final selectedMap = controller.selectedAttributes;
+    final groups = state.attributeGroups;
+    final selectedMap = state.selectedAttributes;
 
       // Resolve preview thumbnail: priority to selected style or color image
       String previewUrl = '';
@@ -63,9 +72,9 @@ class ProductVariantsSheet extends StatelessWidget {
         }
       }
       if (previewUrl.isEmpty) {
-        previewUrl = controller.imageUrl.isNotEmpty
-            ? controller.imageUrl
-            : (controller.images.isNotEmpty ? controller.images.first : '');
+        previewUrl = state.imageUrl.isNotEmpty
+            ? state.imageUrl
+            : (state.images.isNotEmpty ? state.images.first : '');
       }
 
       return Container(
@@ -146,9 +155,9 @@ class ProductVariantsSheet extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (controller.brand.isNotEmpty)
+                        if (state.brand.isNotEmpty)
                           Text(
-                            controller.brand,
+                            state.brand,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -164,7 +173,7 @@ class ProductVariantsSheet extends StatelessWidget {
                           textBaseline: TextBaseline.alphabetic,
                           children: [
                             Text(
-                              '\$${controller.salePriceText.replaceAll('.00', '')}',
+                              '\$${state.salePriceText.replaceAll('.00', '')}',
                               style: TextStyle(
                                 color: context.foreground,
                                 fontWeight: FontWeight.w900,
@@ -172,10 +181,10 @@ class ProductVariantsSheet extends StatelessWidget {
                                 height: 1.1,
                               ),
                             ),
-                            if (controller.hasDiscount) ...[
+                            if (state.hasDiscount) ...[
                               const SizedBox(width: 8),
                               Text(
-                                '\$${controller.oldPriceText}',
+                                '\$${state.oldPriceText}',
                                 style: TextStyle(
                                   color: context.mutedForeground,
                                   decoration: TextDecoration.lineThrough,
@@ -195,7 +204,7 @@ class ProductVariantsSheet extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  '-${controller.discount}%',
+                                  '-${state.discount}%',
                                   style: TextStyle(
                                     color: context.destructive,
                                     fontSize: 10.5,
@@ -208,7 +217,7 @@ class ProductVariantsSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          controller.selectedOptionsSummary,
+                          state.selectedOptionsSummary,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -271,7 +280,7 @@ class ProductVariantsSheet extends StatelessWidget {
                           selectedOptionId: selectedOptionId,
                           onSelectOption: (optId) {
                             HapticFeedback.selectionClick();
-                            controller.selectAttribute(group.id, optId);
+                            notifier.selectAttribute(group.id, optId);
                           },
                         ),
                       );
@@ -305,7 +314,7 @@ class ProductVariantsSheet extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              controller.stockText,
+                              state.stockText,
                               style: TextStyle(
                                 color: context.mutedForeground,
                                 fontSize: 11.5,
@@ -331,14 +340,14 @@ class ProductVariantsSheet extends StatelessWidget {
                             children: [
                               _MiniQtyButton(
                                 icon: Icons.remove_rounded,
-                                isEnabled: controller.quantity.value > 1,
-                                onTap: controller.decrementQuantity,
+                                isEnabled: state.quantity > 1,
+                                onTap: notifier.decrementQuantity,
                               ),
                               Container(
                                 constraints: const BoxConstraints(minWidth: 40),
                                 alignment: Alignment.center,
                                 child: Text(
-                                  '${controller.quantity.value}',
+                                  '${state.quantity}',
                                   style: TextStyle(
                                     color: context.foreground,
                                     fontWeight: FontWeight.w900,
@@ -348,8 +357,8 @@ class ProductVariantsSheet extends StatelessWidget {
                               ),
                               _MiniQtyButton(
                                 icon: Icons.add_rounded,
-                                isEnabled: controller.quantity.value < 10,
-                                onTap: controller.incrementQuantity,
+                                isEnabled: state.quantity < 10,
+                                onTap: notifier.incrementQuantity,
                               ),
                             ],
                           ),
@@ -418,7 +427,7 @@ class ProductVariantsSheet extends StatelessWidget {
                         onPressed: () {
                           HapticFeedback.heavyImpact();
                           Navigator.of(context).pop();
-                          controller.addToCart();
+                          notifier.addToCart(context);
                         },
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size.fromHeight(48),
@@ -437,7 +446,7 @@ class ProductVariantsSheet extends StatelessWidget {
                         label: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            'أضف (\$${controller.totalPriceText.replaceAll('.00', '')})',
+                            'أضف (\$${state.totalPriceText.replaceAll('.00', '')})',
                             style: const TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w900,
@@ -453,7 +462,6 @@ class ProductVariantsSheet extends StatelessWidget {
           ],
         ),
       );
-    });
   }
 }
 

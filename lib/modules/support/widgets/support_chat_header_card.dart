@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 
 class SupportChatHeaderCard extends StatelessWidget {
@@ -84,14 +84,19 @@ class SupportChatHeaderCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Text(
-            Tk.supportChatReplyTime.tr,
-            textAlign: TextAlign.end,
-            style: TextStyle(
-              color: context.mutedForeground,
-              fontWeight: FontWeight.w700,
-              fontSize: 11.5,
-              height: 1.35,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 120),
+            child: Text(
+              Tk.supportChatReplyTime.tr,
+              textAlign: TextAlign.end,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: context.mutedForeground,
+                fontWeight: FontWeight.w700,
+                fontSize: 11.5,
+                height: 1.35,
+              ),
             ),
           ),
         ],

@@ -1,28 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/home/controllers/main_controller.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
-import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
-import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
-import 'package:rwnaqk_frontend/modules/cart/views/cart_view.dart';
-import 'package:rwnaqk_frontend/modules/orders/views/orders_view.dart';
-import 'package:rwnaqk_frontend/modules/customer/views/settings_view.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rwnaqk_frontend/core/di/core_providers.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_bottom_nav.dart';
+import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
+import 'package:rwnaqk_frontend/modules/cart/views/cart_view.dart';
+import 'package:rwnaqk_frontend/modules/customer/views/settings_view.dart';
+import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/views/home_view.dart';
+import 'package:rwnaqk_frontend/modules/orders/views/orders_view.dart';
+import 'package:rwnaqk_frontend/modules/wishlist/providers/wishlist_providers.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/views/wishlist_view.dart';
 
-class MainScreen extends GetView<MainController> {
+class MainScreen extends ConsumerWidget {
   const MainScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final profileStore = Get.find<ProfileStoreService>();
-    final cartController = Get.isRegistered<CartController>()
-        ? Get.find<CartController>()
-        : null;
-    final wishlistController = Get.isRegistered<WishlistController>()
-        ? Get.find<WishlistController>()
-        : null;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(mainNavigationProvider);
+    final navNotifier = ref.read(mainNavigationProvider.notifier);
+
+    final cartCount = ref.watch(cartProvider).itemCount;
+    final wishlistCount = ref.watch(wishlistProvider).itemCount;
+    final customer = ref.watch(currentCustomerProvider);
 
     final pages = [
       const HomeScreen(),
@@ -32,24 +31,26 @@ class MainScreen extends GetView<MainController> {
       const SettingsScreen(),
     ];
 
-    return Obx(() {
-      final i = controller.currentIndex.value;
-      final cartCount = cartController?.cartItems.length ?? 0;
-      final wishlistCount = wishlistController?.wishlist.length ?? 0;
+    final fullName = customer?.fullName;
+    final firstName = customer?.firstName;
+    final String displayName = (fullName != null && fullName.isNotEmpty)
+        ? fullName
+        : ((firstName != null && firstName.isNotEmpty)
+            ? firstName
+            : 'رَوْنَقُك');
 
-      return Scaffold(
-        extendBody: true,
-        body: IndexedStack(index: i, children: pages),
-        bottomNavigationBar: AppBottomNav(
-          currentIndex: i,
-          onChanged: controller.changeTab,
-          profileName: profileStore.displayName,
-          profileAvatarPath: profileStore.avatarPath.value,
-          profileAvatarUrl: profileStore.avatarUrl,
-          cartBadgeCount: cartCount,
-          wishlistBadgeCount: wishlistCount,
-        ),
-      );
-    });
+    return Scaffold(
+      extendBody: true,
+      body: IndexedStack(index: currentIndex, children: pages),
+      bottomNavigationBar: AppBottomNav(
+        currentIndex: currentIndex,
+        onChanged: navNotifier.changeTab,
+        profileName: displayName,
+        profileAvatarPath: '',
+        profileAvatarUrl: customer?.avatarUrl ?? '',
+        cartBadgeCount: cartCount,
+        wishlistBadgeCount: wishlistCount,
+      ),
+    );
   }
 }

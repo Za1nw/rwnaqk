@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_date_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
@@ -289,7 +290,7 @@ class OrderCard extends StatelessWidget {
                     // Action: Tracking Button (for active/shipped/pending)
                     if (status != 'canceled')
                       InkWell(
-                        onTap: () => Get.toNamed(
+                        onTap: () => AppNav.toNamed(
                           AppRoutes.orderTracking,
                           arguments: order,
                         ),

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk_frontend/modules/catalog/controllers/product_details_controller.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/add_review_sheet.dart';
 
@@ -34,15 +33,7 @@ class ProductReviewsSection extends StatelessWidget {
     AddReviewSheet.show(
       context,
       onSubmit: (rating, comment, name) {
-        if (onAddReview != null) {
-          onAddReview!(rating, comment, name);
-        } else if (Get.isRegistered<ProductDetailsController>()) {
-          Get.find<ProductDetailsController>().addReview(
-            rating: rating,
-            comment: comment,
-            name: name,
-          );
-        }
+        onAddReview?.call(rating, comment, name);
       },
     );
   }

@@ -1,22 +1,26 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/catalog/controllers/flash_sale_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk_frontend/core/utils/app_date_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_breakpoints.dart';
+import 'package:rwnaqk_frontend/core/utils/app_date_utils.dart';
+import 'package:rwnaqk_frontend/core/widgets/common/app_empty_state.dart';
+import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
+import 'package:rwnaqk_frontend/modules/catalog/providers/catalog_providers.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/app_categories_filter_sheet.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/app_filter_button.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_grid_section.dart';
-import 'package:rwnaqk_frontend/core/widgets/common/app_empty_state.dart';
-import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/home_layout.dart';
 
-class FlashSaleScreen extends GetView<FlashSaleController> {
+class FlashSaleScreen extends ConsumerWidget {
   const FlashSaleScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(flashSaleProvider);
+    final notifier = ref.read(flashSaleProvider.notifier);
+
     return Scaffold(
       backgroundColor: context.background,
       body: SafeArea(
@@ -25,82 +29,78 @@ class FlashSaleScreen extends GetView<FlashSaleController> {
             final w = c.maxWidth;
             final cols = AppBreakpoints.productGridColumns(w);
 
+            final d = state.selectedDiscount;
+            final title = d == 0
+                ? Tk.flashSaleAllDiscount.tr
+                : Tk.flashSaleDiscountValue.trParams({'value': '$d'});
+
+            final items = state.products;
+
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsetsDirectional.fromSTEB(18, 12, 18, 18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _FlashSaleHeroHeader(controller: controller),
+                  _FlashSaleHeroHeader(
+                    hh: state.hh,
+                    mm: state.mm,
+                    ss: state.ss,
+                  ),
                   const SizedBox(height: 12),
 
-                  Obx(() {
-                    return _FlashSaleDiscountTabs(
-                      discounts: controller.discounts,
-                      selected: controller.selectedDiscount.value,
-                      onChanged: controller.selectDiscount,
-                    );
-                  }),
+                  _FlashSaleDiscountTabs(
+                    discounts: state.discounts,
+                    selected: state.selectedDiscount,
+                    onChanged: notifier.selectDiscount,
+                  ),
 
                   const SizedBox(height: 14),
 
-                  Obx(() {
-                    final d = controller.selectedDiscount.value;
-                    final title = d == 0
-                        ? Tk.flashSaleAllDiscount.tr
-                        : Tk.flashSaleDiscountValue.trParams({
-                            'value': '$d',
-                          });
-
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: AppSectionHeader(
-                            title: title,
-                            titleFontSize: 18,
-                            titleFontWeight: FontWeight.w900,
-                          ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppSectionHeader(
+                          title: title,
+                          titleFontSize: 18,
+                          titleFontWeight: FontWeight.w900,
                         ),
-                        const SizedBox(width: 10),
-                        AppFilterButton(
-                          onTap: () {
-                            Get.bottomSheet(
-                              const AppCategoriesFilterSheet(),
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              elevation: 0,
-                            );
-                          },
-                        ),
-                      ],
-                    );
-                  }),
+                      ),
+                      const SizedBox(width: 10),
+                      AppFilterButton(
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            elevation: 0,
+                            builder: (_) => const AppCategoriesFilterSheet(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
 
                   const SizedBox(height: 12),
 
-                  Obx(() {
-                    final items = controller.flashSaleProducts.toList();
-
-                    if (items.isEmpty) {
-                      return Padding(
-                        padding: EdgeInsets.only(top: 16),
-                        child: AppEmptyState(
-                          title: Tk.flashSaleNoOffersTitle.tr,
-                          subtitle: Tk.flashSaleNoOffersSubtitle.tr,
-                          icon: Icons.local_offer_outlined,
-                        ),
-                      );
-                    }
-
-                    return ProductGridSection(
+                  if (items.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: AppEmptyState(
+                        title: Tk.flashSaleNoOffersTitle.tr,
+                        subtitle: Tk.flashSaleNoOffersSubtitle.tr,
+                        icon: Icons.local_offer_outlined,
+                      ),
+                    )
+                  else
+                    ProductGridSection(
                       items: items,
                       crossAxisCount: cols,
                       crossAxisSpacing: HomeLayout.gridSpacing,
                       mainAxisSpacing: HomeLayout.gridSpacing,
                       childAspectRatio: 1.0,
-                      onTap: controller.openProduct,
-                    );
-                  }),
+                      onTap: notifier.openProduct,
+                    ),
                 ],
               ),
             );
@@ -112,10 +112,14 @@ class FlashSaleScreen extends GetView<FlashSaleController> {
 }
 
 class _FlashSaleHeroHeader extends StatelessWidget {
-  final FlashSaleController controller;
+  final int hh;
+  final int mm;
+  final int ss;
 
   const _FlashSaleHeroHeader({
-    required this.controller,
+    required this.hh,
+    required this.mm,
+    required this.ss,
   });
 
   @override
@@ -128,7 +132,12 @@ class _FlashSaleHeroHeader extends StatelessWidget {
     final softCircle = context.isDark
         ? accent.withValues(alpha: 0.18)
         : accent.withValues(alpha: 0.90);
-    final deepCircle = context.isDark ? primary.withValues(alpha: 0.85) : primary;
+    final deepCircle =
+        context.isDark ? primary.withValues(alpha: 0.85) : primary;
+
+    final hhStr = AppDateUtils.pad2(hh);
+    final mmStr = AppDateUtils.pad2(mm);
+    final ssStr = AppDateUtils.pad2(ss);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
@@ -194,24 +203,18 @@ class _FlashSaleHeroHeader extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Obx(() {
-                    final hh = AppDateUtils.pad2(controller.hh.value);
-                    final mm = AppDateUtils.pad2(controller.mm.value);
-                    final ss = AppDateUtils.pad2(controller.ss.value);
-
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.alarm, color: context.primary, size: 18),
-                        const SizedBox(width: 8),
-                        _FlashSaleCountdownBox(text: hh),
-                        const SizedBox(width: 6),
-                        _FlashSaleCountdownBox(text: mm),
-                        const SizedBox(width: 6),
-                        _FlashSaleCountdownBox(text: ss),
-                      ],
-                    );
-                  }),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.alarm, color: context.primary, size: 18),
+                      const SizedBox(width: 8),
+                      _FlashSaleCountdownBox(text: hhStr),
+                      const SizedBox(width: 6),
+                      _FlashSaleCountdownBox(text: mmStr),
+                      const SizedBox(width: 6),
+                      _FlashSaleCountdownBox(text: ssStr),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -234,7 +237,8 @@ class _FlashSaleCountdownBox extends StatelessWidget {
     final bg = context.isDark
         ? context.background.withValues(alpha: 0.35)
         : context.background;
-    final border = context.border.withValues(alpha: context.isDark ? 0.55 : 0.35);
+    final border =
+        context.border.withValues(alpha: context.isDark ? 0.55 : 0.35);
 
     return Container(
       width: 32,
@@ -246,7 +250,8 @@ class _FlashSaleCountdownBox extends StatelessWidget {
         border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color: context.shadow.withValues(alpha: context.isDark ? 0.20 : 0.12),
+            color:
+                context.shadow.withValues(alpha: context.isDark ? 0.20 : 0.12),
             blurRadius: 10,
             offset: const Offset(0, 6),
           ),

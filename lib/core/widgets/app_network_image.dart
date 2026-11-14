@@ -68,8 +68,17 @@ class AppNetworkImage extends StatelessWidget {
       );
     }
 
+    var resolvedUrl = url.trim();
+    if (resolvedUrl.contains('format=svg')) {
+      resolvedUrl = resolvedUrl.replaceAll('format=svg', 'format=png');
+    }
+
+    if (resolvedUrl.isEmpty || resolvedUrl.toLowerCase().endsWith('.svg')) {
+      return buildError();
+    }
+
     final imageWidget = Image.network(
-      url,
+      resolvedUrl,
       width: width,
       height: height,
       fit: fit,

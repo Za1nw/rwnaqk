@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 
 class AppDialogShell extends StatelessWidget {
   final String title;
@@ -81,7 +82,7 @@ class AppDialogShell extends StatelessWidget {
                     if (showCloseButton)
                       InkWell(
                         borderRadius: BorderRadius.circular(999),
-                        onTap: Get.back,
+                        onTap: AppNav.back,
                         child: Padding(
                           padding: const EdgeInsets.all(6),
                           child: Icon(

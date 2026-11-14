@@ -62,3 +62,7 @@ Avoid creating new `StateProvider`, `StateNotifierProvider`, or `ChangeNotifierP
 - https://riverpod.dev/docs/how_to/testing
 - https://riverpod.dev/docs/whats_new
 - https://pub.dev/packages/flutter_riverpod/versions
+
+## Mandatory up-to-date Riverpod 3.5 reference (verified 2026-11-09)
+
+Read `docs/RIVERPOD3-OFFICIAL-DOCS-2026-11-09-AR.md` and `docs/RIVERPOD3-GETX-MIGRATION-PROTOCOL-AR.md` from the original package root **if available**. If only this skills folder was copied into `.agents/skills`, use the bundled `references/riverpod3-35-release-and-compatibility.md` (in `riverpod3-flutter-state`) and `references/riverpod3-apis.md`, then official links. **Verify SDK first**: flutter_riverpod 3.5.0 requires Dart >=3.12; riverpod_lint 3.2.0 requires Dart 3.13 dev. Prefer `Notifier`/`AsyncNotifier`, safe `ref.mounted`, no sensitive POST in provider build, Riverpod 3.5 override methods, and evidence-driven module gates. The online documentation overrides this dated snapshot.

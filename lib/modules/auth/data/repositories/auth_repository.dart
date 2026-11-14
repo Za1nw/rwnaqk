@@ -1,5 +1,7 @@
 import 'package:rwnaqk_frontend/modules/auth/controllers/login_service.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
+import 'package:rwnaqk_frontend/modules/customer/data/models/passkey_model.dart';
+import 'package:rwnaqk_frontend/modules/customer/data/models/user_session_model.dart';
 
 /// عقد مستودع المصادقة النقي
 ///
@@ -24,6 +26,7 @@ abstract class IAuthRepository {
     required String passwordConfirmation,
     required bool termsAccepted,
     required bool privacyPolicyAccepted,
+    String? gender,
     String? deviceName,
   });
 
@@ -32,6 +35,11 @@ abstract class IAuthRepository {
   Future<void> logout();
 
   Future<void> forgotPassword({required String email});
+
+  Future<void> verifyPasswordResetCode({
+    required String email,
+    required String code,
+  });
 
   Future<void> resetPassword({
     required String token,
@@ -42,5 +50,43 @@ abstract class IAuthRepository {
   Future<void> sendEmailVerificationCode();
 
   Future<void> verifyEmailCode({required String code});
+
+  Future<CustomerModel> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? name,
+    String? email,
+    String? mobile,
+    String? gender,
+    String? avatarFilePath,
+  });
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  });
+
+  Future<List<UserSessionModel>> getSessions();
+
+  Future<void> revokeSession(int id);
+
+  Future<void> revokeOtherSessions();
+
+  Future<List<PasskeyModel>> getPasskeys();
+
+  Future<PasskeyModel> storePasskey({
+    required String name,
+    String? credentialId,
+    Map<String, dynamic>? credential,
+  });
+
+  Future<LoginResult> passkeyLogin({
+    required String credentialId,
+    String? secret,
+    String? email,
+  });
+
+  Future<void> deletePasskey(int id);
 }
 

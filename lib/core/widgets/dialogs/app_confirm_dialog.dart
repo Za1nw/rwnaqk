@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
@@ -37,8 +38,8 @@ class AppConfirmDialog extends StatelessWidget {
     Color? iconColor,
     bool isDestructive = false,
   }) {
-    return Get.dialog<bool>(
-      AppConfirmDialog(
+    return AppNav.dialog<bool>(
+      child: AppConfirmDialog(
         title: title,
         message: message,
         confirmLabel: confirmLabel,
@@ -113,7 +114,7 @@ class AppConfirmDialog extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => Get.back<bool>(result: false),
+                  onPressed: () => AppNav.back(false),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     side: BorderSide(
@@ -146,7 +147,7 @@ class AppConfirmDialog extends StatelessWidget {
                           ? const Color(0xFF93000A)
                           : const Color(0xFFB42318))
                       : null,
-                  onPressed: () => Get.back<bool>(result: true),
+                  onPressed: () => AppNav.back(true),
                 ),
               ),
             ],

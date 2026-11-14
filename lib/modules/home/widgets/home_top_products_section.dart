@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_action_icon_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
-import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
+import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_card_image_section.dart';
-import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
+import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
-class HomeTopProductsSection extends GetView<HomeController> {
+class HomeTopProductsSection extends ConsumerWidget {
   final double itemWidth;
   final double height;
 
@@ -22,47 +23,46 @@ class HomeTopProductsSection extends GetView<HomeController> {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(homeContentProvider);
+    final notifier = ref.read(homeContentProvider.notifier);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppSectionHeader(
           title: Tk.homeTopProducts.tr,
           actionText: Tk.homeSeeAll.tr,
-          onActionTap: controller.onSeeAllMostPopular,
+          onActionTap: notifier.onSeeAllMostPopular,
         ),
         const SizedBox(height: 12),
-        Obx(() {
-          final items = controller.topProducts.toList();
-          if (items.isEmpty) return const SizedBox.shrink();
-
-          return SizedBox(
+        if (state.topProducts.isNotEmpty)
+          SizedBox(
             height: height,
             child: ListView.separated(
               clipBehavior: Clip.none,
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              itemCount: items.length,
+              itemCount: state.topProducts.length,
               separatorBuilder: (_, _) => const SizedBox(width: 12),
               itemBuilder: (context, i) {
                 return SizedBox(
                   width: itemWidth,
                   child: _RankedProductCard(
-                    item: items[i],
+                    item: state.topProducts[i],
                     rank: i + 1,
-                    onTap: () => controller.openProduct(items[i]),
+                    onTap: () => notifier.openProduct(state.topProducts[i]),
                   ),
                 );
               },
             ),
-          );
-        }),
+          ),
       ],
     );
   }
 }
 
-class _RankedProductCard extends StatelessWidget {
+class _RankedProductCard extends ConsumerWidget {
   final HomeProductItem item;
   final int rank;
   final VoidCallback onTap;
@@ -73,16 +73,13 @@ class _RankedProductCard extends StatelessWidget {
     required this.onTap,
   });
 
-  void _addToCart(BuildContext context) {
-    if (Get.isRegistered<CartController>()) {
-      final cartController = Get.find<CartController>();
-      cartController.addToCart(item);
-    }
+  void _addToCart(BuildContext context, WidgetRef ref) {
+    ref.read(cartProvider.notifier).addToCart(item);
     CartAddedDialog.show(context);
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final hasDiscount = (item.discountPercent ?? 0) > 0;
     final originalPrice = item.price;
     final discountedPrice = hasDiscount
@@ -307,7 +304,7 @@ class _RankedProductCard extends StatelessWidget {
                             ),
                             AppActionIconButton(
                               icon: Icons.shopping_bag_outlined,
-                              onTap: () => _addToCart(context),
+                              onTap: () => _addToCart(context, ref),
                               size: 28,
                               iconSize: 14,
                               backgroundColor: context.primary,

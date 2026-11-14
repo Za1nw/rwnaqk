@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_order_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/review_dialog.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
-import 'package:rwnaqk_frontend/modules/orders/controllers/orders_controller.dart';
+import 'package:rwnaqk_frontend/modules/orders/controllers/orders_service.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
+import 'package:rwnaqk_frontend/modules/orders/providers/orders_providers.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_timeline.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_tracking_actions.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_tracking_courier_card.dart';
@@ -15,24 +18,26 @@ import 'package:rwnaqk_frontend/modules/orders/widgets/order_tracking_horizontal
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_tracking_summary_card.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
-class OrderTrackingScreen extends GetView<OrdersController> {
+class OrderTrackingScreen extends ConsumerWidget {
   const OrderTrackingScreen({super.key});
 
-  OrderModel? _getOrderFromArgs() {
-    final args = Get.arguments;
+  OrderModel? _getOrderFromArgs(BuildContext context, WidgetRef ref) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    final orders = ref.watch(ordersProvider).orders;
+
     if (args is OrderModel) {
-      return controller.orders.firstWhereOrNull((item) => item.id == args.id) ??
-          args;
+      final found = orders.where((item) => item.id == args.id).firstOrNull;
+      return found ?? args;
     }
     if (args is String) {
-      return controller.orders.firstWhereOrNull((item) => item.id == args);
+      return orders.where((item) => item.id == args).firstOrNull;
     }
     return null;
   }
 
   @override
-  Widget build(BuildContext context) {
-    final order = _getOrderFromArgs();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final order = _getOrderFromArgs(context, ref);
 
     if (order == null) {
       return Scaffold(
@@ -76,7 +81,7 @@ class OrderTrackingScreen extends GetView<OrdersController> {
                     width: 140,
                     height: 46,
                     child: ElevatedButton(
-                      onPressed: Get.back,
+                      onPressed: AppNav.back,
                       style: ElevatedButton.styleFrom(
                         elevation: 0,
                         backgroundColor: context.primary,
@@ -102,7 +107,8 @@ class OrderTrackingScreen extends GetView<OrdersController> {
       );
     }
 
-    final steps = controller.buildTrackingSteps(order);
+    final service = OrdersService();
+    final steps = service.buildTrackingSteps(order);
 
     return Scaffold(
       backgroundColor: context.background,
@@ -218,13 +224,13 @@ class OrderTrackingScreen extends GetView<OrdersController> {
               },
               onHelpOrReorder: () {
                 if (AppOrderUtils.canReorder(order.status)) {
-                  controller.openCart();
+                  AppNav.toNamed(AppRoutes.cart);
                 } else {
-                  Get.toNamed(AppRoutes.supportChat);
+                  AppNav.toNamed(AppRoutes.supportChat);
                 }
               },
               onViewDetails: () {
-                Get.toNamed(AppRoutes.orderDetails, arguments: order);
+                AppNav.toNamed(AppRoutes.orderDetails, arguments: order);
               },
               onReview: () {
                 ReviewDialog.show(

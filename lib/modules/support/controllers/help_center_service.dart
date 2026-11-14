@@ -1,4 +1,5 @@
-﻿import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/support/views/support_chat_view.dart';
 
 class HelpCenterEntry {
@@ -24,6 +25,12 @@ class HelpCenterContactEntry {
 }
 
 class HelpCenterService {
+  HelpCenterService({
+    this.urlLauncher,
+  });
+
+  final Future<bool> Function(Uri uri, {LaunchMode mode})? urlLauncher;
+
   List<HelpCenterEntry> supportEntries() {
     return const [
       HelpCenterEntry(
@@ -75,5 +82,60 @@ class HelpCenterService {
       title: titleKey,
       frequentQuestions: faqQuestions(),
     );
+  }
+
+  /// فتح محادثة WhatsApp مباشرة للتواصل السريع مع خدمة العملاء
+  Future<bool> launchWhatsApp({
+    String phone = '+967770000000',
+    String message = 'مرحباً خدمة عملاء رونقك، لدي استفسار',
+  }) async {
+    final sanitizedPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final encodedMessage = Uri.encodeComponent(message);
+    final uri = Uri.parse('https://wa.me/$sanitizedPhone?text=$encodedMessage');
+
+    if (urlLauncher != null) {
+      return urlLauncher!(uri, mode: LaunchMode.externalApplication);
+    }
+    if (await canLaunchUrl(uri)) {
+      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+    return false;
+  }
+
+  /// فتح تطبيق البريد الإلكتروني لإرسال تذكرة دعم
+  Future<bool> launchEmail({
+    String email = 'support@rawnaqk.com',
+    String subject = 'طلب مساعدة - تطبيق رونقك',
+    String body = '',
+  }) async {
+    final uri = Uri(
+      scheme: 'mailto',
+      path: email,
+      queryParameters: {
+        'subject': subject,
+        if (body.isNotEmpty) 'body': body,
+      },
+    );
+
+    if (urlLauncher != null) {
+      return urlLauncher!(uri, mode: LaunchMode.platformDefault);
+    }
+    if (await canLaunchUrl(uri)) {
+      return await launchUrl(uri);
+    }
+    return false;
+  }
+
+  /// فتح تطبيق الاتصال الهاتفي المباشر
+  Future<bool> launchPhoneCall({String phone = '+967770000000'}) async {
+    final uri = Uri(scheme: 'tel', path: phone);
+
+    if (urlLauncher != null) {
+      return urlLauncher!(uri, mode: LaunchMode.platformDefault);
+    }
+    if (await canLaunchUrl(uri)) {
+      return await launchUrl(uri);
+    }
+    return false;
   }
 }

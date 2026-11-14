@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rwnaqk_frontend/core/constants/local_storage_keys.dart';
@@ -11,7 +12,7 @@ abstract class IAuthTokenStorage {
 }
 
 /// تطبيق التخزين الآمن باستخدام Android KeyStore و iOS Keychain
-/// مع ترحيل تلقائي لبيانات SharedPreferences القديمة وحماية بيئات الاختبار.
+/// مع تفعيل encryptedSharedPreferences لحماية هواتف سامسونج من التعليق والإغلاق القسري.
 class SecureAuthTokenStorage implements IAuthTokenStorage {
   SecureAuthTokenStorage({FlutterSecureStorage? secureStorage})
       : _storage = secureStorage ??
@@ -40,6 +41,11 @@ class SecureAuthTokenStorage implements IAuthTokenStorage {
         } catch (_) {}
         return secureToken.trim();
       }
+    } on PlatformException catch (e) {
+      debugPrint('[SecureStorage] PlatformException on read: $e');
+      try {
+        await _storage.deleteAll();
+      } catch (_) {}
     } catch (e) {
       debugPrint('[SecureStorage] Warning on read secure token: $e');
     }
@@ -77,16 +83,18 @@ class SecureAuthTokenStorage implements IAuthTokenStorage {
         value: normalized,
       );
     } catch (e) {
-      debugPrint('[SecureStorage] Warning writing to secure storage: $e');
-      // في بيئة الاختبارات أو الأجهزة التي لا تدعم Keystore، كتابة كاحتياط
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(LocalStorageKeys.authToken, normalized);
+      debugPrint('[SecureStorage] Error writing to secure storage: $e');
+      // لا نقوم إطلاقاً بكتابة التوكن كـ plaintext في SharedPreferences لحماية أمان الإنتاج
+      if (kReleaseMode) {
+        rethrow;
+      }
       return;
     }
 
-    // تنظيف SharedPreferences لضمان عدم بقاء نسخة غير مشفرة
+    // حفظ علامة وجود جلسة سريعة في SharedPreferences لتفادي قفل الواجهة عند الإقلاع
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('has_auth_session', true);
       if (prefs.containsKey(LocalStorageKeys.authToken)) {
         await prefs.remove(LocalStorageKeys.authToken);
       }
@@ -103,6 +111,7 @@ class SecureAuthTokenStorage implements IAuthTokenStorage {
 
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('has_auth_session');
       await prefs.remove(LocalStorageKeys.authToken);
     } catch (_) {}
   }

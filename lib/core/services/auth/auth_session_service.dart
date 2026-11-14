@@ -1,182 +1,208 @@
 import 'dart:async';
 
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/core/constants/app_env.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rwnaqk_frontend/core/di/core_providers.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_token_storage.dart';
-import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
 
-class AuthSessionService extends GetxService {
+/// كلاس بديل خفيف وخالص من أي تبعية لـ GetX لتوافق الحقول التفاعلية
+class SessionRx<T> {
+  SessionRx(this.value);
+  T value;
+  T call([T? v]) {
+    if (v != null) value = v;
+    return value;
+  }
+
+  @override
+  String toString() => 'SessionRx($value)';
+}
+
+/// جسر التوافقية المؤقت لجلسة المصادقة (Single-Writer Compatibility Bridge الخالص).
+///
+/// تم تحويل هذا الكلاس إلى مهايئ قراءة وتفويض أحادي الاتجاه خالص من GetX،
+/// حيث تكون حاوية Riverpod 3 وموفر [authSessionProvider] هي المالك الحصري الأوحد للحالة (Single Authoritative Writer).
+class AuthSessionService {
   AuthSessionService({
     String? initialAccessToken,
     IAuthTokenStorage? tokenStorage,
-  }) : _tokenStorage = tokenStorage ?? SecureAuthTokenStorage() {
+    this._container,
+  })  : _tokenStorage = tokenStorage ?? SecureAuthTokenStorage() {
     final hasInitialToken = (initialAccessToken ?? '').trim().isNotEmpty;
     if (hasInitialToken) {
-      token.value = initialAccessToken!.trim();
+      final normToken = initialAccessToken!.trim();
+      token.value = normToken;
+      try {
+        _notifier.startSession(accessToken: normToken);
+      } catch (_) {}
     }
+    _bindToRiverpod();
   }
 
+  // ignore: unused_field
   final IAuthTokenStorage _tokenStorage;
+  final ProviderContainer? _container;
+  ProviderSubscription<dynamic>? _subscription;
 
-  final token = RxnString();
-  final requiresEmailVerification = false.obs;
-  final customer = Rxn<CustomerModel>();
-  final isGuestMode = false.obs;
+  ProviderContainer get _effectiveContainer =>
+      _container ?? globalProviderContainer;
+
+  AuthSessionNotifier get _notifier =>
+      _effectiveContainer.read(authSessionProvider.notifier);
+
+  /// إسقاط قراءة تفاعلي متزامن أحادي الاتجاه من Riverpod
+  final token = SessionRx<String?>(null);
+  final requiresEmailVerification = SessionRx<bool>(false);
+  final customer = SessionRx<CustomerModel?>(null);
+  final isGuestMode = SessionRx<bool>(false);
+
+  void Function()? _onSessionTerminated;
+
+  /// دالة تنظيف البيانات المحلية المرتبطة بالحساب (السلة، الطلبات، العناوين، المفضلة)
+  void Function()? get onSessionTerminated =>
+      _notifier.onSessionTerminated ?? _onSessionTerminated;
+
+  set onSessionTerminated(void Function()? callback) {
+    _onSessionTerminated = callback;
+    _notifier.onSessionTerminated = callback;
+  }
 
   bool get isAuthenticated =>
       (token.value ?? '').isNotEmpty || isGuestMode.value;
 
+  /// رقم جيل الجلسة الحالي المنعكس من Riverpod
+  int get sessionGeneration =>
+      _effectiveContainer.read(authSessionProvider).sessionGeneration;
+
+  void _bindToRiverpod() {
+    try {
+      final container = _effectiveContainer;
+      final initial = container.read(authSessionProvider);
+      if (initial.token != null && initial.token!.isNotEmpty) {
+        token.value = initial.token;
+      }
+      requiresEmailVerification.value = initial.requiresEmailVerification;
+      customer.value = initial.customer;
+      isGuestMode.value = initial.isGuest;
+
+      _subscription?.close();
+      _subscription = container.listen(
+        authSessionProvider,
+        (previous, next) {
+          token.value = next.token;
+          requiresEmailVerification.value = next.requiresEmailVerification;
+          customer.value = next.customer;
+          isGuestMode.value = next.isGuest;
+        },
+        fireImmediately: false,
+      );
+    } catch (_) {
+      // حماية في حال تم الاستدعاء قبل تهيئة الحاوية في بيئة الاختبار
+    }
+  }
+
+  void onClose() {
+    _subscription?.close();
+    _subscription = null;
+  }
+
+  void dispose() => onClose();
+
   /// تمكين وضع الضيف لتجاوز تسجيل الدخول لأغراض التصميم والتطوير
   void enterGuestMode() {
-    isGuestMode.value = true;
-    token.value = 'guest_dev_mode';
-    customer.value = const CustomerModel(
-      id: 1,
-      firstName: 'مستخدم',
-      lastName: 'تجريبي',
-      fullName: 'مستخدم تجريبي',
-      email: 'guest@rawnaqk.com',
-      mobile: '777000000',
-    );
+    _notifier.enterGuestMode();
   }
 
-  Future<void> bootstrapSession(CustomerAuthApiService api) async {
-    final currentToken = (token.value ?? '').trim();
-    if (currentToken.isEmpty) {
-      return;
-    }
-
-    if (AppEnv.enableMockData) {
-      customer.value ??= CustomerModel(
-        id: 1,
-        firstName: 'مستخدم',
-        lastName: 'تجريبي',
-        fullName: 'مستخدم تجريبي',
-        email: 'user@rawnaqk.com',
-        mobile: '777000000',
-        emailVerifiedAt: DateTime.now(),
-      );
-      _setEmailVerificationRequired(false);
-      return;
-    }
-
-    try {
-      final response = await api.me(token: currentToken);
-
-      if (!response.isOk) {
-        await _clearSessionAndRedirectToLogin();
-        return;
-      }
-
-      final body = response.body;
-      if (body is! Map<String, dynamic>) {
-        await _clearSessionAndRedirectToLogin();
-        return;
-      }
-
-      final customerPayload = body['customer'];
-      if (customerPayload is Map<String, dynamic>) {
-        final parsedCustomer = CustomerModel.fromJson(customerPayload);
-        customer.value = parsedCustomer;
-        final requiresVerification = parsedCustomer.emailVerifiedAt == null;
-        _setEmailVerificationRequired(requiresVerification);
-
-        if (requiresVerification) {
-          await _clearSessionAndRedirectToLogin();
-          return;
-        }
-      }
-    } catch (_) {
-      await _clearSessionAndRedirectToLogin();
-    }
+  /// استعادة الجلسة عند بدء تشغيل التطبيق
+  Future<void> bootstrapSession([CustomerAuthApiService? api]) async {
+    await _notifier.bootstrapSession(initialToken: token.value);
   }
 
+  /// بدء جلسة مصادقة جديدة
   void startSession({
     required String accessToken,
     CustomerModel? customerPayload,
     bool emailVerificationRequired = false,
   }) {
-    final normalizedToken = accessToken.trim();
-    token.value = normalizedToken;
-    customer.value = customerPayload;
-    _setEmailVerificationRequired(emailVerificationRequired);
-    if (!emailVerificationRequired) {
-      unawaited(_persistToken(normalizedToken));
-    }
+    _notifier.startSession(
+      accessToken: accessToken,
+      customerPayload: customerPayload,
+      emailVerificationRequired: emailVerificationRequired,
+    );
   }
 
+  /// تعيين بيانات العميل
   void setCustomer(CustomerModel? customerModel) {
-    customer.value = customerModel;
+    _notifier.setCustomer(customerModel);
   }
 
+  /// تحديث بيانات العميل عبر دالة تحويل
   void updateCustomer(CustomerModel Function(CustomerModel? current) update) {
-    customer.value = update(customer.value);
+    _notifier.updateCustomer(update);
   }
 
+  bool _isHandlingUnauthorized = false;
+
+  /// تفريغ الجلسة محلياً
   void clearSession() {
     isGuestMode.value = false;
     token.value = null;
     customer.value = null;
     requiresEmailVerification.value = false;
-    unawaited(_persistToken(null));
+    _notifier.clearSession();
   }
 
+  /// إكمال تأكيد البريد الإلكتروني
   Future<void> completeEmailVerification() async {
-    final currentToken = (token.value ?? '').trim();
-
-    if (currentToken.isEmpty) {
-      _setEmailVerificationRequired(false);
-      return;
-    }
-
-    final currentCustomer = customer.value;
-    if (currentCustomer != null && currentCustomer.emailVerifiedAt == null) {
-      customer.value = currentCustomer.copyWith(
-        emailVerifiedAt: DateTime.now(),
-      );
-    }
-
-    _setEmailVerificationRequired(false);
-    await _persistToken(currentToken);
+    await _notifier.completeEmailVerification();
   }
 
+  /// تعيين راية تأكيد البريد الإلكتروني
   void setEmailVerificationRequired(bool value) {
-    _setEmailVerificationRequired(value);
+    if (value) {
+      _notifier.startSession(
+        accessToken: token.value ?? '',
+        customerPayload: customer.value,
+        emailVerificationRequired: true,
+      );
+    } else {
+      unawaited(_notifier.completeEmailVerification());
+    }
   }
 
-  Future<void> _persistToken(String? accessToken) async {
-    final normalizedToken = (accessToken ?? '').trim();
-    if (normalizedToken.isEmpty) {
-      await _tokenStorage.clearToken();
+  /// معالجة استجابة HTTP 401 المركزية
+  Future<void> handleUnauthorized({
+    String? failedToken,
+    int? staleGeneration,
+  }) async {
+    if (_isHandlingUnauthorized) {
       return;
     }
 
-    await _tokenStorage.writeToken(normalizedToken);
-  }
+    _isHandlingUnauthorized = true;
+    try {
+      // تفويض المعالجة بالكامل وبشكل صارم إلى نوتيفاير Riverpod (الكاتب الأوحد)
+      await _notifier.handleUnauthorized(
+        failedToken: failedToken,
+        staleGeneration: staleGeneration,
+      );
 
-  void _setEmailVerificationRequired(bool value) {
-    requiresEmailVerification.value = value;
-  }
+      // مزامنة حالة الإسقاط المحلي حصراً من نوتيفاير Riverpod بعد المعالجة
+      final currentRiverpodState =
+          _effectiveContainer.read(authSessionProvider);
+      token.value = currentRiverpodState.token;
+      requiresEmailVerification.value =
+          currentRiverpodState.requiresEmailVerification;
+      customer.value = currentRiverpodState.customer;
+      isGuestMode.value = currentRiverpodState.isGuest;
 
-  Future<void> _clearSessionAndRedirectToLogin() async {
-    clearSession();
-
-    final currentRoute = Get.currentRoute;
-    if (currentRoute == AppRoutes.onboarding ||
-        currentRoute == AppRoutes.login ||
-        currentRoute == AppRoutes.register ||
-        currentRoute == AppRoutes.forgot ||
-        currentRoute == AppRoutes.otp ||
-        currentRoute == AppRoutes.reset) {
-      return;
+      // إذا كانت النتيجة الفعلية لنوتيفاير Riverpod هي إنهاء الجلسة، نقوم بمسح التخزين الممرر للمهايئ محلياً
+      if (!currentRiverpodState.isAuthenticated) {
+        await _tokenStorage.clearToken();
+      }
+    } finally {
+      _isHandlingUnauthorized = false;
     }
-
-    if (Get.context == null || (Get.testMode && Get.key.currentState == null)) {
-      return;
-    }
-
-    Get.offAllNamed(AppRoutes.login);
   }
 }

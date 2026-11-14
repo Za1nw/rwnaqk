@@ -1,5 +1,5 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:rwnaqk_frontend/core/utils/app_breakpoints.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
@@ -34,11 +34,11 @@ const ListingGridSliver({
 
           double tileHeight;
           if (tileWidth <= 150) {
-            tileHeight = tileWidth * 1.82;
+            tileHeight = tileWidth * 1.90;
           } else if (tileWidth <= 180) {
-            tileHeight = tileWidth * 1.58;
+            tileHeight = tileWidth * 1.70;
           } else {
-            tileHeight = tileWidth * 1.52;
+            tileHeight = tileWidth * 1.60;
           }
 
           return SliverGrid(
@@ -48,7 +48,7 @@ const ListingGridSliver({
 
                 return ProductCard(
                   item: item,
-                  onTap: (_) => Get.toNamed(
+                  onTap: (_) => AppNav.toNamed(
                     AppRoutes.product,
                     arguments: {'item': item},
                   ),

@@ -1,27 +1,42 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/support/controllers/help_center_controller.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_sectioned_page.dart';
+import 'package:rwnaqk_frontend/modules/customer/widgets/settings_sections.dart';
+import 'package:rwnaqk_frontend/modules/support/providers/support_providers.dart';
 import 'package:rwnaqk_frontend/modules/support/widgets/help_contact_tile.dart';
 import 'package:rwnaqk_frontend/modules/support/widgets/help_faq_card.dart';
-import 'package:rwnaqk_frontend/modules/customer/widgets/settings_sections.dart';
+import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
-class HelpCenterScreen extends GetView<HelpCenterController> {
+/// شاشة مركز المساعدة والأسئلة الشائعة
+///
+/// تمت هجرتها بنجاح إلى Riverpod 3 مع الإبقاء على توافقية الملاحة والترجمة
+class HelpCenterScreen extends ConsumerWidget {
   const HelpCenterScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final supportEntries = controller.supportEntries;
-    final contactEntries = controller.contactEntries;
-    final faqQuestions = controller.faqQuestions;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(helpCenterProvider);
+    final supportEntries = state.supportEntries;
+    final contactEntries = state.contactEntries;
+    final faqQuestions = state.faqQuestions;
+
+    void openSupport(String titleKey) {
+      final service = ref.read(helpCenterServiceProvider);
+      AppNav.toNamed(
+        AppRoutes.supportChat,
+        arguments: service.buildSupportArgs(titleKey),
+      );
+    }
 
     return AppSectionedPage(
       title: Tk.helpCenterTitle.tr,
-      onBack: Get.back,
+      onBack: AppNav.back,
       trailingIcon: Icons.support_agent_rounded,
       children: [
         _HeroCard(
@@ -38,19 +53,19 @@ class HelpCenterScreen extends GetView<HelpCenterController> {
                   icon: Icons.receipt_long_outlined,
                   title: supportEntries[0].title.tr,
                   subtitle: supportEntries[0].subtitle.tr,
-                  onTap: () => controller.openSupport(supportEntries[0].routeTitle),
+                  onTap: () => openSupport(supportEntries[0].routeTitle),
                 ),
                 SettingsTileSpec(
                   icon: Icons.account_balance_wallet_outlined,
                   title: supportEntries[1].title.tr,
                   subtitle: supportEntries[1].subtitle.tr,
-                  onTap: () => controller.openSupport(supportEntries[1].routeTitle),
+                  onTap: () => openSupport(supportEntries[1].routeTitle),
                 ),
                 SettingsTileSpec(
                   icon: Icons.manage_accounts_outlined,
                   title: supportEntries[2].title.tr,
                   subtitle: supportEntries[2].subtitle.tr,
-                  onTap: () => controller.openSupport(supportEntries[2].routeTitle),
+                  onTap: () => openSupport(supportEntries[2].routeTitle),
                 ),
               ],
             ),
@@ -93,21 +108,21 @@ class HelpCenterScreen extends GetView<HelpCenterController> {
           icon: Icons.chat_bubble_outline_rounded,
           title: contactEntries[0].title.tr,
           subtitle: contactEntries[0].subtitle.tr,
-          onTap: () => controller.openSupport(contactEntries[0].title),
+          onTap: () => openSupport(contactEntries[0].title),
         ),
         const SizedBox(height: 10),
         HelpContactTile(
           icon: Icons.mail_outline_rounded,
           title: contactEntries[1].title.tr,
           subtitle: contactEntries[1].subtitle.tr,
-          onTap: () => controller.openSupport(contactEntries[1].title),
+          onTap: () => openSupport(contactEntries[1].title),
         ),
         const SizedBox(height: 10),
         HelpContactTile(
           icon: Icons.phone_outlined,
           title: contactEntries[2].title.tr,
           subtitle: contactEntries[2].subtitle.tr,
-          onTap: () => controller.openSupport(contactEntries[2].title),
+          onTap: () => openSupport(contactEntries[2].title),
         ),
         const SizedBox(height: 18),
         Container(
@@ -132,7 +147,7 @@ class HelpCenterScreen extends GetView<HelpCenterController> {
               AppButton(
                 text: Tk.helpCenterContactSupport.tr,
                 icon: Icons.support_agent_rounded,
-                onPressed: controller.openDefaultSupport,
+                onPressed: () => openSupport(Tk.helpCenterContactSupport),
               ),
             ],
           ),
@@ -222,4 +237,3 @@ class _HeroCard extends StatelessWidget {
     );
   }
 }
-

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/network/api_client.dart';
 import 'package:rwnaqk_frontend/core/network/api_endpoints.dart';
@@ -5,6 +6,7 @@ import 'package:rwnaqk_frontend/modules/catalog/controllers/products_listing_ser
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/providers/fake_products_remote_data_source.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/repositories/products_repository.dart';
+import 'package:rwnaqk_frontend/modules/home/data/models/home_category_item.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 /// تطبيق مستودع الكتالوج النقي المتصل بخادم Laravel API عبر [ApiClient]
@@ -26,6 +28,8 @@ class ProductsRepositoryImpl implements IProductsRepository {
     ListingSort sort = ListingSort.newest,
     double? minPrice,
     double? maxPrice,
+    String? categoryId,
+    String? search,
   }) async {
     if (AppEnv.enableMockData) {
       return _fallback.getProducts(
@@ -34,6 +38,8 @@ class ProductsRepositoryImpl implements IProductsRepository {
         sort: sort,
         minPrice: minPrice,
         maxPrice: maxPrice,
+        categoryId: categoryId,
+        search: search,
       );
     }
 
@@ -44,6 +50,8 @@ class ProductsRepositoryImpl implements IProductsRepository {
         'sort': sort.name,
         'min_price': ?minPrice,
         'max_price': ?maxPrice,
+        'category_id': ?categoryId,
+        'search': ?search,
       };
 
       final response = await _api.get<dynamic>(
@@ -117,6 +125,62 @@ class ProductsRepositoryImpl implements IProductsRepository {
           .toList();
     } catch (_) {
       // لا نفعّل الـ Mock Fallback تلقائياً عند فشل الـ API
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<HomeProductItem>> searchProducts(
+    String query, {
+    CancelToken? cancelToken,
+  }) async {
+    if (AppEnv.enableMockData) {
+      return _fallback.searchProducts(query, cancelToken: cancelToken);
+    }
+
+    try {
+      final response = await _api.get<dynamic>(
+        ApiEndpoints.products,
+        queryParameters: {'q': query.trim()},
+        cancelToken: cancelToken,
+      );
+
+      final data = response.data;
+      final rawList = data is Map<String, dynamic> && data['data'] is List
+          ? data['data'] as List
+          : data is List
+              ? data
+              : const [];
+
+      return rawList
+          .whereType<Map<String, dynamic>>()
+          .map((json) => HomeProductItem.fromJson(json))
+          .toList();
+    } catch (_) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<HomeCategoryItem>> getCategories() async {
+    if (AppEnv.enableMockData) {
+      return _fallback.getCategories();
+    }
+
+    try {
+      final response = await _api.get<dynamic>(ApiEndpoints.categories);
+      final data = response.data;
+      final rawList = data is Map<String, dynamic> && data['data'] is List
+          ? data['data'] as List
+          : data is List
+              ? data
+              : const [];
+
+      return rawList
+          .whereType<Map<String, dynamic>>()
+          .map((json) => HomeCategoryItem.fromJson(json))
+          .toList();
+    } catch (_) {
       rethrow;
     }
   }

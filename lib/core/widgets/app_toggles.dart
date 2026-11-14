@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/modules/customer/providers/customer_profile_providers.dart';
 
-class AppToggles extends GetView<AppSettingsController> {
+class AppToggles extends ConsumerWidget {
   final Alignment alignment;
 
   /// التحكم في الأزرار
@@ -18,8 +19,12 @@ class AppToggles extends GetView<AppSettingsController> {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = context.isDark;
+    final locale = ref.watch(appLocaleProvider);
+    final themeMode = ref.watch(appThemeModeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark ||
+        (themeMode == ThemeMode.system && isDark);
 
     return Align(
       alignment: alignment,
@@ -51,7 +56,12 @@ class AppToggles extends GetView<AppSettingsController> {
             if (showLanguage)
               _ToggleButton(
                 icon: Icons.language_rounded,
-                onTap: controller.toggleLanguage,
+                onTap: () {
+                  final next = locale.languageCode == 'ar'
+                      ? const Locale('en', 'US')
+                      : const Locale('ar', 'YE');
+                  ref.read(appLocaleProvider.notifier).setLocale(next);
+                },
               ),
 
             /// مسافة فقط إذا كان الإثنان ظاهرين
@@ -59,16 +69,16 @@ class AppToggles extends GetView<AppSettingsController> {
 
             /// زر الثيم
             if (showTheme)
-              Obx(() {
-                final isDarkMode = controller.themeMode.value == ThemeMode.dark;
-
-                return _ToggleButton(
-                  icon: isDarkMode
-                      ? Icons.dark_mode_rounded
-                      : Icons.light_mode_rounded,
-                  onTap: controller.toggleTheme,
-                );
-              }),
+              _ToggleButton(
+                icon: isDarkMode
+                    ? Icons.dark_mode_rounded
+                    : Icons.light_mode_rounded,
+                onTap: () {
+                  ref.read(appThemeModeProvider.notifier).setThemeMode(
+                        isDarkMode ? ThemeMode.light : ThemeMode.dark,
+                      );
+                },
+              ),
           ],
         ),
       ),

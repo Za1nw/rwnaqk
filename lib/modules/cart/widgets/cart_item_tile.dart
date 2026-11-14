@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_utils/src/extensions/export.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
@@ -37,7 +37,7 @@ class CartItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = context.isDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasDiscount = item.hasDiscount;
     final salePrice = item.salePrice;
     final originalPrice = item.price;

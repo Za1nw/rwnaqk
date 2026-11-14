@@ -66,6 +66,18 @@ class ForbiddenException extends ApiException {
   });
 }
 
+/// استثناء الحساب المحظور (403 Forbidden - Account Banned)
+class AccountBannedException extends ForbiddenException {
+  const AccountBannedException({
+    super.message = 'تم حظر حسابك. يرجى التواصل مع إدارة المتجر لمزيد من التفاصيل.',
+    super.statusCode = 403,
+    super.rawResponse,
+    this.customerData,
+  });
+
+  final Map<String, dynamic>? customerData;
+}
+
 /// استثناء عدم العثور على المورد (404 Not Found)
 class NotFoundException extends ApiException {
   const NotFoundException({

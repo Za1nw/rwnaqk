@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/profile_service.dart';
+import 'package:rwnaqk_frontend/modules/customer/providers/customer_profile_providers.dart';
 
 /// شريط المؤشرات التفاعلي للملف الشخصي (الطلبات، العناوين، المفضلة)
 class ProfileStatsStrip extends StatelessWidget {

@@ -1,4 +1,3 @@
-import 'package:rwnaqk_frontend/core/services/auth/auth_session_service.dart';
 import 'package:rwnaqk_frontend/core/services/auth/customer_auth_api_service.dart';
 
 class TwoFactorSettingsState {
@@ -8,6 +7,7 @@ class TwoFactorSettingsState {
     required this.hasSetupData,
     this.manualSetupKey,
     this.qrCodeSvg,
+    this.qrCodeUrl,
     this.recoveryCodes = const <String>[],
   });
 
@@ -16,17 +16,18 @@ class TwoFactorSettingsState {
   final bool hasSetupData;
   final String? manualSetupKey;
   final String? qrCodeSvg;
+  final String? qrCodeUrl;
   final List<String> recoveryCodes;
 }
 
 class TwoFactorSettingsService {
-  TwoFactorSettingsService(this._api, this._session);
+  TwoFactorSettingsService(this._api, {this._getToken});
 
   final CustomerAuthApiService _api;
-  final AuthSessionService _session;
+  final String Function()? _getToken;
 
   String _tokenOrThrow() {
-    final token = (_session.token.value ?? '').trim();
+    final token = (_getToken?.call() ?? '').trim();
     if (token.isEmpty) {
       throw const AuthApiException(message: 'No active authenticated session.');
     }
@@ -55,6 +56,9 @@ class TwoFactorSettingsService {
       enabled: body['two_factor_enabled'] == true,
       requiresConfirmation: body['requires_confirmation'] == true,
       hasSetupData: body['has_setup_data'] == true,
+      manualSetupKey: body['secret_key']?.toString().trim(),
+      qrCodeSvg: body['qr_code_svg']?.toString().trim(),
+      qrCodeUrl: body['qr_code_url']?.toString().trim(),
     );
   }
 
@@ -81,6 +85,7 @@ class TwoFactorSettingsService {
       hasSetupData: true,
       manualSetupKey: (body['secret_key'] ?? '').toString().trim(),
       qrCodeSvg: (body['qr_code_svg'] ?? '').toString().trim(),
+      qrCodeUrl: body['qr_code_url']?.toString().trim(),
       recoveryCodes: _extractRecoveryCodes(body['recovery_codes']),
     );
   }

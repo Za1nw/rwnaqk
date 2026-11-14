@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
 
@@ -149,7 +149,7 @@ class _AppFilterSheetState extends State<AppFilterSheet> {
                   const Spacer(),
                   InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    onTap: () => Get.back(),
+                    onTap: () => Navigator.of(context).pop(),
                     child: Padding(
                       padding: const EdgeInsets.all(8),
                       child: Icon(
@@ -341,7 +341,7 @@ class _AppFilterSheetState extends State<AppFilterSheet> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () => Get.back(result: state),
+                      onPressed: () => Navigator.of(context).pop(state),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: context.primary,
                         foregroundColor: context.primaryForeground,

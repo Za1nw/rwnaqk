@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk_frontend/modules/cart/controllers/cart_controller.dart';
-import 'package:rwnaqk_frontend/modules/catalog/controllers/product_details_controller.dart';
+import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
+import 'package:rwnaqk_frontend/modules/catalog/providers/catalog_providers.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_details_header_card.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_reviews_section.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_size_guide_sheet.dart';
@@ -12,17 +14,63 @@ import 'package:rwnaqk_frontend/modules/catalog/widgets/product_specifications_c
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_trust_badges.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_variants_sheet.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_grid_section.dart';
+import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 const double _sectionGap = 18;
 const double _innerGap = 12;
 const double _gridSpacing = 12;
 
-class ProductDetailsScreen extends GetView<ProductDetailsController> {
+class ProductDetailsScreen extends ConsumerStatefulWidget {
   const ProductDetailsScreen({super.key});
 
   @override
+  ConsumerState<ProductDetailsScreen> createState() =>
+      _ProductDetailsScreenState();
+}
+
+class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
+  bool _initialized = false;
+  late String _productId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      final args = ModalRoute.of(context)?.settings.arguments;
+      HomeProductItem? item;
+      if (args is HomeProductItem) {
+        item = args;
+        _productId = args.id;
+      } else if (args is Map) {
+        if (args['item'] is HomeProductItem) {
+          item = args['item'] as HomeProductItem;
+          _productId = item.id;
+        } else {
+          _productId = args['id']?.toString() ??
+              args['productId']?.toString() ??
+              '1';
+        }
+      } else if (args is String) {
+        _productId = args;
+      } else {
+        _productId = '1';
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(productDetailsFamily(_productId).notifier).loadProduct(
+              initialItem: item,
+              args: args,
+            );
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(productDetailsFamily(_productId));
+    final notifier = ref.read(productDetailsFamily(_productId).notifier);
     final width = MediaQuery.of(context).size.width;
 
     final justCols = width >= 1100
@@ -31,155 +79,146 @@ class ProductDetailsScreen extends GetView<ProductDetailsController> {
             ? 3
             : 2;
 
-    return Obx(() {
-      return Scaffold(
-        backgroundColor: context.background,
-        appBar: _ProductDetailsAppBar(
-          title: controller.brand.isNotEmpty
-              ? controller.brand
-              : controller.title,
-          isFavorite: controller.isFavorite.value,
-          onFavorite: controller.toggleFavorite,
-          onShare: controller.shareProduct,
-        ),
-        bottomNavigationBar: _BottomBar(
-          isFavorite: controller.isFavorite.value,
-          onFavorite: controller.toggleFavorite,
-          onAdd: controller.addToCart,
-          onBuy: controller.buyNow,
-        ),
-        body: SafeArea(
-          top: false,
-          child: ListView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
-            children: [
-              // 1. Header Card (Gallery, Info, and Variant Selector Tile)
-              ProductDetailsHeaderCard(
-                images: controller.images,
-                title: controller.title,
-                description: controller.description,
-                brand: controller.brand,
-                priceText:
-                    '\$${controller.salePriceText.replaceAll('.00', '')}',
-                oldPriceText: controller.hasDiscount
-                    ? '\$${controller.oldPriceText}'
-                    : null,
-                discountText: controller.hasDiscount
-                    ? '-${controller.discount}%'
-                    : null,
-                timerWidget: null,
-                rating: controller.hasReviews ? controller.averageRating : null,
-                reviewsCount:
-                    controller.hasReviews ? controller.reviewsCount : null,
-                infoText: controller.stockText,
-                isFavorite: controller.isFavorite.value,
-                onFavorite: controller.toggleFavorite,
-                availableColors: controller.availableColors,
-                selectedColorId: controller.selectedColorId.value,
-                onSelectColor: controller.setSelectedColor,
-                availableSizes: controller.availableSizes,
-                selectedSize: controller.selectedSize.value,
-                onSelectSize: controller.setSelectedSize,
-                variationsTitle: Tk.productDetailsVariations.tr,
-                selectedChips: controller.selectedOptionChips,
-                variationImages: controller.variationImages,
-                selectedVariationImageIndex: controller.selectedThumb.value,
-                onSelectVariationImage: controller.selectThumb,
-                onShare: controller.shareProduct,
-                showArrowButton: true,
-                onArrowTap: () => ProductVariantsSheet.show(context),
-                onOpenVariantsSheet: () => ProductVariantsSheet.show(context),
-                onSizeGuideTap: () => ProductSizeGuideSheet.show(
-                  context,
-                  currentSelectedSize: controller.selectedSize.value,
-                  onSizeSelected: controller.setSelectedSize,
+    return Scaffold(
+      backgroundColor: context.background,
+      appBar: _ProductDetailsAppBar(
+        title: state.brand.isNotEmpty ? state.brand : state.title,
+        isFavorite: state.isFavorite,
+        onFavorite: () => notifier.toggleFavorite(context),
+        onShare: notifier.shareProduct,
+      ),
+      bottomNavigationBar: _BottomBar(
+        isFavorite: state.isFavorite,
+        onFavorite: () => notifier.toggleFavorite(context),
+        onAdd: () => notifier.addToCart(context),
+        onBuy: notifier.buyNow,
+      ),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
+          children: [
+            // 1. Header Card (Gallery, Info, and Variant Selector Tile)
+            ProductDetailsHeaderCard(
+              images: state.images,
+              title: state.title,
+              description: state.description,
+              brand: state.brand,
+              priceText: '\$${state.salePriceText.replaceAll('.00', '')}',
+              oldPriceText:
+                  state.hasDiscount ? '\$${state.oldPriceText}' : null,
+              discountText:
+                  state.hasDiscount ? '-${state.discount}%' : null,
+              timerWidget: null,
+              rating: state.hasReviews ? state.averageRating : null,
+              reviewsCount: state.hasReviews ? state.reviewsCount : null,
+              infoText: state.stockText,
+              isFavorite: state.isFavorite,
+              onFavorite: () => notifier.toggleFavorite(context),
+              availableColors: state.availableColors,
+              selectedColorId: state.selectedColorId,
+              onSelectColor: notifier.setSelectedColor,
+              availableSizes: state.availableSizes,
+              selectedSize: state.selectedSize,
+              onSelectSize: notifier.setSelectedSize,
+              variationsTitle: Tk.productDetailsVariations.tr,
+              selectedChips: state.selectedOptionChips,
+              variationImages: state.variationImages,
+              selectedVariationImageIndex: state.selectedThumb,
+              onSelectVariationImage: notifier.selectThumb,
+              onShare: notifier.shareProduct,
+              showArrowButton: true,
+              onArrowTap: () =>
+                  ProductVariantsSheet.show(context, productId: _productId),
+              onOpenVariantsSheet: () =>
+                  ProductVariantsSheet.show(context, productId: _productId),
+              onSizeGuideTap: () => ProductSizeGuideSheet.show(
+                context,
+                currentSelectedSize: state.selectedSize,
+                onSizeSelected: notifier.setSelectedSize,
+              ),
+            ),
+
+            const SizedBox(height: _sectionGap),
+
+            // 2. E-Commerce Trust Badges (Authentic, Fast Delivery, 14-day returns, Secure Payment)
+            const ProductTrustBadges(),
+
+            const SizedBox(height: _sectionGap),
+
+            // 3. Specifications Card (Material, Origin, SKU, Care Instructions, and Size Guide link)
+            ProductSpecificationsCard(
+              sku: state.sku,
+              selectedSize: state.selectedSize,
+              onSelectSize: notifier.setSelectedSize,
+            ),
+
+            const SizedBox(height: _sectionGap),
+
+            // 4. Product Reviews (With in-app review submission)
+            ProductReviewsSection(
+              reviews: state.reviews,
+              onAddReview: (rating, comment, name) {
+                notifier.addReview(rating: rating, comment: comment, name: name);
+              },
+              onViewAll: () => AppNav.toNamed(
+                AppRoutes.reviews,
+                arguments: {'reviews': state.reviews},
+              ),
+            ),
+
+            const SizedBox(height: _sectionGap),
+
+            // 5. Recommended Products (Just for you)
+            Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    color: context.primary,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: _sectionGap),
-
-              // 2. E-Commerce Trust Badges (Authentic, Fast Delivery, 14-day returns, Secure Payment)
-              const ProductTrustBadges(),
-
-              const SizedBox(height: _sectionGap),
-
-              // 3. Specifications Card (Material, Origin, SKU, Care Instructions, and Size Guide link)
-              ProductSpecificationsCard(
-                sku: controller.sku,
-                selectedSize: controller.selectedSize.value,
-                onSelectSize: controller.setSelectedSize,
-              ),
-
-              const SizedBox(height: _sectionGap),
-
-              // 4. Product Reviews (With in-app review submission)
-              ProductReviewsSection(
-                reviews: controller.reviews.toList(),
-                onViewAll: () => Get.toNamed(
-                  AppRoutes.reviews,
-                  arguments: {'reviews': controller.reviews.toList()},
+                const SizedBox(width: 8),
+                Text(
+                  Tk.homeJustForYou.tr,
+                  style: TextStyle(
+                    color: context.foreground,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16.5,
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: _innerGap),
+            if (state.recommended.isNotEmpty)
+              ProductGridSection(
+                items: state.recommended,
+                crossAxisCount: justCols,
+                crossAxisSpacing: _gridSpacing,
+                mainAxisSpacing: _gridSpacing,
+                onTap: (p) => AppNav.toNamed(
+                  AppRoutes.product,
+                  arguments: {
+                    'item': p,
+                    'mostPopular': state.mostPopular,
+                    'recommended': state.recommended,
+                    'reviews': state.reviews,
+                  },
+                ),
+                childAspectRatio: 1.0,
               ),
-
-              const SizedBox(height: _sectionGap),
-
-              // 6. Recommended Products (Just for you)
-              Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 18,
-                    decoration: BoxDecoration(
-                      color: context.primary,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    Tk.homeJustForYou.tr,
-                    style: TextStyle(
-                      color: context.foreground,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16.5,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: _innerGap),
-              Obx(() {
-                final items = controller.recommended.toList();
-                if (items.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-
-                return ProductGridSection(
-                  items: items,
-                  crossAxisCount: justCols,
-                  crossAxisSpacing: _gridSpacing,
-                  mainAxisSpacing: _gridSpacing,
-                  onTap: (p) => Get.toNamed(
-                    AppRoutes.product,
-                    arguments: {
-                      'item': p,
-                      'mostPopular': controller.mostPopular.toList(),
-                      'recommended': controller.recommended.toList(),
-                      'reviews': controller.reviews.toList(),
-                    },
-                  ),
-                  childAspectRatio: 1.0,
-                );
-              }),
-              const SizedBox(height: _sectionGap),
-            ],
-          ),
+            const SizedBox(height: _sectionGap),
+          ],
         ),
-      );
-    });
+      ),
+    );
   }
 }
 
-class _ProductDetailsAppBar extends StatelessWidget
+class _ProductDetailsAppBar extends ConsumerWidget
     implements PreferredSizeWidget {
   final String title;
   final bool isFavorite;
@@ -197,7 +236,9 @@ class _ProductDetailsAppBar extends StatelessWidget
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(cartProvider.select((s) => s.itemsCount));
+
     return AppBar(
       backgroundColor: context.background,
       elevation: 0,
@@ -275,64 +316,57 @@ class _ProductDetailsAppBar extends StatelessWidget
             ),
           ),
         ),
-        Obx(() {
-          int count = 0;
-          if (Get.isRegistered<CartController>()) {
-            count = Get.find<CartController>().itemsCount;
-          }
-
-          return Stack(
-            clipBehavior: Clip.none,
-            children: [
-              IconButton(
-                onPressed: () => Get.toNamed(AppRoutes.cart),
-                icon: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: context.card,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: context.border.withValues(alpha: 0.45),
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.shopping_bag_outlined,
-                    size: 18,
-                    color: context.foreground,
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              onPressed: () => AppNav.toNamed(AppRoutes.cart),
+              icon: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: context.card,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: context.border.withValues(alpha: 0.45),
                   ),
                 ),
+                child: Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 18,
+                  color: context.foreground,
+                ),
               ),
-              if (count > 0)
-                PositionedDirectional(
-                  top: 5,
-                  end: 5,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: context.primary,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 17,
-                      minHeight: 17,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$count',
-                        style: TextStyle(
-                          color: context.primaryForeground,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w900,
-                          height: 1.0,
-                        ),
+            ),
+            if (count > 0)
+              PositionedDirectional(
+                top: 5,
+                end: 5,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: context.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 17,
+                    minHeight: 17,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$count',
+                      style: TextStyle(
+                        color: context.primaryForeground,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                        height: 1.0,
                       ),
                     ),
                   ),
                 ),
-            ],
-          );
-        }),
+              ),
+          ],
+        ),
         const SizedBox(width: 4),
       ],
     );

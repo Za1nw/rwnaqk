@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
@@ -26,7 +26,7 @@ class OrderTrackingCourierCard extends StatelessWidget {
   }
 
   void _chatWithSupport() {
-    Get.toNamed(AppRoutes.supportChat);
+    AppNav.toNamed(AppRoutes.supportChat);
   }
 
   @override

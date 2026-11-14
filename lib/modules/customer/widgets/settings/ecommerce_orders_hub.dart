@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
@@ -41,7 +42,7 @@ class EcommerceOrdersHub extends StatelessWidget {
         children: [
           // شريط العنوان العلوي مع زر "عرض كافة الطلبات"
           InkWell(
-            onTap: onAllOrders ?? () => Get.toNamed(AppRoutes.orders),
+            onTap: onAllOrders ?? () => AppNav.toNamed(AppRoutes.orders),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
@@ -120,26 +121,26 @@ class EcommerceOrdersHub extends StatelessWidget {
                   icon: Icons.hourglass_top_rounded,
                   label: 'قيد الانتظار',
                   badgeCount: 1,
-                  onTap: () => Get.toNamed(AppRoutes.orders),
+                  onTap: () => AppNav.toNamed(AppRoutes.orders),
                 ),
                 _OrderStatusItem(
                   icon: Icons.inventory_2_outlined,
                   label: 'قيد التجهيز',
                   badgeCount: 2,
-                  onTap: () => Get.toNamed(AppRoutes.orders),
+                  onTap: () => AppNav.toNamed(AppRoutes.orders),
                 ),
                 _OrderStatusItem(
                   icon: Icons.local_shipping_outlined,
                   label: 'في الطريق',
                   badgeCount: 1,
                   isHighlighted: true,
-                  onTap: () => Get.toNamed(AppRoutes.orders),
+                  onTap: () => AppNav.toNamed(AppRoutes.orders),
                 ),
                 _OrderStatusItem(
                   icon: Icons.rate_review_outlined,
                   label: 'بانتظار التقييم',
                   badgeCount: 0,
-                  onTap: () => Get.toNamed(AppRoutes.orders),
+                  onTap: () => AppNav.toNamed(AppRoutes.orders),
                 ),
               ],
             ),

@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/app_dialog_shell.dart';
@@ -19,8 +20,8 @@ class AppSavedDialog extends StatelessWidget {
     String titleKey = Tk.commonSaved,
     required String messageKey,
   }) {
-    return Get.dialog<T>(
-      AppSavedDialog(
+    return AppNav.dialog<T>(
+      child: AppSavedDialog(
         titleKey: titleKey,
         messageKey: messageKey,
       ),
@@ -56,7 +57,7 @@ class AppSavedDialog extends StatelessWidget {
           const SizedBox(height: 18),
           AppButton(
             text: Tk.commonOk.tr,
-            onPressed: () => Get.back<void>(),
+            onPressed: () => AppNav.back(),
           ),
         ],
       ),

@@ -1,28 +1,51 @@
-# Riverpod 3.x API quick reference
+# Riverpod 3.5 API — verified quick reference (2026-11-09)
 
-| GetX today | Riverpod 3 destination | Important note |
+**Always read first:** `docs/RIVERPOD3-OFFICIAL-DOCS-2026-11-09-AR.md` at the extracted package root; all links and example patterns live there. This reference is a concise enforcement checklist.
+
+| Old GetX API | Riverpod 3.5 destination | Owner |
 |---|---|---|
-| `GetxController` + `.obs` | `Notifier` / `AsyncNotifier` + immutable state | Methods replace direct mutation |
-| `Obx(() => ...)` | `Consumer` + `ref.watch(provider)` | Keep watches narrow |
-| `Get.find<T>()` | `ref.read(repositoryProvider)` | Only in presentation/event code; dependencies via providers |
-| `Get.put`, `Get.lazyPut` | `Provider` factories + overrides | One owner for each dependency |
-| `GetBuilder` | `ConsumerWidget` / `ConsumerStatefulWidget` | Widget lifecycle differs |
-| `ever`, `once`, `debounce` | `ref.listen`, cancellation, explicit debounce | Dispose listeners/timers correctly |
-| `GetxService` | Plain Dart service + `Provider` | Do not turn service into a giant global Notifier |
-| `Get.offAllNamed` | Keep existing GetX routes temporarily | Routing migration is independent |
-| `GetMiddleware` | Existing router until separate gate | Auth redirects parity mandatory |
-| `.obs` loading flags | `AsyncValue` or immutable command state | Keep non-idempotent submit explicit |
+| `GetxController` + `.obs` | `Notifier<T>` / `AsyncNotifier<T>` with immutable state | presentation |
+| `Get.find<T>()` | `ref.watch(repoProvider)` in providers, `ref.read` in actions | DI providers |
+| `Get.put` / `Get.lazyPut` | `Provider<T>((ref) => dependency)` plus `overrideWith` | composition |
+| `Obx`, `GetBuilder` | `ConsumerWidget` / `Consumer` / `ConsumerStatefulWidget` | presentation |
+| `ever`, `once` | `ref.listen` where side effects appropriate | presentation/handler |
+| `GetxService` | plain Dart service + Provider | core/domain/data |
+| GetX routing/middleware | KEEP until separate navigation migration gate | app routing |
 
-## Version notes
+## Accurate 3.5 notes
 
-- Riverpod 3 discourages `StateProvider`, `StateNotifierProvider`, and `ChangeNotifierProvider` for new usage; these live under `flutter_riverpod/legacy.dart` or `riverpod/legacy.dart`.
-- Riverpod 3 removes most `AutoDispose*` notifier subclasses; use supported `.autoDispose` variants or generator lifecycle configuration.
-- `ref.mounted` should be checked after `await` for disposed-provider scenarios.
-- Automatic retries occur on failure of provider initialization; never rely on implicit retry for POST /orders, payment, register, or upload actions.
-- `ProviderScope` can wrap a **GetMaterialApp** during transitional coexistence; keep exactly one root composition boundary.
-- Generated providers are an optional later step. If selected, verify compatible `riverpod_annotation` and `riverpod_generator` versions from pub.dev, then use `dart run build_runner build --delete-conflicting-outputs`.
-- Avoid obsolete Riverpod 2 migration snippets that refer to removed `AutoDisposeAsyncNotifier` class patterns without verifying Riverpod 3.
+- Stable Riverpod/Flutter Riverpod 3.5.0 (2026-11-06), **Dart >=3.12**. Verify current project first.
+- `riverpod_annotation` 4.0.8 and `riverpod_generator` 4.0.10 optional, both Dart >=3.12. `riverpod_lint` 3.2.0 needs Dart 3.13 dev; optional and *not automatic*.
+- Legacy providers (`StateNotifierProvider`, `StateProvider`, `ChangeNotifierProvider`) moved to `flutter_riverpod/legacy.dart`; avoid in new migration code.
+- `Ref` is unified, no old typed `Ref<T>`. AutoDispose types unified; use `.autoDispose` manually or default generated disposal.
+- Riverpod 3 automatically retries *provider computations*. Never put POST /orders/register/payment/receipt in a build method.
+- Riverpod 3 throws for using Ref after disposal: use `ref.mounted` after await and cancellation via `ref.onDispose`.
+- Version 3.5 introduces `ProviderDisposedException` for disposed provider `.future` and fixes listener/resume issues. Handle cancellations separately from server business errors.
+- `ProviderObserver` uses `ProviderObserverContext` as first parameter.
+- `.family` Notifier classes are unified; avoid obsolete `FamilyNotifier` examples.
+- Manually declared Provider<T> override example: `repoProvider.overrideWith((ref) => fakeRepo)`; never blindly paste Riverpod 2 `overrideWithValue` examples.
+- Offline persistence and Mutations are EXPERIMENTAL; avoid as default for financial/auth state.
 
-## Auth and route separation
+## Safe examples
 
-Store bearer tokens only in existing `IAuthTokenStorage`; a Riverpod provider exposes **session status / customer data**, not raw token for UI. Registration may require email verification or 2FA; don't route directly to Home just because HTTP 201 was returned. Handle server state explicitly. Retain GetX navigation until all routes, deep links, guards, dialogs, back behavior, theme and localization are tested against replacement router (if routing migration is later requested).
+```dart
+final apiProvider = Provider<ApiClient>((ref) => makeApiClient());
+final catalogProvider = AsyncNotifierProvider<Catalog, List<Product>>(Catalog.new);
+class Catalog extends AsyncNotifier<List<Product>> {
+  @override
+  Future<List<Product>> build() async => ref.watch(productsRepositoryProvider).list();
+}
+```
+
+Example uses conceptual `ApiClient`/`Product`/`list` identifiers: adapt them to real code, do not assume those methods exist.
+
+For full runnable-contained quantity examples and tests use `docs/RIVERPOD3-OFFICIAL-DOCS-2026-11-09-AR.md`.
+
+### Official source URLs
+
+- https://riverpod.dev/docs/introduction/getting_started
+- https://riverpod.dev/docs/whats_new
+- https://riverpod.dev/docs/3.0_migration
+- https://riverpod.dev/docs/concepts2/retry
+- https://riverpod.dev/docs/how_to/testing
+- https://pub.dev/packages/flutter_riverpod/changelog

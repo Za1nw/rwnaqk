@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
-import 'package:rwnaqk_frontend/modules/wishlist/controllers/wishlist_controller.dart';
 import 'package:rwnaqk_frontend/core/utils/app_breakpoints.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_grid_section.dart';
+import 'package:rwnaqk_frontend/modules/wishlist/providers/wishlist_providers.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/widgets/recent_filter_row.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/widgets/wishlist_item_tile.dart';
 
-class WishlistTabAnimatedBody extends StatelessWidget {
-  final WishlistController controller;
+/// المحتوى المتحرك لتبويبات المفضلة والمشاهدة الأخيرة [WishlistTabAnimatedBody].
+class WishlistTabAnimatedBody extends ConsumerWidget {
   final bool isWishlist;
 
   const WishlistTabAnimatedBody({
     super.key,
-    required this.controller,
     required this.isWishlist,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 280),
       reverseDuration: const Duration(milliseconds: 220),
@@ -25,13 +25,12 @@ class WishlistTabAnimatedBody extends StatelessWidget {
       switchOutCurve: Curves.easeInCubic,
       transitionBuilder: (child, animation) {
         final fade = CurvedAnimation(parent: animation, curve: Curves.easeOut);
-        final slide =
-            Tween<Offset>(
-              begin: const Offset(0.04, 0),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            );
+        final slide = Tween<Offset>(
+          begin: const Offset(0.04, 0),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+        );
 
         return FadeTransition(
           opacity: fade,
@@ -39,36 +38,35 @@ class WishlistTabAnimatedBody extends StatelessWidget {
         );
       },
       child: isWishlist
-          ? _WishlistTabContent(
-              key: const ValueKey('wishlist_tab_content'),
-              controller: controller,
+          ? const _WishlistTabContent(
+              key: ValueKey('wishlist_tab_content'),
             )
-          : _RecentTabContent(
-              key: const ValueKey('recent_tab_content'),
-              controller: controller,
+          : const _RecentTabContent(
+              key: ValueKey('recent_tab_content'),
             ),
     );
   }
 }
 
-class _WishlistTabContent extends StatelessWidget {
-  final WishlistController controller;
-
-  const _WishlistTabContent({super.key, required this.controller});
+class _WishlistTabContent extends ConsumerWidget {
+  const _WishlistTabContent({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    if (controller.wishlist.isEmpty) {
-      return _WishlistEmptyState(onExplore: controller.goToHome);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(wishlistProvider);
+    final notifier = ref.read(wishlistProvider.notifier);
+
+    if (state.items.isEmpty) {
+      return _WishlistEmptyState(onExplore: notifier.goToHome);
     }
 
     return Column(
       children: [
         // Bulk Actions Bar (Add All to Cart)
         _WishlistBulkActionBar(
-          count: controller.wishlist.length,
-          onAddAll: controller.addAllToCart,
-          onClear: controller.clearWishlist,
+          count: state.items.length,
+          onAddAll: notifier.addAllToCart,
+          onClear: notifier.clearWishlist,
         ),
 
         const SizedBox(height: 10),
@@ -79,16 +77,16 @@ class _WishlistTabContent extends StatelessWidget {
             key: const ValueKey('wishlist_list'),
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(0, 4, 0, 110),
-            itemCount: controller.wishlist.length,
+            itemCount: state.items.length,
             separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (_, i) {
-              final item = controller.wishlist[i];
+              final item = state.items[i];
 
               return WishlistItemTile(
                 item: item,
-                onTap: () => controller.openProduct(item),
-                onRemove: () => controller.removeFromWishlist(item.id),
-                onAddToCart: () => controller.addToCart(item),
+                onTap: () => notifier.openProduct(item),
+                onRemove: () => notifier.removeFromWishlist(item.id),
+                onAddToCart: () => notifier.addToCart(item),
               );
             },
           ),
@@ -280,11 +278,10 @@ class _WishlistEmptyState extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color:
-                          (isDark
-                                  ? const Color(0xFFFAAD01)
-                                  : const Color(0xFF6E0131))
-                              .withValues(alpha: 0.35),
+                      color: (isDark
+                              ? const Color(0xFFFAAD01)
+                              : const Color(0xFF6E0131))
+                          .withValues(alpha: 0.35),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -321,16 +318,16 @@ class _WishlistEmptyState extends StatelessWidget {
   }
 }
 
-class _RecentTabContent extends StatelessWidget {
-  final WishlistController controller;
-
-  const _RecentTabContent({super.key, required this.controller});
+class _RecentTabContent extends ConsumerWidget {
+  const _RecentTabContent({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(wishlistProvider);
+    final notifier = ref.read(wishlistProvider.notifier);
     final isDark = context.isDark;
 
-    if (controller.recentlyViewed.isEmpty) {
+    if (state.recentlyViewed.isEmpty) {
       return Column(
         key: const ValueKey('recent_empty_column'),
         children: [
@@ -380,12 +377,12 @@ class _RecentTabContent extends StatelessWidget {
               final ratio = w >= AppBreakpoints.compact ? 0.78 : 0.70;
 
               return ProductGridSection(
-                items: controller.recentlyViewed,
+                items: state.recentlyViewed,
                 crossAxisCount: cols,
                 mainAxisSpacing: 14,
                 crossAxisSpacing: 14,
                 childAspectRatio: ratio,
-                onTap: controller.openProduct,
+                onTap: notifier.openProduct,
               );
             },
           ),

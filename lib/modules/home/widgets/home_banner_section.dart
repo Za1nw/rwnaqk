@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:rwnaqk_frontend/modules/home/controllers/home_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/banner_carousel.dart';
 
-class HomeBannerSection extends GetView<HomeController> {
+class HomeBannerSection extends ConsumerWidget {
   const HomeBannerSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      final items = controller.banners.toList();
-      if (items.isEmpty) return const SizedBox.shrink();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(homeContentProvider);
+    final notifier = ref.read(homeContentProvider.notifier);
 
-      return BannerCarousel(
-        items: items,
-        index: controller.bannerIndex.value,
-        onChanged: controller.onBannerChanged,
-      );
-    });
+    if (state.banners.isEmpty) return const SizedBox.shrink();
+
+    return BannerCarousel(
+      items: state.banners,
+      index: state.bannerIndex,
+      onChanged: notifier.onBannerChanged,
+    );
   }
 }

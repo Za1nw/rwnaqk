@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:rwnaqk_frontend/modules/catalog/controllers/products_listing_service.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
+import 'package:rwnaqk_frontend/modules/home/data/models/home_category_item.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 /// عقد المستودع الخاص ببيانات المنتجات والكتالوج.
@@ -14,6 +16,8 @@ abstract class IProductsRepository {
     ListingSort sort = ListingSort.newest,
     double? minPrice,
     double? maxPrice,
+    String? categoryId,
+    String? search,
   });
 
   /// جلب منتج محدد بالمعرف
@@ -24,5 +28,14 @@ abstract class IProductsRepository {
     String productId, {
     dynamic rawReviews,
   });
+
+  /// البحث عن المنتجات مع دعم إلغاء الطلب عبر CancelToken
+  Future<List<HomeProductItem>> searchProducts(
+    String query, {
+    CancelToken? cancelToken,
+  });
+
+  /// جلب قائمة الفئات
+  Future<List<HomeCategoryItem>> getCategories();
 }
 

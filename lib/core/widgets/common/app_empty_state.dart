@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 
 /// حالة فارغة موحّدة للاستخدام في الشاشات التي تعرض نتائج/قوائم.
 class AppEmptyState extends StatelessWidget {

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/network/api_client.dart';
@@ -85,6 +86,9 @@ class OrdersRepositoryImpl implements IOrdersRepository {
   @override
   Future<OrderModel> createOrder(OrderModel order) async {
     if (AppEnv.enableMockData) {
+      if (kReleaseMode) {
+        throw StateError('CRITICAL: Mock order creation is forbidden in release mode.');
+      }
       return _fallback.createOrder(order);
     }
 
@@ -126,6 +130,9 @@ class OrdersRepositoryImpl implements IOrdersRepository {
     String? idempotencyKey,
   }) async {
     if (AppEnv.enableMockData) {
+      if (kReleaseMode) {
+        throw StateError('CRITICAL: Mock checkout operations are forbidden in release mode.');
+      }
       return _fallback.submitCheckout(
         addressId: addressId,
         items: items,
@@ -192,6 +199,9 @@ class OrdersRepositoryImpl implements IOrdersRepository {
   @override
   Future<OrderModel> cancelOrder(String orderId) async {
     if (AppEnv.enableMockData) {
+      if (kReleaseMode) {
+        throw StateError('CRITICAL: Mock order cancellation is forbidden in release mode.');
+      }
       return _fallback.cancelOrder(orderId);
     }
 

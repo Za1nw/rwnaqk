@@ -1,4 +1,4 @@
-import 'package:get/get.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/translations/app_mock_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_category_item.dart';

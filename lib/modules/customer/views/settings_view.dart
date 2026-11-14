@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/di/core_providers.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
-import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/app_settings_controller.dart';
-import 'package:rwnaqk_frontend/modules/customer/controllers/profile_store_service.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/app_confirm_dialog.dart';
+import 'package:rwnaqk_frontend/modules/customer/providers/customer_profile_providers.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/settings/ecommerce_orders_hub.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/settings/ecommerce_wallet_hub.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/settings/language_selection_sheet.dart';
@@ -13,18 +15,65 @@ import 'package:rwnaqk_frontend/modules/customer/widgets/settings/settings_group
 import 'package:rwnaqk_frontend/modules/customer/widgets/settings/settings_list_tile.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/settings/settings_user_header.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/settings/theme_mode_selection_sheet.dart';
-import 'package:rwnaqk_frontend/modules/orders/controllers/orders_controller.dart';
+import 'package:rwnaqk_frontend/modules/orders/providers/orders_providers.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 /// الشاشة الرئيسية لـ "حسابي والإعدادات" وفق أفضل معايير تجربة المستخدم للمتاجر العالمية
-class SettingsScreen extends GetView<AppSettingsController> {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
+  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+    final confirmed = await AppConfirmDialog.show(
+      title: Tk.settingsLogout.tr,
+      message: Tk.settingsLogoutSubtitle.tr,
+      confirmLabel: Tk.settingsLogout.tr,
+      isDestructive: true,
+    );
+    if (confirmed == true) {
+      await ref.read(customerSettingsProvider.notifier).logout();
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
-    final app = Get.find<AppSettingsController>();
-    final profileStore = Get.find<ProfileStoreService>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final customer = ref.watch(currentCustomerProvider);
+    final settings = ref.watch(customerSettingsProvider);
+    final settingsNotifier = ref.read(customerSettingsProvider.notifier);
+    final currentTheme = ref.watch(appThemeModeProvider);
+    final currentLocale = ref.watch(appLocaleProvider);
+    final ordersCount = ref.watch(ordersProvider).orders.length;
+    final twoFactorState = ref.watch(twoFactorSettingsNotifierProvider);
+    final is2FaEnabled = twoFactorState.isEnabled;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final firstName = customer?.firstName?.trim();
+    final fullName = customer?.fullName?.trim();
+    final String displayName = (firstName != null && firstName.isNotEmpty)
+        ? firstName
+        : ((fullName != null && fullName.isNotEmpty)
+            ? fullName.split(RegExp(r'\s+')).first
+            : 'عميل رَوْنَقُك');
+
+    final phone = customer?.phone;
+    final String displayPhone = (phone != null && phone.isNotEmpty)
+        ? phone
+        : '+967 777 000 000';
+
+    String themeBadge;
+    switch (currentTheme) {
+      case ThemeMode.dark:
+        themeBadge = 'داكن';
+        break;
+      case ThemeMode.light:
+        themeBadge = 'فاتح';
+        break;
+      case ThemeMode.system:
+        themeBadge = 'تلقائي';
+        break;
+    }
+
+    final isArabic = currentLocale.languageCode == 'ar';
 
     return Scaffold(
       backgroundColor: context.background,
@@ -38,7 +87,7 @@ class SettingsScreen extends GetView<AppSettingsController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. ترويسة المتجر الراقية لصفحة الحساب (بدون أزرار رجوع دائرية لأنها صفحة رئيسية)
+              // 1. ترويسة المتجر الراقية لصفحة الحساب
               Padding(
                 padding: const EdgeInsets.only(bottom: 14),
                 child: Row(
@@ -74,7 +123,7 @@ class SettingsScreen extends GetView<AppSettingsController> {
                     _TopActionButton(
                       icon: Icons.chat_bubble_outline_rounded,
                       tooltip: 'محادثة الدعم المباشر',
-                      onTap: () => Get.toNamed(AppRoutes.supportChat),
+                      onTap: () => AppNav.toNamed(AppRoutes.supportChat),
                     ),
                     const SizedBox(width: 8),
 
@@ -82,209 +131,264 @@ class SettingsScreen extends GetView<AppSettingsController> {
                     _TopActionButton(
                       icon: Icons.help_outline_rounded,
                       tooltip: Tk.settingsHelpCenter.tr,
-                      onTap: () => Get.toNamed(AppRoutes.helpCenter),
+                      onTap: () => AppNav.toNamed(AppRoutes.helpCenter),
                     ),
                   ],
                 ),
               ),
 
               // 2. بطاقة العضوية الملكية الفاخرة للعميل (Executive VIP Membership Card)
-              Obx(
-                () => SettingsUserHeader(
-                  name: profileStore.displayName,
-                  phone: profileStore.phone,
-                  avatarPath: profileStore.avatarPath.value,
-                  avatarUrl: profileStore.avatarUrl,
-                  onTap: () => Get.toNamed(AppRoutes.profile),
-                  onEdit: () => Get.toNamed(AppRoutes.editProfile),
-                ),
+              SettingsUserHeader(
+                name: displayName,
+                phone: displayPhone,
+                avatarPath: '',
+                avatarUrl: customer?.avatarUrl ?? '',
+                onTap: () => AppNav.toNamed(AppRoutes.profile),
+                onEdit: () => AppNav.toNamed(AppRoutes.editProfile),
               ),
               const SizedBox(height: 16),
 
-              // 3. مركز تتبع ومتابعة الطلبات والشحنات (Orders & Tracking Hub)
-              Obx(() {
-                final ordersCount = Get.isRegistered<OrdersController>()
-                    ? Get.find<OrdersController>().orders.length
-                    : 0;
+              // 3. مركز متابعة الطلبات والشحنات
+              EcommerceOrdersHub(
+                totalOrders: ordersCount,
+                onAllOrders: () => AppNav.toNamed(AppRoutes.orders),
+              ),
+              const SizedBox(height: 16),
 
-                return EcommerceOrdersHub(
-                  totalOrders: ordersCount,
-                  onAllOrders: () => Get.toNamed(AppRoutes.orders),
-                );
-              }),
-              const SizedBox(height: 14),
+              // 4. المحفظة والمكافآت
+              EcommerceWalletHub(
+                walletBalance: '0 ر.ي',
+                activeCouponsCount: '3 كوبونات',
+                loyaltyPoints: '2,450 نقطة',
+                onWalletTap: () {},
+                onCouponsTap: () {},
+                onPointsTap: () {},
+              ),
+              const SizedBox(height: 16),
 
-              // 4. بطاقة المحفظة والكوبونات ونقاط الولاء (Wallet & Rewards Hub)
-              Obx(() {
-                final wallet = AppMoneyUtils.riyal(profileStore.walletBalance);
-
-                return EcommerceWalletHub(
-                  walletBalance: wallet,
-                  activeCouponsCount: '2 قسائم',
-                  loyaltyPoints: '250 نقطة',
-                  onWalletTap: () => Get.toNamed(AppRoutes.profile),
-                  onCouponsTap: () => Get.toNamed(AppRoutes.cart),
-                  onPointsTap: () => Get.toNamed(AppRoutes.profile),
-                );
-              }),
-              const SizedBox(height: 20),
-
-              // 5. مجموعة الحساب وعناوين التوصيل
+              // 5. إدارة الشحن والعناوين والمفضلة
               SettingsGroupCard(
-                title: 'إدارة الحساب والتوصيل',
-                icon: Icons.person_outline_rounded,
+                title: 'تفضيلات التسوق والشحن',
+                icon: Icons.shopping_bag_outlined,
                 children: [
-                  SettingsListTile(
-                    icon: Icons.badge_outlined,
-                    title: 'الملف الشخصي التفصيلي',
-                    subtitle: 'عرض وتعديل معلومات حسابك ورقم هاتفك',
-                    onTap: () => Get.toNamed(AppRoutes.profile),
-                  ),
                   SettingsListTile(
                     icon: Icons.location_on_outlined,
                     title: Tk.settingsAddresses.tr,
-                    subtitle: Tk.settingsAddressesSubtitle.tr,
-                    onTap: () => Get.toNamed(AppRoutes.addresses),
+                    subtitle: 'إدارة وتعديل عناوين التوصيل والاستلام',
+                    onTap: () => AppNav.toNamed(AppRoutes.addresses),
                   ),
                   SettingsListTile(
-                    icon: Icons.favorite_outline_rounded,
-                    title: Tk.navWishlist.tr,
-                    subtitle: 'المنتجات التي قمت بحفظها للإعجاب',
-                    onTap: () => Get.toNamed(AppRoutes.wishlist),
-                  ),
-                  SettingsListTile(
-                    icon: Icons.shield_outlined,
-                    title: 'الأمان والمصادقة الثنائية (2FA)',
-                    subtitle: 'حماية حسابك برمز تحقق إضافي',
-                    onTap: () => Get.toNamed(AppRoutes.profile),
+                    icon: Icons.favorite_border_rounded,
+                    title: Tk.wishlistTitle.tr,
+                    subtitle: 'استعراض قائمة المنتجات المفضلة',
+                    onTap: () => AppNav.toNamed(AppRoutes.wishlist),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              // 6. مجموعة التفضيلات والمظهر (Boutique Preferences)
+              // 6. تفضيلات التطبيق (الثيم، اللغة، الإشعارات)
               SettingsGroupCard(
-                title: Tk.settingsPreferences.tr,
+                title: 'تفضيلات ومظهر التطبيق',
                 icon: Icons.tune_rounded,
                 children: [
-                  // المظهر ووضع العرض (نهاري، ليلي، أو حسب الجهاز)
-                  Obx(() {
-                    final mode = app.themeMode.value;
-                    final modeBadge = mode == ThemeMode.dark
-                        ? 'ليلي'
-                        : (mode == ThemeMode.light ? 'نهاري' : 'تلقائي');
+                  // الإشعارات العامة
+                  SettingsListTile(
+                    icon: Icons.notifications_none_rounded,
+                    title: 'الإشعارات العامة',
+                    subtitle: 'إشعارات العروض الخاصة وحالة الشحنات',
+                    showChevron: false,
+                    trailing: Switch.adaptive(
+                      value: settings.notificationsEnabled,
+                      activeTrackColor: isDark
+                          ? BrandColors.gold
+                          : BrandColors.burgundy,
+                      onChanged: settingsNotifier.toggleNotifications,
+                    ),
+                  ),
 
-                    return SettingsListTile(
-                      icon: app.themeModeIcon,
-                      title: 'المظهر ووضع العرض',
-                      subtitle: app.themeModeLabel,
-                      onTap: () => ThemeModeSelectionSheet.show(context),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
+                  // مظهر التطبيق (ثيم)
+                  SettingsListTile(
+                    icon: currentTheme == ThemeMode.dark
+                        ? Icons.dark_mode_outlined
+                        : (currentTheme == ThemeMode.light
+                            ? Icons.light_mode_outlined
+                            : Icons.brightness_auto_outlined),
+                    title: Tk.settingsDarkMode.tr,
+                    subtitle: currentTheme == ThemeMode.dark
+                        ? 'الوضع الليلي (داكن)'
+                        : (currentTheme == ThemeMode.light
+                            ? 'الوضع النهاري (فاتح)'
+                            : 'تلقائي (حسب الجهاز)'),
+                    onTap: () => ThemeModeSelectionSheet.show(context),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (isDark ? BrandColors.gold : BrandColors.burgundy)
+                            .withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: (isDark
+                                  ? BrandColors.gold
+                                  : BrandColors.burgundy)
+                              .withValues(alpha: 0.30),
+                          width: 1,
                         ),
-                        decoration: BoxDecoration(
-                          color:
-                              (isDark ? BrandColors.gold : BrandColors.burgundy)
-                                  .withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color:
-                                (isDark
-                                        ? BrandColors.gold
-                                        : BrandColors.burgundy)
-                                    .withValues(alpha: 0.30),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              modeBadge,
-                              style: AppTextTheme.cairo(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w800,
-                                color: isDark
-                                    ? BrandColors.gold
-                                    : BrandColors.burgundy,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.chevron_left_rounded,
-                              size: 16,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            themeBadge,
+                            style: AppTextTheme.cairo(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
                               color: isDark
                                   ? BrandColors.gold
                                   : BrandColors.burgundy,
                             ),
-                          ],
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.chevron_left_rounded,
+                            size: 16,
+                            color: isDark
+                                ? BrandColors.gold
+                                : BrandColors.burgundy,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // لغة التطبيق
+                  SettingsListTile(
+                    icon: Icons.language_rounded,
+                    title: Tk.settingsLanguage.tr,
+                    subtitle: isArabic
+                        ? 'العربية (اليمن)'
+                        : 'English (International)',
+                    onTap: () => LanguageSelectionSheet.show(context),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (isDark ? BrandColors.gold : BrandColors.burgundy)
+                            .withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: (isDark
+                                  ? BrandColors.gold
+                                  : BrandColors.burgundy)
+                              .withValues(alpha: 0.30),
+                          width: 1,
                         ),
                       ),
-                    );
-                  }),
-
-                  // لغة التطبيق مع ورقة الاختيار الملكية
-                  Obx(() {
-                    final isArabic = app.locale.value.languageCode == 'ar';
-                    return SettingsListTile(
-                      icon: Icons.language_rounded,
-                      title: Tk.settingsLanguage.tr,
-                      subtitle: isArabic
-                          ? 'العربية (اليمن)'
-                          : 'English (International)',
-                      onTap: () => LanguageSelectionSheet.show(context),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color:
-                              (isDark ? BrandColors.gold : BrandColors.burgundy)
-                                  .withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color:
-                                (isDark
-                                        ? BrandColors.gold
-                                        : BrandColors.burgundy)
-                                    .withValues(alpha: 0.30),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              isArabic ? 'العربية' : 'English',
-                              style: AppTextTheme.cairo(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w800,
-                                color: isDark
-                                    ? BrandColors.gold
-                                    : BrandColors.burgundy,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              Icons.chevron_left_rounded,
-                              size: 16,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            isArabic ? 'العربية' : 'English',
+                            style: AppTextTheme.cairo(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
                               color: isDark
                                   ? BrandColors.gold
                                   : BrandColors.burgundy,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.chevron_left_rounded,
+                            size: 16,
+                            color: isDark
+                                ? BrandColors.gold
+                                : BrandColors.burgundy,
+                          ),
+                        ],
                       ),
-                    );
-                  }),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              // 7. مجموعة الدعم والخدمات
+              // 7. قسم الأمان وحماية الحساب
+              SettingsGroupCard(
+                title: 'الأمان وحماية الحساب',
+                icon: Icons.shield_outlined,
+                children: [
+                  SettingsListTile(
+                    icon: Icons.lock_outline_rounded,
+                    title: 'كلمة المرور والأمان',
+                    subtitle: 'تغيير كلمة المرور وإدارة الجلسات والأجهزة النشطة',
+                    onTap: () => AppNav.toNamed(AppRoutes.passwordAndSecurity),
+                  ),
+                  SettingsListTile(
+                    icon: Icons.fingerprint_rounded,
+                    title: 'المصادقة الثنائية ومفاتيح المرور',
+                    subtitle: is2FaEnabled
+                        ? 'المصادقة الثنائية ومفاتيح المرور مفعلة بحسابك'
+                        : 'تأمين الحساب برمز التحقق وتطبيق المصادقة وبصمة الإصبع أو قفل الهاتف',
+                    onTap: () => AppNav.toNamed(AppRoutes.twoFactorAndPasskeys),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (is2FaEnabled
+                                ? const Color(0xFF10B981)
+                                : BrandColors.gold)
+                            .withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: (is2FaEnabled
+                                  ? const Color(0xFF10B981)
+                                  : BrandColors.gold)
+                              .withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            is2FaEnabled ? 'مفعلة' : 'إعداد',
+                            style: AppTextTheme.cairo(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: is2FaEnabled
+                                  ? const Color(0xFF10B981)
+                                  : (isDark
+                                      ? BrandColors.gold
+                                      : BrandColors.burgundy),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.chevron_left_rounded,
+                            size: 16,
+                            color: is2FaEnabled
+                                ? const Color(0xFF10B981)
+                                : (isDark
+                                    ? BrandColors.gold
+                                    : BrandColors.burgundy),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // 8. مجموعة الدعم والخدمات
               SettingsGroupCard(
                 title: Tk.settingsSupport.tr,
                 icon: Icons.support_agent_outlined,
@@ -293,13 +397,13 @@ class SettingsScreen extends GetView<AppSettingsController> {
                     icon: Icons.headset_mic_outlined,
                     title: 'تواصل معنا والمحادثة المباشرة',
                     subtitle: 'فريق رَوْنَقُك جاهز لمساعدتك دائماً',
-                    onTap: () => Get.toNamed(AppRoutes.supportChat),
+                    onTap: () => AppNav.toNamed(AppRoutes.supportChat),
                   ),
                   SettingsListTile(
                     icon: Icons.help_outline_rounded,
                     title: Tk.settingsHelpCenter.tr,
                     subtitle: Tk.settingsHelpCenterSubtitle.tr,
-                    onTap: () => Get.toNamed(AppRoutes.helpCenter),
+                    onTap: () => AppNav.toNamed(AppRoutes.helpCenter),
                   ),
                 ],
               ),
@@ -323,7 +427,7 @@ class SettingsScreen extends GetView<AppSettingsController> {
                           : const Color(0xFFB42318),
                       size: 20,
                     ),
-                    onTap: controller.confirmLogout,
+                    onTap: () => _confirmLogout(context, ref),
                   ),
                 ],
               ),
@@ -418,3 +522,4 @@ class _TopActionButton extends StatelessWidget {
     );
   }
 }
+

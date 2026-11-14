@@ -1,5 +1,17 @@
-import 'package:get/get.dart';
+import 'package:dio/dio.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
+
+class CustomerAuthApiResponse<T> {
+  const CustomerAuthApiResponse({
+    required this.statusCode,
+    required this.isOk,
+    this.body,
+  });
+
+  final int? statusCode;
+  final bool isOk;
+  final T? body;
+}
 
 class AuthApiException implements Exception {
   const AuthApiException({
@@ -10,7 +22,7 @@ class AuthApiException implements Exception {
   });
 
   factory AuthApiException.fromResponse(
-    Response<dynamic> response, {
+    CustomerAuthApiResponse<dynamic> response, {
     String? fallbackMessage,
   }) {
     return AuthApiException(
@@ -37,24 +49,26 @@ class AuthApiException implements Exception {
   }
 }
 
-class CustomerAuthApiService extends GetConnect {
-  static String get _defaultBaseUrl => AppEnv.apiBaseUrl;
+class CustomerAuthApiService {
+  CustomerAuthApiService({Dio? dio})
+      : _dio = dio ??
+            Dio(
+              BaseOptions(
+                baseUrl: AppEnv.apiBaseUrl,
+                connectTimeout:
+                    Duration(seconds: AppEnv.apiTimeoutSeconds),
+                receiveTimeout:
+                    Duration(seconds: AppEnv.apiTimeoutSeconds),
+                headers: const {'Accept': 'application/json'},
+                validateStatus: (status) => true,
+              ),
+            );
+
+  final Dio _dio;
 
   static String get _apiPrefix => AppEnv.customerAuthPrefix;
 
-  @override
-  void onInit() {
-    super.onInit();
-    httpClient.baseUrl = _defaultBaseUrl;
-    httpClient.timeout = Duration(seconds: AppEnv.apiTimeoutSeconds);
-    httpClient.defaultContentType = 'application/json';
-    httpClient.addRequestModifier<dynamic>((request) {
-      request.headers['Accept'] = 'application/json';
-      return request;
-    });
-  }
-
-  Future<Response<dynamic>> register({
+  Future<CustomerAuthApiResponse<dynamic>> register({
     required String firstName,
     required String lastName,
     required String phone,
@@ -65,208 +79,236 @@ class CustomerAuthApiService extends GetConnect {
     required String passwordConfirmation,
     required bool termsAccepted,
     required bool privacyPolicyAccepted,
-    String deviceName = 'rwnaqk-mobile',
-  }) {
-    
-    return post('$_apiPrefix/register', <String, dynamic>{
-      'first_name': firstName,
-      'last_name': lastName,
-      'mobile': phone,
-      'email': email,
-      'country': country,
-      'governorate': governorate,
-      'password': password,
-      'password_confirmation': passwordConfirmation,
-      'terms_accepted': termsAccepted,
-      'privacy_policy_accepted': privacyPolicyAccepted,
-      'device_name': deviceName,
-    });
+    String? deviceName,
+  }) async {
+    final response = await _dio.post<dynamic>(
+      '$_apiPrefix/register',
+      data: <String, dynamic>{
+        'first_name': firstName.trim(),
+        'last_name': lastName.trim(),
+        'phone': phone.trim(),
+        'email': email.trim().toLowerCase(),
+        'country': country.trim(),
+        'governorate': governorate.trim(),
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+        'terms_accepted': termsAccepted,
+        'privacy_policy_accepted': privacyPolicyAccepted,
+        'device_name': deviceName ?? 'rwnaqk-mobile',
+      },
+    );
+
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> login({
+  Future<CustomerAuthApiResponse<dynamic>> login({
     required String email,
     required String password,
     String? code,
     String? recoveryCode,
-    String deviceName = 'rwnaqk-mobile',
-  }) {
-    return post(
+    String? deviceName,
+  }) async {
+    final response = await _dio.post<dynamic>(
       '$_apiPrefix/login',
-      <String, dynamic>{
-        'email': email,
+      data: <String, dynamic>{
+        'email': email.trim().toLowerCase(),
         'password': password,
-        'code': code,
-        'recovery_code': recoveryCode,
-        'device_name': deviceName,
-      }..removeWhere((key, value) => value == null || value == ''),
+        'code': ?code,
+        'recovery_code': ?recoveryCode,
+        'device_name': deviceName ?? 'rwnaqk-mobile',
+      },
     );
+
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> forgotPassword({required String email}) {
-    return post('$_apiPrefix/forgot-password', <String, dynamic>{
-      'email': email,
-    });
+  Future<CustomerAuthApiResponse<dynamic>> forgotPassword({required String email}) async {
+    final response = await _dio.post<dynamic>(
+      '$_apiPrefix/forgot-password',
+      data: <String, dynamic>{'email': email.trim().toLowerCase()},
+    );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> resetPassword({
-    required String token,
+  Future<CustomerAuthApiResponse<dynamic>> resetPassword({
     required String email,
+    required String token,
     required String password,
-  }) {
-    return post('$_apiPrefix/reset-password', <String, dynamic>{
-      'token': token,
-      'email': email,
-      'password': password,
-      'password_confirmation': password,
-    });
+    required String passwordConfirmation,
+  }) async {
+    final response = await _dio.post<dynamic>(
+      '$_apiPrefix/reset-password',
+      data: <String, dynamic>{
+        'email': email.trim().toLowerCase(),
+        'token': token.trim(),
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      },
+    );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> me({required String token}) {
-    return get('$_apiPrefix/me', headers: _authHeaders(token));
+  Future<CustomerAuthApiResponse<dynamic>> me({required String token}) async {
+    final response = await _dio.get<dynamic>('$_apiPrefix/me', options: _authOptions(token));
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> logout({required String token}) {
-    return post(
+  Future<CustomerAuthApiResponse<dynamic>> logout({required String token}) async {
+    final response = await _dio.post<dynamic>(
       '$_apiPrefix/logout',
-      const <String, dynamic>{},
-      headers: _authHeaders(token),
+      data: const <String, dynamic>{},
+      options: _authOptions(token),
     );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> sendEmailVerification({required String token}) {
-    return post(
+  Future<CustomerAuthApiResponse<dynamic>> sendEmailVerification({required String token}) async {
+    final response = await _dio.post<dynamic>(
       '$_apiPrefix/email/verification-notification',
-      const <String, dynamic>{},
-      headers: _authHeaders(token),
+      data: const <String, dynamic>{},
+      options: _authOptions(token),
     );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> sendEmailVerificationCode({required String token}) {
-    return post(
-      '$_apiPrefix/email/verification-code',
-      const <String, dynamic>{},
-      headers: _authHeaders(token),
+  Future<CustomerAuthApiResponse<dynamic>> sendEmailVerificationCode({
+    required String token,
+  }) async {
+    final response = await _dio.post<dynamic>(
+      '$_apiPrefix/email/verification-code/send',
+      data: const <String, dynamic>{},
+      options: _authOptions(token),
     );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> verifyEmailVerificationCode({
+  Future<CustomerAuthApiResponse<dynamic>> verifyEmailVerificationCode({
     required String token,
     required String code,
-  }) {
-    return post('$_apiPrefix/email/verify-code', <String, dynamic>{
-      'code': code,
-    }, headers: _authHeaders(token));
+  }) async {
+    final response = await _dio.post<dynamic>(
+      '$_apiPrefix/email/verification-code/verify',
+      data: <String, dynamic>{'code': code.trim()},
+      options: _authOptions(token),
+    );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> twoFactorStatus({required String token}) {
-    return get('$_apiPrefix/two-factor-status', headers: _authHeaders(token));
+  Future<CustomerAuthApiResponse<dynamic>> twoFactorStatus({required String token}) async {
+    final response = await _dio.get<dynamic>(
+      '$_apiPrefix/two-factor-status',
+      options: _authOptions(token),
+    );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> enableTwoFactor({required String token}) {
-    return post(
+  Future<CustomerAuthApiResponse<dynamic>> enableTwoFactor({required String token}) async {
+    final response = await _dio.post<dynamic>(
       '$_apiPrefix/two-factor-authentication',
-      const <String, dynamic>{},
-      headers: _authHeaders(token),
+      data: const <String, dynamic>{},
+      options: _authOptions(token),
     );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> confirmTwoFactor({
+  Future<CustomerAuthApiResponse<dynamic>> confirmTwoFactor({
     required String token,
     required String code,
-  }) {
-    return post(
+  }) async {
+    final response = await _dio.post<dynamic>(
       '$_apiPrefix/two-factor-authentication/confirm',
-      <String, dynamic>{'code': code},
-      headers: _authHeaders(token),
+      data: <String, dynamic>{'code': code},
+      options: _authOptions(token),
     );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> disableTwoFactor({required String token}) {
-    return delete(
+  Future<CustomerAuthApiResponse<dynamic>> disableTwoFactor({required String token}) async {
+    final response = await _dio.delete<dynamic>(
       '$_apiPrefix/two-factor-authentication',
-      headers: _authHeaders(token),
+      options: _authOptions(token),
     );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> twoFactorRecoveryCodes({required String token}) {
-    return get(
+  Future<CustomerAuthApiResponse<dynamic>> twoFactorRecoveryCodes({required String token}) async {
+    final response = await _dio.get<dynamic>(
       '$_apiPrefix/two-factor-recovery-codes',
-      headers: _authHeaders(token),
+      options: _authOptions(token),
     );
+    return _wrapResponse(response);
   }
 
-  Future<Response<dynamic>> regenerateTwoFactorRecoveryCodes({
+  Future<CustomerAuthApiResponse<dynamic>> regenerateTwoFactorRecoveryCodes({
     required String token,
-  }) {
-    return post(
+  }) async {
+    final response = await _dio.post<dynamic>(
       '$_apiPrefix/two-factor-recovery-codes',
-      const <String, dynamic>{},
-      headers: _authHeaders(token),
+      data: const <String, dynamic>{},
+      options: _authOptions(token),
+    );
+    return _wrapResponse(response);
+  }
+
+  Options _authOptions(String token) {
+    return Options(
+      headers: <String, String>{
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
     );
   }
 
-  Map<String, String> _authHeaders(String token) {
-    return <String, String>{
-      'Authorization': 'Bearer $token',
-      'Accept': 'application/json',
-    };
+  CustomerAuthApiResponse<dynamic> _wrapResponse(Response<dynamic> response) {
+    final sc = response.statusCode ?? 500;
+    return CustomerAuthApiResponse<dynamic>(
+      statusCode: sc,
+      isOk: sc >= 200 && sc < 300,
+      body: response.data,
+    );
   }
 
-  static String? parseErrorMessage(Response<dynamic> response) {
+  static String? parseErrorMessage(CustomerAuthApiResponse<dynamic> response) {
     final body = response.body;
 
     if (body is Map<String, dynamic>) {
       final message = body['message'];
-
       if (message is String && message.trim().isNotEmpty) {
-        return message;
-      }
-
-      final errors = body['errors'];
-
-      if (errors is Map<String, dynamic>) {
-        for (final value in errors.values) {
-          if (value is List && value.isNotEmpty && value.first is String) {
-            return (value.first as String).trim();
-          }
-        }
+        return message.trim();
       }
     }
 
-    if (response.statusText != null && response.statusText!.trim().isNotEmpty) {
-      return response.statusText!.trim();
+    if (body is String && body.trim().isNotEmpty) {
+      return body.trim();
     }
 
     return null;
   }
 
   static Map<String, List<String>> parseValidationErrors(
-    Response<dynamic> response,
+    CustomerAuthApiResponse<dynamic> response,
   ) {
     final body = response.body;
-    final result = <String, List<String>>{};
-
     if (body is! Map<String, dynamic>) {
-      return result;
+      return const <String, List<String>>{};
     }
 
-    final errors = body['errors'];
-
-    if (errors is! Map<String, dynamic>) {
-      return result;
+    final rawErrors = body['errors'];
+    if (rawErrors is! Map) {
+      return const <String, List<String>>{};
     }
 
-    for (final entry in errors.entries) {
-      final value = entry.value;
+    final parsed = <String, List<String>>{};
+
+    rawErrors.forEach((key, value) {
       if (value is List) {
-        result[entry.key] = value
-            .whereType<String>()
-            .map((item) => item.trim())
-            .where((item) => item.isNotEmpty)
-            .toList(growable: false);
+        parsed[key.toString()] =
+            value.map((item) => item.toString()).toList(growable: false);
+      } else if (value != null) {
+        parsed[key.toString()] = <String>[value.toString()];
       }
-    }
+    });
 
-    return result;
+    return parsed;
   }
 }

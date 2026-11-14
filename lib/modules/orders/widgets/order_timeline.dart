@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/utils/app_date_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_order_utils.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';

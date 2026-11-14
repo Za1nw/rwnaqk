@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 
 /// ويدجت الصورة الشخصية القابلة للتعديل والرفع
@@ -149,8 +150,24 @@ class EditableAvatarBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasFile = avatarPath.trim().isNotEmpty;
-    final hasUrl = avatarUrl.trim().isNotEmpty;
-    final initial = name.trim().isEmpty ? 'ر' : name.trim().characters.first;
+    var safeUrl = avatarUrl.trim();
+    if (safeUrl.contains('format=svg')) {
+      safeUrl = safeUrl.replaceAll('format=svg', 'format=png');
+    }
+    if (AppEnv.apiBaseUrl.contains('10.0.2.2')) {
+      safeUrl = safeUrl
+          .replaceFirst('http://localhost:8000', 'http://10.0.2.2:8000')
+          .replaceFirst('http://127.0.0.1:8000', 'http://10.0.2.2:8000');
+    }
+    final isSvg = safeUrl.toLowerCase().endsWith('.svg');
+    final isUiAvatar = safeUrl.contains('ui-avatars.com');
+    final hasRealNetworkImage = safeUrl.isNotEmpty && !isSvg && !isUiAvatar;
+
+    final trimmedName = name.trim();
+    final firstWord = trimmedName.split(RegExp(r'\s+')).first;
+    final initial = firstWord.runes.isNotEmpty
+        ? String.fromCharCode(firstWord.runes.first).toUpperCase()
+        : 'ر';
 
     return Center(
       child: GestureDetector(
@@ -177,9 +194,8 @@ class EditableAvatarBadge extends StatelessWidget {
                 padding: const EdgeInsets.all(3.0),
                 child: ClipOval(
                   child: Container(
-                    color: isDark
-                        ? const Color(0xFF1E0A17)
-                        : const Color(0xFFF2EAEF),
+                    color: const Color(0xFF560026),
+                    alignment: Alignment.center,
                     child: isUploading
                         ? const Center(
                             child: SizedBox(
@@ -197,13 +213,17 @@ class EditableAvatarBadge extends StatelessWidget {
                         ? Image.file(
                             File(avatarPath),
                             fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
                             errorBuilder: (_, _, _) =>
                                 _InitialText(initial: initial),
                           )
-                        : hasUrl
+                        : hasRealNetworkImage
                         ? Image.network(
-                            avatarUrl,
+                            safeUrl,
                             fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
                             errorBuilder: (_, _, _) =>
                                 _InitialText(initial: initial),
                           )
@@ -263,9 +283,10 @@ class _InitialText extends StatelessWidget {
       child: Text(
         initial,
         style: AppTextTheme.cairo(
-          fontSize: 34,
+          fontSize: 38,
           fontWeight: FontWeight.w900,
-          color: BrandColors.burgundy,
+          color: BrandColors.gold,
+          height: 1.1,
         ),
       ),
     );

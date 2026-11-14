@@ -44,6 +44,8 @@ class AppMoneyUtils {
     return str.replaceAllMapped(reg, (m) => '${m[1]},');
   }
 
+  static String formatCurrency(num value) => riyal(value);
+
   static String riyal(num value) {
     return '${commaFormat(value)} ر.ي';
   }
