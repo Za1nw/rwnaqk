@@ -46,12 +46,14 @@ class ProductCard extends ConsumerWidget {
     return LayoutBuilder(
       builder: (context, c) {
         final w = c.maxWidth;
+        final isBounded = c.hasBoundedHeight;
 
-        final titleSize = w < 165 ? 12.5 : 13.5;
-        final brandSize = w < 165 ? 10.0 : 11.0;
-        final priceSize = w < 165 ? 13.0 : 14.0;
-        final oldPriceSize = w < 165 ? 10.0 : 10.5;
+        final titleSize = w < 165 ? 12.0 : 13.0;
+        final brandSize = w < 165 ? 9.5 : 10.5;
+        final priceSize = w < 165 ? 12.5 : 13.5;
+        final oldPriceSize = w < 165 ? 9.5 : 10.0;
         final cardPadding = w < 165 ? 8.0 : 10.0;
+        final titleMaxLines = w < 155 ? 2 : 3;
 
         return Material(
           color: Colors.transparent,
@@ -59,6 +61,7 @@ class ProductCard extends ConsumerWidget {
             borderRadius: BorderRadius.circular(radius),
             onTap: () => onTap(item),
             child: Container(
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: context.isDark
                     ? const Color(0xFF24111F)
@@ -91,111 +94,255 @@ class ProductCard extends ConsumerWidget {
                   ),
 
                   // 2. Info Section (Brand, Title, Price, Add to Cart)
-                  Padding(
-                    padding: EdgeInsets.all(cardPadding),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Brand Name (Direction-Safe start aligned)
-                        if (brandName.isNotEmpty) ...[
+                  if (isBounded)
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          cardPadding,
+                          6,
+                          cardPadding,
+                          8,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Brand Name (Direction-Safe start aligned)
+                            if (brandName.isNotEmpty) ...[
+                              Text(
+                                brandName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: context.isDark
+                                      ? BrandColors.gold
+                                      : BrandColors.burgundy,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: brandSize,
+                                  fontFamily: 'Cairo',
+                                  letterSpacing: 0.2,
+                                  height: 1.1,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                            ],
+
+                            // Product Title (Flexibly fills the middle space without overflowing)
+                            Expanded(
+                              child: Text(
+                                item.title.tr,
+                                maxLines: titleMaxLines,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: context.isDark
+                                      ? Colors.white
+                                      : const Color(0xFF1E0A17),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: titleSize,
+                                  fontFamily: 'Cairo',
+                                  height: 1.25,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 4),
+
+                            // Price & Action Button Row (Pinned at bottom)
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                // Prices Column
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Discounted / Current Price
+                                      Text(
+                                        AppMoneyUtils.formatCurrency(
+                                          discountedPrice,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: context.isDark
+                                              ? const Color(0xFFFAAD01)
+                                              : const Color(0xFF6E0131),
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: priceSize,
+                                          fontFamily: 'Cairo',
+                                          height: 1.1,
+                                        ),
+                                      ),
+
+                                      // Original Price (if discounted)
+                                      if (hasDiscount) ...[
+                                        const SizedBox(height: 1),
+                                        Text(
+                                          AppMoneyUtils.formatCurrency(
+                                            originalPrice,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: context.isDark
+                                                ? Colors.white38
+                                                : const Color(0xFF9E8E98),
+                                            decoration:
+                                                TextDecoration.lineThrough,
+                                            fontSize: oldPriceSize,
+                                            fontWeight: FontWeight.w600,
+                                            fontFamily: 'Cairo',
+                                            height: 1.1,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+
+                                // Add To Cart Quick Action
+                                if (showAddToCart)
+                                  AppActionIconButton(
+                                    icon: Icons.add_shopping_cart_rounded,
+                                    onTap: () => _addToCart(context, ref),
+                                    size: 30,
+                                    iconSize: 15,
+                                    backgroundColor: context.isDark
+                                        ? BrandColors.gold
+                                        : BrandColors.burgundy,
+                                    iconColor: context.isDark
+                                        ? const Color(0xFF1E0A17)
+                                        : Colors.white,
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        cardPadding,
+                        6,
+                        cardPadding,
+                        8,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Brand Name (Direction-Safe start aligned)
+                          if (brandName.isNotEmpty) ...[
+                            Text(
+                              brandName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: context.isDark
+                                    ? BrandColors.gold
+                                    : BrandColors.burgundy,
+                                fontWeight: FontWeight.w700,
+                                fontSize: brandSize,
+                                fontFamily: 'Cairo',
+                                letterSpacing: 0.2,
+                                height: 1.1,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                          ],
+
+                          // Product Title
                           Text(
-                            brandName,
-                            maxLines: 1,
+                            item.title.tr,
+                            maxLines: titleMaxLines,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: context.isDark
-                                  ? BrandColors.gold
-                                  : BrandColors.burgundy,
-                              fontWeight: FontWeight.w700,
-                              fontSize: brandSize,
+                                  ? Colors.white
+                                  : const Color(0xFF1E0A17),
+                              fontWeight: FontWeight.w800,
+                              fontSize: titleSize,
                               fontFamily: 'Cairo',
-                              letterSpacing: 0.2,
+                              height: 1.25,
                             ),
                           ),
-                          const SizedBox(height: 2),
-                        ],
 
-                        // Product Title
-                        Text(
-                          item.title.tr,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: context.isDark
-                                ? Colors.white
-                                : const Color(0xFF1E0A17),
-                            fontWeight: FontWeight.w800,
-                            fontSize: titleSize,
-                            fontFamily: 'Cairo',
-                            height: 1.25,
-                          ),
-                        ),
+                          const SizedBox(height: 6),
 
-                        const SizedBox(height: 8),
-
-                        // Price & Action Button Row
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            // Prices Column
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Discounted / Current Price
-                                  Text(
-                                    AppMoneyUtils.formatCurrency(
-                                      discountedPrice,
-                                    ),
-                                    style: TextStyle(
-                                      color: context.isDark
-                                          ? const Color(0xFFFAAD01)
-                                          : const Color(0xFF6E0131),
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: priceSize,
-                                      fontFamily: 'Cairo',
-                                    ),
-                                  ),
-
-                                  // Original Price (if discounted)
-                                  if (hasDiscount)
+                          // Price & Action Button Row
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              // Prices Column
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Discounted / Current Price
                                     Text(
                                       AppMoneyUtils.formatCurrency(
-                                        originalPrice,
+                                        discountedPrice,
                                       ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         color: context.isDark
-                                            ? Colors.white38
-                                            : const Color(0xFF9E8E98),
-                                        decoration: TextDecoration.lineThrough,
-                                        fontSize: oldPriceSize,
-                                        fontWeight: FontWeight.w600,
+                                            ? const Color(0xFFFAAD01)
+                                            : const Color(0xFF6E0131),
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: priceSize,
                                         fontFamily: 'Cairo',
+                                        height: 1.1,
                                       ),
                                     ),
-                                ],
-                              ),
-                            ),
 
-                            // Add To Cart Quick Action
-                            if (showAddToCart)
-                              AppActionIconButton(
-                                icon: Icons.add_shopping_cart_rounded,
-                                onTap: () => _addToCart(context, ref),
-                                size: 32,
-                                iconSize: 16,
-                                backgroundColor: context.isDark
-                                    ? BrandColors.gold
-                                    : BrandColors.burgundy,
-                                iconColor: context.isDark
-                                    ? const Color(0xFF1E0A17)
-                                    : Colors.white,
+                                    // Original Price (if discounted)
+                                    if (hasDiscount) ...[
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        AppMoneyUtils.formatCurrency(
+                                          originalPrice,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: context.isDark
+                                              ? Colors.white38
+                                              : const Color(0xFF9E8E98),
+                                          decoration:
+                                              TextDecoration.lineThrough,
+                                          fontSize: oldPriceSize,
+                                          fontWeight: FontWeight.w600,
+                                          fontFamily: 'Cairo',
+                                          height: 1.1,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
                               ),
-                          ],
-                        ),
-                      ],
+
+                              // Add To Cart Quick Action
+                              if (showAddToCart)
+                                AppActionIconButton(
+                                  icon: Icons.add_shopping_cart_rounded,
+                                  onTap: () => _addToCart(context, ref),
+                                  size: 30,
+                                  iconSize: 15,
+                                  backgroundColor: context.isDark
+                                      ? BrandColors.gold
+                                      : BrandColors.burgundy,
+                                  iconColor: context.isDark
+                                      ? const Color(0xFF1E0A17)
+                                      : Colors.white,
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

@@ -7,6 +7,7 @@ abstract class AppRoutes {
   static const forgot = '/forgot';
   static const otp = '/otp';
   static const reset = '/reset';
+  static const banned = '/banned';
   static const home = '/home';
   static const search = '/Search';
   static const searchResults = '/searchResults';
@@ -19,6 +20,8 @@ abstract class AppRoutes {
   static const payment = '/payment';
   static const settings = '/settings';
   static const profile = '/profile';
+  static const passwordAndSecurity = '/password-and-security';
+  static const twoFactorAndPasskeys = '/two-factor-and-passkeys';
   static const helpCenter = '/help-center';
   static const supportChat = '/support-chat';
   static const editProfile = '/edit-profile';

@@ -7,9 +7,7 @@ import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/customer/providers/customer_profile_providers.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/profile/profile_info_tile.dart';
-import 'package:rwnaqk_frontend/modules/customer/widgets/profile/profile_membership_banner.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/profile/profile_stats_strip.dart';
-import 'package:rwnaqk_frontend/modules/customer/widgets/profile/profile_two_factor_card.dart';
 import 'package:rwnaqk_frontend/modules/customer/widgets/settings/settings_user_header.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
@@ -54,7 +52,7 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          'إدارة معلوماتك الشخصية وعضويتك الفاخرة',
+                          'إدارة معلوماتك الشخصية وتفاصيل حسابك',
                           style: AppTextTheme.cairo(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -85,7 +83,7 @@ class ProfileScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // بطاقة العضوية والاسم
+                    // بطاقة المستخدم والاسم
                     SettingsUserHeader(
                       name: data.name,
                       phone: data.phone,
@@ -93,13 +91,6 @@ class ProfileScreen extends ConsumerWidget {
                       avatarUrl: data.avatarUrl,
                       onTap: () {},
                       onEdit: () => AppNav.toNamed(AppRoutes.editProfile),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // بنر نادي رونق VIP
-                    ProfileMembershipBanner(
-                      tierName: data.membershipTier,
-                      discountText: data.membershipPerk,
                     ),
                     const SizedBox(height: 14),
 
@@ -137,39 +128,6 @@ class ProfileScreen extends ConsumerWidget {
 
                     // قائمة البيانات الشخصية بطريقة ديناميكية آمنة
                     ...data.infoItems.map((item) => ProfileInfoTile(item: item)),
-
-                    const SizedBox(height: 16),
-
-                    // عنوان قسم الأمان والحماية
-                    Row(
-                      children: [
-                        Container(
-                          width: 3.5,
-                          height: 15,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? BrandColors.gold
-                                : BrandColors.burgundy,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'الأمان والخصوصية',
-                          style: AppTextTheme.cairo(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                            color: isDark
-                                ? Colors.white
-                                : AppColors.textPrimaryLight,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // بطاقة المصادقة الثنائية
-                    const ProfileTwoFactorCard(),
                   ],
                 ),
               ),

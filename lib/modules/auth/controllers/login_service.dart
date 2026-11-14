@@ -7,6 +7,7 @@ class LoginResult {
     required this.isSuccess,
     required this.requiresTwoFactor,
     required this.requiresEmailVerification,
+    this.isBanned = false,
     this.message,
     this.token,
     this.customer,
@@ -15,6 +16,7 @@ class LoginResult {
   final bool isSuccess;
   final bool requiresTwoFactor;
   final bool requiresEmailVerification;
+  final bool isBanned;
   final String? message;
   final String? token;
   final CustomerModel? customer;
@@ -38,6 +40,14 @@ class LoginService {
       code: code,
       recoveryCode: recoveryCode,
     );
+
+    if (result.isBanned || result.customer?.isBanned == true) {
+      _session.markAsBanned(
+        customerPayload: result.customer,
+        reason: result.message,
+      );
+      return result;
+    }
 
     if (result.isSuccess) {
       CustomerModel? customer = result.customer;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -9,7 +10,6 @@ import 'core/constants/local_storage_keys.dart';
 import 'core/di/core_providers.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/routing/app_nav.dart';
-import 'core/services/auth/auth_token_storage.dart';
 import 'core/theme/dark_theme.dart';
 import 'core/theme/light_theme.dart';
 import 'modules/customer/providers/customer_profile_providers.dart';
@@ -28,13 +28,11 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final hasSeenOnboarding =
       prefs.getBool(LocalStorageKeys.onboardingSeen) ?? false;
-  final tokenStorage = SecureAuthTokenStorage();
-  final persistedToken = await tokenStorage.readToken();
+  final hasSavedSession = prefs.getBool('has_auth_session') ?? false;
 
-  final initialRoute = _resolveInitialRoute(
-    hasSeenOnboarding: hasSeenOnboarding,
-    persistedToken: persistedToken,
-  );
+  final initialRoute = !hasSeenOnboarding
+      ? AppRoutes.onboarding
+      : (hasSavedSession ? AppRoutes.main : AppRoutes.login);
 
   final container = ProviderContainer(
     overrides: [
@@ -43,11 +41,14 @@ Future<void> main() async {
   );
   globalProviderContainer = container;
 
-  // Bootstrap authentication session natively in Riverpod
-  await container.read(authSessionProvider.notifier).bootstrapSession(
-        initialToken: persistedToken,
-      );
+  // تهيئة فورية لحالة الجلسة في الذاكرة لتفادي استدعاء KeyStore وحظر الإقلاع
+  if (hasSavedSession) {
+    container
+        .read(authSessionProvider.notifier)
+        .primeSession(token: 'cached_session');
+  }
 
+  // 1. إطلاق واجهة التطبيق فوراً لإنهاء شاشة الشعار (Splash) فوراً دون أي حظر
   runApp(
     UncontrolledProviderScope(
       container: container,
@@ -56,18 +57,11 @@ Future<void> main() async {
       ),
     ),
   );
-}
 
-String _resolveInitialRoute({
-  required bool hasSeenOnboarding,
-  required String? persistedToken,
-}) {
-  if (!hasSeenOnboarding) {
-    return AppRoutes.onboarding;
-  }
-
-  final hasToken = (persistedToken ?? '').trim().isNotEmpty;
-  return hasToken ? AppRoutes.main : AppRoutes.login;
+  // 2. قراءة التخزين المشفر والتحقق من التوكن في الخلفية بعد رسم أول إطار بالكامل
+  unawaited(
+    container.read(authSessionProvider.notifier).bootstrapSession(),
+  );
 }
 
 class MyApp extends ConsumerWidget {

@@ -7,6 +7,7 @@ class TwoFactorSettingsState {
     required this.hasSetupData,
     this.manualSetupKey,
     this.qrCodeSvg,
+    this.qrCodeUrl,
     this.recoveryCodes = const <String>[],
   });
 
@@ -15,6 +16,7 @@ class TwoFactorSettingsState {
   final bool hasSetupData;
   final String? manualSetupKey;
   final String? qrCodeSvg;
+  final String? qrCodeUrl;
   final List<String> recoveryCodes;
 }
 
@@ -54,6 +56,9 @@ class TwoFactorSettingsService {
       enabled: body['two_factor_enabled'] == true,
       requiresConfirmation: body['requires_confirmation'] == true,
       hasSetupData: body['has_setup_data'] == true,
+      manualSetupKey: body['secret_key']?.toString().trim(),
+      qrCodeSvg: body['qr_code_svg']?.toString().trim(),
+      qrCodeUrl: body['qr_code_url']?.toString().trim(),
     );
   }
 
@@ -80,6 +85,7 @@ class TwoFactorSettingsService {
       hasSetupData: true,
       manualSetupKey: (body['secret_key'] ?? '').toString().trim(),
       qrCodeSvg: (body['qr_code_svg'] ?? '').toString().trim(),
+      qrCodeUrl: body['qr_code_url']?.toString().trim(),
       recoveryCodes: _extractRecoveryCodes(body['recovery_codes']),
     );
   }

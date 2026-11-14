@@ -31,11 +31,11 @@ class ProductGridSection extends StatelessWidget {
         double tileH;
 
         if (tileW <= 150) {
-          tileH = tileW * 1.88;
+          tileH = tileW * 1.90;
         } else if (tileW <= 180) {
-          tileH = tileW * 1.64;
+          tileH = tileW * 1.70;
         } else {
-          tileH = tileW * 1.56;
+          tileH = tileW * 1.60;
         }
 
         return GridView.builder(

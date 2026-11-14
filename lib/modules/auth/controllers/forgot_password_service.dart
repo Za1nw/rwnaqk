@@ -67,6 +67,16 @@ class ForgotPasswordService {
     return 'Password reset link sent.';
   }
 
+  Future<void> verifyPasswordResetCode({
+    required String email,
+    required String code,
+  }) async {
+    await _authRepository.verifyPasswordResetCode(
+      email: email.trim(),
+      code: code.trim(),
+    );
+  }
+
   Future<OtpVerificationResult> verifyTwoFactorLogin({
     required String email,
     required String password,

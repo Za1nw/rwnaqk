@@ -108,7 +108,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 builder: (_, c) {
                   final w = c.maxWidth;
                   final cardW = AppBreakpoints.isCompact(w) ? 155.0 : 170.0;
-                  final listH = AppBreakpoints.isCompact(w) ? 240.0 : 245.0;
+                  final listH = AppBreakpoints.isCompact(w) ? 280.0 : 290.0;
 
                   if (searchState.discover.isEmpty) return const SizedBox.shrink();
 

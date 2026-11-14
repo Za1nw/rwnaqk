@@ -34,11 +34,11 @@ const ListingGridSliver({
 
           double tileHeight;
           if (tileWidth <= 150) {
-            tileHeight = tileWidth * 1.82;
+            tileHeight = tileWidth * 1.90;
           } else if (tileWidth <= 180) {
-            tileHeight = tileWidth * 1.58;
+            tileHeight = tileWidth * 1.70;
           } else {
-            tileHeight = tileWidth * 1.52;
+            tileHeight = tileWidth * 1.60;
           }
 
           return SliverGrid(

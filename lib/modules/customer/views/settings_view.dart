@@ -42,15 +42,17 @@ class SettingsScreen extends ConsumerWidget {
     final currentTheme = ref.watch(appThemeModeProvider);
     final currentLocale = ref.watch(appLocaleProvider);
     final ordersCount = ref.watch(ordersProvider).orders.length;
+    final twoFactorState = ref.watch(twoFactorSettingsNotifierProvider);
+    final is2FaEnabled = twoFactorState.isEnabled;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final fullName = customer?.fullName;
-    final firstName = customer?.firstName;
-    final String displayName = (fullName != null && fullName.isNotEmpty)
-        ? fullName
-        : ((firstName != null && firstName.isNotEmpty)
-            ? firstName
+    final firstName = customer?.firstName?.trim();
+    final fullName = customer?.fullName?.trim();
+    final String displayName = (firstName != null && firstName.isNotEmpty)
+        ? firstName
+        : ((fullName != null && fullName.isNotEmpty)
+            ? fullName.split(RegExp(r'\s+')).first
             : 'عميل رَوْنَقُك');
 
     final phone = customer?.phone;
@@ -316,7 +318,77 @@ class SettingsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
 
-              // 7. مجموعة الدعم والخدمات
+              // 7. قسم الأمان وحماية الحساب
+              SettingsGroupCard(
+                title: 'الأمان وحماية الحساب',
+                icon: Icons.shield_outlined,
+                children: [
+                  SettingsListTile(
+                    icon: Icons.lock_outline_rounded,
+                    title: 'كلمة المرور والأمان',
+                    subtitle: 'تغيير كلمة المرور وإدارة الجلسات والأجهزة النشطة',
+                    onTap: () => AppNav.toNamed(AppRoutes.passwordAndSecurity),
+                  ),
+                  SettingsListTile(
+                    icon: Icons.fingerprint_rounded,
+                    title: 'المصادقة الثنائية ومفاتيح المرور',
+                    subtitle: is2FaEnabled
+                        ? 'المصادقة الثنائية ومفاتيح المرور مفعلة بحسابك'
+                        : 'تأمين الحساب برمز التحقق وتطبيق المصادقة وبصمة الإصبع أو قفل الهاتف',
+                    onTap: () => AppNav.toNamed(AppRoutes.twoFactorAndPasskeys),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (is2FaEnabled
+                                ? const Color(0xFF10B981)
+                                : BrandColors.gold)
+                            .withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: (is2FaEnabled
+                                  ? const Color(0xFF10B981)
+                                  : BrandColors.gold)
+                              .withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            is2FaEnabled ? 'مفعلة' : 'إعداد',
+                            style: AppTextTheme.cairo(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                              color: is2FaEnabled
+                                  ? const Color(0xFF10B981)
+                                  : (isDark
+                                      ? BrandColors.gold
+                                      : BrandColors.burgundy),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.chevron_left_rounded,
+                            size: 16,
+                            color: is2FaEnabled
+                                ? const Color(0xFF10B981)
+                                : (isDark
+                                    ? BrandColors.gold
+                                    : BrandColors.burgundy),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // 8. مجموعة الدعم والخدمات
               SettingsGroupCard(
                 title: Tk.settingsSupport.tr,
                 icon: Icons.support_agent_outlined,
@@ -450,3 +522,4 @@ class _TopActionButton extends StatelessWidget {
     );
   }
 }
+

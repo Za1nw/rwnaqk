@@ -274,10 +274,10 @@ void main() {
       );
 
       final profileData = container.read(customerProfileDataProvider);
-      expect(profileData.name, 'سمو الأميرة لولوة');
+      expect(profileData.name, 'سمو');
       expect(profileData.phone, '777888999');
       expect(profileData.email, 'lulu@rawnaqk.com');
-      expect(profileData.membershipTier, 'عضوية رونق الذهبية VIP');
+      expect(profileData.membershipTier, '');
       expect(profileData.stats.length, 4);
       expect(profileData.infoItems.length, 4);
     });

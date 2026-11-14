@@ -31,22 +31,40 @@ class AppValidators {
     return null;
   }
 
-  /// التحقق من صحة رقم الهاتف (اليمن والدولي)
+  /// التحقق من صحة رقم الهاتف اليمني حصراً (يبدأ بـ 77، 78، 73، 71، أو 70)
+  static String? yemenPhone(
+    String? value, {
+    String? requiredMsg,
+    String? invalidMsg,
+  }) {
+    final text = (value ?? '').trim();
+    if (text.isEmpty) {
+      return requiredMsg ?? Tk.registerPhoneRequired.tr;
+    }
+
+    final clean = text.replaceAll(RegExp(r'[\s\-]'), '');
+    final yemenPhoneRegex = RegExp(r'^(?:(?:\+|00)?967|0)?(7[01378]\d{7})$');
+
+    if (!yemenPhoneRegex.hasMatch(clean)) {
+      return invalidMsg ??
+          'يرجى إدخال رقم هاتف يمني صالح (يبدأ بـ 77، 78، 73، 71، أو 70)';
+    }
+
+    return null;
+  }
+
+  /// التحقق من صحة رقم الهاتف (اليمن حصراً)
   static String? phone(
     String? value, {
     String? requiredMsg,
     String? invalidMsg,
     int minDigits = 8,
   }) {
-    final text = (value ?? '').trim();
-    if (text.isEmpty) {
-      return requiredMsg ?? Tk.registerPhoneRequired.tr;
-    }
-    final digits = text.replaceAll(RegExp(r'\D'), '');
-    if (digits.length < minDigits) {
-      return invalidMsg ?? Tk.registerPhoneInvalid.tr;
-    }
-    return null;
+    return yemenPhone(
+      value,
+      requiredMsg: requiredMsg,
+      invalidMsg: invalidMsg,
+    );
   }
 
   /// التحقق من كلمة المرور

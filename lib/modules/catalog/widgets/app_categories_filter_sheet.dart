@@ -232,6 +232,16 @@ class _CategoryTile extends StatelessWidget {
                     width: 48,
                     height: 48,
                     fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      width: 48,
+                      height: 48,
+                      color: context.primary.withValues(alpha: 0.08),
+                      child: Icon(
+                        Icons.category_outlined,
+                        color: context.primary,
+                        size: 22,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 14),

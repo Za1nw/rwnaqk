@@ -31,9 +31,11 @@ class SettingsUserHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final displayName = name.trim().isEmpty
+    final trimmedName = name.trim();
+    final firstOnly = trimmedName.split(RegExp(r'\s+')).first;
+    final displayName = firstOnly.isEmpty
         ? 'عميل رَوْنَقُك الفاخر'
-        : name.trim();
+        : firstOnly;
     final displayPhone = phone.trim().isEmpty
         ? 'لم يتم ربط رقم الهاتف'
         : phone.trim();
@@ -75,7 +77,7 @@ class SettingsUserHeader extends StatelessWidget {
           onTap: onTap ?? () => AppNav.toNamed(AppRoutes.profile),
           borderRadius: BorderRadius.circular(22),
           child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 14),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -88,14 +90,10 @@ class SettingsUserHeader extends StatelessWidget {
                       name: displayName,
                       imagePath: avatarPath,
                       imageUrl: avatarUrl,
-                      size: 54,
-                      fontSize: 21,
-                      backgroundColor: isDark
-                          ? const Color(0xFF280719)
-                          : const Color(0xFFFFF7FA),
-                      textColor: isDark
-                          ? BrandColors.gold
-                          : BrandColors.burgundy,
+                      size: 56,
+                      fontSize: 22,
+                      backgroundColor: const Color(0xFF560026),
+                      textColor: BrandColors.gold,
                       showBorder: true,
                     ),
                     const SizedBox(width: 12),
@@ -220,100 +218,6 @@ class SettingsUserHeader extends StatelessWidget {
                       ),
                     ),
                   ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // 2. شريط فئة العضوية الملكية المنفصل والأنيق (Membership Tier Ribbon)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        BrandColors.gold.withValues(alpha: 0.22),
-                        BrandColors.gold.withValues(alpha: 0.08),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: BrandColors.gold.withValues(alpha: 0.40),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.workspace_premium_rounded,
-                        size: 14,
-                        color: BrandColors.gold,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'عضوية VIP الذهبية',
-                        style: AppTextTheme.cairo(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w800,
-                          color: BrandColors.gold,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        'ROYAL MEMBER',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.0,
-                          color: BrandColors.gold.withValues(alpha: 0.85),
-                          fontFamily: AppTextTheme.fontFamily,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                // 3. شريط المزايا الحصرية السفلية للعميل
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.24),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.auto_awesome_rounded,
-                        size: 13,
-                        color: BrandColors.gold,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          'توصيل مجاني لكافة طلباتك • خصم 15% فوري',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextTheme.cairo(
-                            fontSize: 11.2,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white.withValues(alpha: 0.92),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.chevron_left_rounded,
-                        size: 18,
-                        color: BrandColors.gold.withValues(alpha: 0.9),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),

@@ -204,12 +204,12 @@ final customerProfileDataProvider = Provider<CustomerProfileData>((ref) {
   final ordersCount = ref.watch(ordersProvider).orders.length;
   final wishlistCount = ref.watch(wishlistProvider).itemCount;
 
-  final fullName = customer?.fullName;
-  final firstName = customer?.firstName;
-  final String displayName = (fullName != null && fullName.isNotEmpty)
-      ? fullName
-      : ((firstName != null && firstName.isNotEmpty)
-          ? firstName
+  final firstName = customer?.firstName?.trim();
+  final fullName = customer?.fullName?.trim();
+  final String displayName = (firstName != null && firstName.isNotEmpty)
+      ? firstName
+      : ((fullName != null && fullName.isNotEmpty)
+          ? fullName.split(RegExp(r'\s+')).first
           : 'عميل رَوْنَقُك');
 
   final phone = customer?.phone;
@@ -276,9 +276,9 @@ final customerProfileDataProvider = Provider<CustomerProfileData>((ref) {
     phone: displayPhone,
     email: displayEmail,
     avatarUrl: customer?.avatarUrl ?? '',
-    membershipTier: 'عضوية رونق الذهبية VIP',
-    membershipBadge: 'VIP Gold',
-    membershipPerk: 'شحن مجاني + خصم حصري 15%',
+    membershipTier: '',
+    membershipBadge: '',
+    membershipPerk: '',
     stats: stats,
     infoItems: infoItems,
   );
@@ -294,20 +294,26 @@ class TwoFactorState {
     this.requiresConfirmation = false,
     this.hasSetupData = false,
     this.manualSetupKey = '',
+    this.qrCodeUrl = '',
     this.setupCode = '',
     this.recoveryCodes = const <String>[],
     this.isLoading = false,
     this.isSubmitting = false,
+    this.hasError = false,
+    this.errorTicks = 0,
   });
 
   final bool isEnabled;
   final bool requiresConfirmation;
   final bool hasSetupData;
   final String manualSetupKey;
+  final String qrCodeUrl;
   final String setupCode;
   final List<String> recoveryCodes;
   final bool isLoading;
   final bool isSubmitting;
+  final bool hasError;
+  final int errorTicks;
 
   bool get canConfirmCode => setupCode.trim().length == 6;
 
@@ -316,20 +322,26 @@ class TwoFactorState {
     bool? requiresConfirmation,
     bool? hasSetupData,
     String? manualSetupKey,
+    String? qrCodeUrl,
     String? setupCode,
     List<String>? recoveryCodes,
     bool? isLoading,
     bool? isSubmitting,
+    bool? hasError,
+    int? errorTicks,
   }) {
     return TwoFactorState(
       isEnabled: isEnabled ?? this.isEnabled,
       requiresConfirmation: requiresConfirmation ?? this.requiresConfirmation,
       hasSetupData: hasSetupData ?? this.hasSetupData,
       manualSetupKey: manualSetupKey ?? this.manualSetupKey,
+      qrCodeUrl: qrCodeUrl ?? this.qrCodeUrl,
       setupCode: setupCode ?? this.setupCode,
       recoveryCodes: recoveryCodes ?? this.recoveryCodes,
       isLoading: isLoading ?? this.isLoading,
       isSubmitting: isSubmitting ?? this.isSubmitting,
+      hasError: hasError ?? this.hasError,
+      errorTicks: errorTicks ?? this.errorTicks,
     );
   }
 }
@@ -353,7 +365,12 @@ class TwoFactorSettingsNotifier extends Notifier<TwoFactorState> {
   }
 
   void setSetupCode(String code) {
-    state = state.copyWith(setupCode: code.trim());
+    const arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    var normalized = code.trim().replaceAll(' ', '').replaceAll('-', '');
+    for (int i = 0; i < arabic.length; i++) {
+      normalized = normalized.replaceAll(arabic[i], '$i');
+    }
+    state = state.copyWith(setupCode: normalized, hasError: false);
   }
 
   Future<void> loadStatus() async {
@@ -370,6 +387,7 @@ class TwoFactorSettingsNotifier extends Notifier<TwoFactorState> {
         requiresConfirmation: res.requiresConfirmation,
         hasSetupData: res.hasSetupData,
         manualSetupKey: res.manualSetupKey ?? '',
+        qrCodeUrl: res.qrCodeUrl ?? '',
         recoveryCodes: codes,
       );
     } catch (_) {} finally {
@@ -387,6 +405,7 @@ class TwoFactorSettingsNotifier extends Notifier<TwoFactorState> {
         requiresConfirmation: res.requiresConfirmation,
         hasSetupData: res.hasSetupData,
         manualSetupKey: res.manualSetupKey ?? '',
+        qrCodeUrl: res.qrCodeUrl ?? '',
         recoveryCodes: res.recoveryCodes,
       );
       if (res.requiresConfirmation) {
@@ -401,13 +420,17 @@ class TwoFactorSettingsNotifier extends Notifier<TwoFactorState> {
 
   Future<void> confirmSetup() async {
     if (state.isSubmitting || !state.canConfirmCode) return;
-    state = state.copyWith(isSubmitting: true);
+    state = state.copyWith(isSubmitting: true, hasError: false);
     try {
       final msg = await _service.confirm(code: state.setupCode);
       AppNotifier.success(msg, isKey: false);
       await loadStatus();
     } catch (e) {
       AppNotifier.errorFrom(e);
+      state = state.copyWith(
+        hasError: true,
+        errorTicks: state.errorTicks + 1,
+      );
     } finally {
       state = state.copyWith(isSubmitting: false);
     }

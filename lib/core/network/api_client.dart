@@ -20,6 +20,7 @@ class ApiClient {
     this.onUnauthorized,
     this.onUnauthorizedWithToken,
     this.onUnauthorizedWithDetails,
+    this.onAccountBanned,
     this.getSessionGeneration,
   })  : _tokenStorage = tokenStorage ?? SecureAuthTokenStorage() {
     _dio = dio ??
@@ -45,6 +46,8 @@ class ApiClient {
   final void Function(String failedToken)? onUnauthorizedWithToken;
   final void Function(String? failedToken, int? sessionGeneration)?
       onUnauthorizedWithDetails;
+  final void Function(Map<String, dynamic>? customerData, String? reason)?
+      onAccountBanned;
   final int? Function()? getSessionGeneration;
 
   Dio get dio => _dio;
@@ -139,6 +142,20 @@ class ApiClient {
         );
 
       case 403:
+        if (data is Map<String, dynamic> &&
+            (data['error_code'] == 'ACCOUNT_BANNED' ||
+                data['is_banned'] == true)) {
+          final customerData = data['customer'] is Map<String, dynamic>
+              ? data['customer'] as Map<String, dynamic>
+              : null;
+          onAccountBanned?.call(customerData, errorMessage);
+          return AccountBannedException(
+            message: errorMessage,
+            statusCode: 403,
+            rawResponse: data,
+            customerData: customerData,
+          );
+        }
         return ForbiddenException(
           message: errorMessage,
           statusCode: 403,

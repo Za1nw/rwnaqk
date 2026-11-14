@@ -88,8 +88,8 @@ class AppNotifier {
     RawnaqkToast.copied(message: message, title: title);
   }
 
-  /// معالجة استثناءات الـ API وتحويلها لتنبيه خطأ ملكي
+  /// معالجة استثناءات الـ API وتحويلها لتنبيه خطأ ملكي واضح ودقيق
   static void errorFrom(Object exception) {
-    AppNotifier.error(ApiErrorUtils.toLocaleKey(exception));
+    AppNotifier.error(ApiErrorUtils.toMessage(exception), isKey: false);
   }
 }

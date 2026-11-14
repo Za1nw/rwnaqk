@@ -18,6 +18,9 @@ enum AuthSessionStatus {
   /// تم تسجيل الدخول لكن يلزم تأكيد البريد الإلكتروني
   emailVerificationRequired,
 
+  /// تم حظر الحساب من قبل إدارة المتجر
+  banned,
+
   /// الجلسة مصادقة بالكامل ومؤكدة مع الخادم
   authenticated,
 }
@@ -55,10 +58,15 @@ class AuthSessionState {
     this.errorMessage,
   });
 
+  /// التحقق هل الحساب محظور
+  bool get isBanned =>
+      status == AuthSessionStatus.banned || (customer?.isBanned == true);
+
   /// التحقق هل الجلسة مصادقة ومصرح لها بالدخول
   bool get isAuthenticated =>
-      status == AuthSessionStatus.authenticated ||
-      status == AuthSessionStatus.guest;
+      !isBanned &&
+      (status == AuthSessionStatus.authenticated ||
+          status == AuthSessionStatus.guest);
 
   /// التحقق هل الجلسة في وضع الضيف
   bool get isGuest => status == AuthSessionStatus.guest;

@@ -6,6 +6,7 @@ import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.d
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository_impl.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/repositories/products_repository.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/repositories/products_repository_impl.dart';
+import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/repositories/orders_repository.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/repositories/orders_repository_impl.dart';
 
@@ -47,6 +48,18 @@ final apiClientProvider = Provider<ApiClient>((ref) {
     },
     onUnauthorized: () {
       ref.read(authSessionProvider.notifier).handleUnauthorized();
+    },
+    onAccountBanned: (customerData, reason) {
+      CustomerModel? customer;
+      if (customerData != null) {
+        try {
+          customer = CustomerModel.fromJson(customerData);
+        } catch (_) {}
+      }
+      ref.read(authSessionProvider.notifier).markAsBanned(
+            customerPayload: customer,
+            reason: reason,
+          );
     },
   );
 });

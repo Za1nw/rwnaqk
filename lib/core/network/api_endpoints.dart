@@ -8,11 +8,22 @@ class ApiEndpoints {
   static const String me = '/api/v1/customer/auth/me';
   static const String logout = '/api/v1/customer/auth/logout';
   static const String forgotPassword = '/api/v1/customer/auth/forgot-password';
+  static const String verifyPasswordResetCode =
+      '/api/v1/customer/auth/verify-reset-code';
   static const String resetPassword = '/api/v1/customer/auth/reset-password';
   static const String sendVerificationCode =
       '/api/v1/customer/auth/email/verification-code';
   static const String verifyEmailCode =
       '/api/v1/customer/auth/email/verify-code';
+  static const String updateProfile = '/api/v1/customer/auth/profile';
+  static const String changePassword = '/api/v1/customer/auth/password';
+  static const String sessions = '/api/v1/customer/auth/sessions';
+  static String revokeSession(int id) => '/api/v1/customer/auth/sessions/$id';
+  static const String revokeOtherSessions =
+      '/api/v1/customer/auth/sessions/revoke-others';
+  static const String passkeys = '/api/v1/customer/auth/passkeys';
+  static const String passkeyLogin = '/api/v1/customer/auth/passkeys/login';
+  static String deletePasskey(int id) => '/api/v1/customer/auth/passkeys/$id';
 
   // Catalog & Products
   static const String products = '/api/v1/products';

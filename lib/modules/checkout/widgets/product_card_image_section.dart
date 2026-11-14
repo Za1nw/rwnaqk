@@ -11,12 +11,14 @@ class ProductCardImageSection extends ConsumerWidget {
   final HomeProductItem item;
   final String imageUrl;
   final double radius;
+  final double aspectRatio;
 
   const ProductCardImageSection({
     super.key,
     required this.item,
     required this.imageUrl,
     required this.radius,
+    this.aspectRatio = 1.12,
   });
 
   @override
@@ -26,7 +28,7 @@ class ProductCardImageSection extends ConsumerWidget {
     final hasDiscount = (item.discountPercent ?? 0) > 0;
 
     return AspectRatio(
-      aspectRatio: 1.05,
+      aspectRatio: aspectRatio,
       child: Stack(
         clipBehavior: Clip.none,
         children: [

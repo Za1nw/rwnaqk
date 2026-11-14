@@ -7,10 +7,12 @@ class RegisterResult {
   const RegisterResult({
     required this.message,
     required this.requiresEmailVerification,
+    this.isBanned = false,
   });
 
   final String message;
   final bool requiresEmailVerification;
+  final bool isBanned;
 }
 
 /// هذا الملف مسؤول عن المنطق المساعد الخاص بشاشة إنشاء الحساب.
@@ -28,10 +30,19 @@ class RegisterService {
   final List<String> governorates = <String>[];
   String _defaultCountryName = 'اليمن';
 
-  Future<void> loadGovernorates() async {
-    final yemenLookup = await _geoLookupApiService.yemenGovernorates();
-    if (yemenLookup == null) {
-      governorates.clear();
+  Future<void> loadGovernorates({bool forceRefresh = false}) async {
+    if (!forceRefresh && governorates.isNotEmpty) {
+      return;
+    }
+
+    final yemenLookup = await _geoLookupApiService.yemenGovernorates(
+      forceRefresh: forceRefresh,
+    );
+
+    if (yemenLookup == null || yemenLookup.governorates.isEmpty) {
+      if (governorates.isEmpty) {
+        governorates.addAll(GeoLookupApiService.defaultYemenGovernorates);
+      }
       return;
     }
 
@@ -45,7 +56,7 @@ class RegisterService {
   }
 
   String? defaultGovernorate() {
-    if (governorates.isEmpty) return null;
+    if (governorates.isEmpty) return 'صنعاء';
 
     if (governorates.contains('صنعاء')) {
       return 'صنعاء';
@@ -59,12 +70,14 @@ class RegisterService {
   /// هذه الدالة تتحقق من صلاحية عملية التسجيل قبل المتابعة.
   bool canRegister({
     required bool isFormValid,
+    required String? gender,
     required String? governorate,
     required String password,
     required String passwordConfirmation,
     required bool agreed,
   }) {
     if (!isFormValid) return false;
+    if (gender == null || gender.trim().isEmpty) return false;
     if (governorate == null || governorate.trim().isEmpty) return false;
     if (password != passwordConfirmation) return false;
     if (!agreed) return false;
@@ -82,6 +95,7 @@ class RegisterService {
     required String passwordConfirmation,
     required bool termsAccepted,
     required bool privacyPolicyAccepted,
+    String? gender,
   }) async {
     final result = await _authRepository.register(
       firstName: firstName,
@@ -94,7 +108,20 @@ class RegisterService {
       passwordConfirmation: passwordConfirmation,
       termsAccepted: termsAccepted,
       privacyPolicyAccepted: privacyPolicyAccepted,
+      gender: gender,
     );
+
+    if (result.isBanned || result.customer?.isBanned == true) {
+      _session.markAsBanned(
+        customerPayload: result.customer,
+        reason: result.message,
+      );
+      return RegisterResult(
+        message: result.message ?? 'تم حظر الحساب.',
+        requiresEmailVerification: false,
+        isBanned: true,
+      );
+    }
 
     if (result.isSuccess) {
       CustomerModel? customer = result.customer;

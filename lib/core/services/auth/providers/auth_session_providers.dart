@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/di/core_providers.dart';
+import 'package:rwnaqk_frontend/core/network/api_exceptions.dart';
 import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/services/auth/models/auth_session_state.dart';
 import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
@@ -50,24 +51,43 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
     return const AuthSessionState();
   }
 
+  /// تهيئة فورية ومحلية للتوكن في الذاكرة دون حظر واجهة المستخدم
+  void primeSession({required String token}) {
+    final normalized = token.trim();
+    if (normalized.isNotEmpty) {
+      state = state.copyWith(
+        status: AuthSessionStatus.authenticated,
+        token: normalized,
+      );
+    }
+  }
+
   /// تهيئة الجلسة وفحص التوكن المحفوظ في التخزين الآمن عند تشغيل التطبيق
   Future<void> bootstrapSession({String? initialToken}) async {
-    if (state.status == AuthSessionStatus.authenticating) {
-      return;
-    }
-
     final storage = ref.read(authTokenStorageProvider);
-    final token = (initialToken ?? await storage.readToken() ?? '').trim();
+    final rawToken = (initialToken != null && initialToken != 'cached_session')
+        ? initialToken
+        : (await storage.readToken() ?? '');
+    final token = rawToken.trim();
 
     if (token.isEmpty) {
       state = state.copyWith(status: AuthSessionStatus.unauthenticated);
+      if (AppNav.context != null && !state.isGuest) {
+        final currentRoute = AppNav.currentRoute;
+        if (currentRoute != AppRoutes.onboarding &&
+            currentRoute != AppRoutes.login) {
+          AppNav.offAllNamed(AppRoutes.login);
+        }
+      }
       return;
     }
 
-    state = state.copyWith(
-      status: AuthSessionStatus.authenticating,
-      token: token,
-    );
+    if (!state.isAuthenticated || state.token != token) {
+      state = state.copyWith(
+        status: AuthSessionStatus.authenticated,
+        token: token,
+      );
+    }
 
     if (AppEnv.enableMockData) {
       final mockCustomer = CustomerModel(
@@ -96,6 +116,11 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
       final authRepo = ref.read(authRepositoryProvider);
       final customer = await authRepo.me();
 
+      if (customer.isBanned == true) {
+        markAsBanned(customerPayload: customer);
+        return;
+      }
+
       final requiresVerification = customer.emailVerifiedAt == null;
       final nextGen = state.sessionGeneration + 1;
 
@@ -105,7 +130,10 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
           customer: customer,
           sessionGeneration: nextGen,
         );
-        await _clearSessionAndRedirectToLogin();
+        AppNav.offAllNamed(
+          AppRoutes.emailVerify,
+          arguments: <String, dynamic>{'email': customer.email},
+        );
         return;
       }
 
@@ -119,8 +147,21 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
         userId: customer.id.toString(),
         generation: nextGen,
       );
-    } catch (_) {
+    } on AccountBannedException catch (bannedEx) {
+      CustomerModel? customer;
+      if (bannedEx.customerData != null) {
+        try {
+          customer = CustomerModel.fromJson(bannedEx.customerData!);
+        } catch (_) {}
+      }
+      markAsBanned(
+        customerPayload: customer,
+        reason: bannedEx.message,
+      );
+    } on UnauthorizedException {
       await _clearSessionAndRedirectToLogin();
+    } catch (e) {
+      debugPrint('[AuthSession] bootstrapSession transient error: $e');
     }
   }
 
@@ -249,6 +290,26 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
     );
   }
 
+  /// وسم الحساب كمحظور وإعادة توجيهه بشكل فوري إلى شاشة الحظر
+  void markAsBanned({CustomerModel? customerPayload, String? reason}) {
+    final nextGen = state.sessionGeneration + 1;
+
+    state = state.copyWith(
+      status: AuthSessionStatus.banned,
+      customer: customerPayload ?? state.customer,
+      errorMessage: reason ??
+          'تم حظر حسابك. يرجى التواصل مع إدارة المتجر لمزيد من التفاصيل.',
+      sessionGeneration: nextGen,
+    );
+
+    _syncSessionScopedProviders(
+      userId: null,
+      generation: nextGen,
+    );
+
+    AppNav.offAllNamed(AppRoutes.banned);
+  }
+
   /// تفريغ الجلسة محلياً بالكامل
   void clearSession() {
     final storage = ref.read(authTokenStorageProvider);
@@ -365,7 +426,8 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
         currentRoute == AppRoutes.forgot ||
         currentRoute == AppRoutes.otp ||
         currentRoute == AppRoutes.reset ||
-        currentRoute == AppRoutes.twoFactorChallenge) {
+        currentRoute == AppRoutes.twoFactorChallenge ||
+        currentRoute == AppRoutes.banned) {
       return;
     }
 
