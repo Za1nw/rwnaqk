@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 enum ProductAttributeType {
   color, // خيار لوني (كود لوني أو اسم لون)
   image, // خيار صورة (صورة مصغرة للنمط أو الموديل)
-  text,  // خيار نصي (مثل المقاسات، الطول، نوع القماش)
+  text, // خيار نصي (مثل المقاسات، الطول، نوع القماش)
 }
 
 class ProductAttributeOption {
@@ -20,6 +20,24 @@ class ProductAttributeOption {
     this.imageUrl,
     this.isAvailable = true,
   });
+
+  factory ProductAttributeOption.fromMap(Map<String, dynamic> map) {
+    return ProductAttributeOption(
+      id: (map['id'] ?? map['value_id'] ?? '').toString(),
+      label: (map['label'] ?? map['name'] ?? map['value_name'] ?? '').toString(),
+      value: (map['value'] ?? map['color_code'] ?? map['value_color'])?.toString(),
+      imageUrl: (map['imageUrl'] ?? map['image_url'])?.toString(),
+      isAvailable: map['isAvailable'] != false && map['is_available'] != false,
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'label': label,
+    'value': value,
+    'imageUrl': imageUrl,
+    'isAvailable': isAvailable,
+  };
 
   Color? get colorValue {
     if (value != null && value!.trim().isNotEmpty) {
@@ -110,5 +128,33 @@ class ProductAttributeGroup {
     required this.options,
     this.isRequired = true,
   });
-}
 
+  factory ProductAttributeGroup.fromMap(Map<String, dynamic> map) {
+    final rawType = (map['type'] ?? 'text').toString().toLowerCase();
+    final type = rawType == 'color'
+        ? ProductAttributeType.color
+        : (rawType == 'image' ? ProductAttributeType.image : ProductAttributeType.text);
+
+    final rawOptions = map['options'] as List? ?? const [];
+    final options = rawOptions
+        .whereType<Map>()
+        .map((e) => ProductAttributeOption.fromMap(Map<String, dynamic>.from(e)))
+        .toList();
+
+    return ProductAttributeGroup(
+      id: (map['id'] ?? map['variation_id'] ?? '').toString(),
+      name: (map['name'] ?? map['variation_name'] ?? '').toString(),
+      type: type,
+      options: options,
+      isRequired: map['isRequired'] != false && map['is_required'] != false,
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'name': name,
+    'type': type.name,
+    'options': options.map((e) => e.toMap()).toList(),
+    'isRequired': isRequired,
+  };
+}

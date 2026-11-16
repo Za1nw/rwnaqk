@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/di/core_providers.dart';
-import 'package:rwnaqk_frontend/core/network/api_endpoints.dart';
+import 'package:rwnaqk_frontend/modules/checkout/data/checkout_endpoints.dart';
 import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/checkout/data/models/wallet_transfer_account.dart';
 import 'package:rwnaqk_frontend/modules/checkout/models/checkout_state.dart';
@@ -155,7 +155,7 @@ class CheckoutFlowNotifier extends Notifier<CheckoutState> {
         if (!AppEnv.enableMockData) {
           final apiClient = ref.read(apiClientProvider);
           final uploadRes = await apiClient.uploadFile<Map<String, dynamic>>(
-            ApiEndpoints.temporaryImages,
+            CheckoutEndpoints.temporaryImages,
             filePath: state.receiptImage!.path,
             fieldName: 'image',
           );

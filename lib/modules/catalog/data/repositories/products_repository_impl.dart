@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/network/api_client.dart';
-import 'package:rwnaqk_frontend/core/network/api_endpoints.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/catalog_endpoints.dart';
 import 'package:rwnaqk_frontend/modules/catalog/controllers/products_listing_service.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/providers/fake_products_remote_data_source.dart';
@@ -15,8 +15,8 @@ class ProductsRepositoryImpl implements IProductsRepository {
   ProductsRepositoryImpl({
     required ApiClient apiClient,
     FakeProductsRepository? fallbackRepository,
-  })  : _api = apiClient,
-        _fallback = fallbackRepository ?? FakeProductsRepository();
+  }) : _api = apiClient,
+       _fallback = fallbackRepository ?? FakeProductsRepository();
 
   final ApiClient _api;
   final FakeProductsRepository _fallback;
@@ -30,6 +30,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
     double? maxPrice,
     String? categoryId,
     String? search,
+    bool? isFeatured,
   }) async {
     if (AppEnv.enableMockData) {
       return _fallback.getProducts(
@@ -40,6 +41,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
         maxPrice: maxPrice,
         categoryId: categoryId,
         search: search,
+        isFeatured: isFeatured,
       );
     }
 
@@ -50,12 +52,14 @@ class ProductsRepositoryImpl implements IProductsRepository {
         'sort': sort.name,
         'min_price': ?minPrice,
         'max_price': ?maxPrice,
-        'category_id': ?categoryId,
-        'search': ?search,
+        if (categoryId != null && categoryId.isNotEmpty)
+          'category_id': categoryId,
+        if (search != null && search.isNotEmpty) 'search': search,
+        if (isFeatured != null) 'is_featured': isFeatured ? 1 : 0,
       };
 
       final response = await _api.get<dynamic>(
-        ApiEndpoints.products,
+        CatalogEndpoints.products,
         queryParameters: queryParams,
       );
 
@@ -63,8 +67,8 @@ class ProductsRepositoryImpl implements IProductsRepository {
       final rawList = data is Map<String, dynamic> && data['data'] is List
           ? data['data'] as List
           : data is List
-              ? data
-              : const [];
+          ? data
+          : const [];
 
       return rawList
           .whereType<Map<String, dynamic>>()
@@ -83,7 +87,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
     }
 
     try {
-      final response = await _api.get<dynamic>(ApiEndpoints.productDetails(id));
+      final response = await _api.get<dynamic>(CatalogEndpoints.productDetails(id));
       final data = response.data;
       if (data is Map<String, dynamic>) {
         final productJson = data['data'] is Map<String, dynamic>
@@ -109,15 +113,15 @@ class ProductsRepositoryImpl implements IProductsRepository {
 
     try {
       final response = await _api.get<dynamic>(
-        ApiEndpoints.productReviews(productId),
+        CatalogEndpoints.productReviews(productId),
       );
 
       final data = response.data;
       final rawList = data is Map<String, dynamic> && data['data'] is List
           ? data['data'] as List
           : data is List
-              ? data
-              : const [];
+          ? data
+          : const [];
 
       return rawList
           .whereType<Map<String, dynamic>>()
@@ -140,7 +144,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
 
     try {
       final response = await _api.get<dynamic>(
-        ApiEndpoints.products,
+        CatalogEndpoints.products,
         queryParameters: {'q': query.trim()},
         cancelToken: cancelToken,
       );
@@ -149,8 +153,8 @@ class ProductsRepositoryImpl implements IProductsRepository {
       final rawList = data is Map<String, dynamic> && data['data'] is List
           ? data['data'] as List
           : data is List
-              ? data
-              : const [];
+          ? data
+          : const [];
 
       return rawList
           .whereType<Map<String, dynamic>>()
@@ -162,19 +166,36 @@ class ProductsRepositoryImpl implements IProductsRepository {
   }
 
   @override
-  Future<List<HomeCategoryItem>> getCategories() async {
+  Future<List<HomeCategoryItem>> getCategories({
+    String? parentId,
+    bool? isFeatured,
+    bool? isTop,
+  }) async {
     if (AppEnv.enableMockData) {
-      return _fallback.getCategories();
+      return _fallback.getCategories(
+        parentId: parentId,
+        isFeatured: isFeatured,
+        isTop: isTop,
+      );
     }
 
     try {
-      final response = await _api.get<dynamic>(ApiEndpoints.categories);
+      final queryParams = <String, dynamic>{
+        'parent_id': ?parentId,
+        if (isFeatured != null) 'is_featured': isFeatured ? 1 : 0,
+        if (isTop != null) 'is_top': isTop ? 1 : 0,
+      };
+
+      final response = await _api.get<dynamic>(
+        CatalogEndpoints.categories,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
       final data = response.data;
       final rawList = data is Map<String, dynamic> && data['data'] is List
           ? data['data'] as List
           : data is List
-              ? data
-              : const [];
+          ? data
+          : const [];
 
       return rawList
           .whereType<Map<String, dynamic>>()

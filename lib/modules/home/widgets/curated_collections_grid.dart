@@ -80,19 +80,56 @@ class _CollectionCardState extends State<_CollectionCard> {
 
   IconData _iconForCategory(String nameKey) {
     final lower = nameKey.toLowerCase();
-    if (lower.contains('cloth') || lower.contains('ملابس')) {
+    if (lower.contains('نساء') ||
+        lower.contains('نسائ') ||
+        lower.contains('women')) {
+      return Icons.woman_rounded;
+    }
+    if (lower.contains('رجال') ||
+        lower.contains('رجالي') ||
+        lower.contains('men')) {
+      return Icons.man_rounded;
+    }
+    if (lower.contains('منزل') ||
+        lower.contains('أثاث') ||
+        lower.contains('اثاث') ||
+        lower.contains('home') ||
+        lower.contains('furniture')) {
+      return Icons.chair_rounded;
+    }
+    if (lower.contains('مطبخ') ||
+        lower.contains('طهي') ||
+        lower.contains('kitchen')) {
+      return Icons.soup_kitchen_rounded;
+    }
+    if (lower.contains('ساعات') ||
+        lower.contains('ساعة') ||
+        lower.contains('watch')) {
+      return Icons.watch_rounded;
+    }
+    if (lower.contains('cloth') ||
+        lower.contains('ملابس') ||
+        lower.contains('فساتين') ||
+        lower.contains('قمصان')) {
       return Icons.checkroom_rounded;
     }
-    if (lower.contains('shoe') || lower.contains('أحذية')) {
+    if (lower.contains('shoe') ||
+        lower.contains('أحذية') ||
+        lower.contains('احذية')) {
       return Icons.hiking_rounded;
     }
-    if (lower.contains('bag') || lower.contains('حقائب')) {
+    if (lower.contains('bag') ||
+        lower.contains('حقائب') ||
+        lower.contains('شنط') ||
+        lower.contains('محافظ')) {
       return Icons.shopping_bag_rounded;
     }
     if (lower.contains('lingerie') || lower.contains('داخلية')) {
       return Icons.auto_awesome_rounded;
     }
-    if (lower.contains('perfume') || lower.contains('عطور')) {
+    if (lower.contains('perfume') ||
+        lower.contains('عطور') ||
+        lower.contains('عطر')) {
       return Icons.local_florist_rounded;
     }
     return Icons.diamond_rounded;

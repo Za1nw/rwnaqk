@@ -45,7 +45,7 @@ class HomeScreen extends ConsumerWidget {
               color: context.primary,
               backgroundColor: context.card,
               onRefresh: () async {
-                notifier.refreshHome();
+                await notifier.refreshHome();
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(

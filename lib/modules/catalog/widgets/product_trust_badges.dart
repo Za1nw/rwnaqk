@@ -16,7 +16,9 @@ class ProductTrustBadges extends StatelessWidget {
         border: Border.all(color: context.border.withValues(alpha: 0.45)),
         boxShadow: [
           BoxShadow(
-            color: context.shadow.withValues(alpha: context.isDark ? 0.12 : 0.04),
+            color: context.shadow.withValues(
+              alpha: context.isDark ? 0.12 : 0.04,
+            ),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
@@ -145,4 +147,3 @@ class _TrustItem extends StatelessWidget {
     );
   }
 }
-

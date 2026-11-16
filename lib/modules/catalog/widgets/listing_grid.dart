@@ -9,11 +9,7 @@ class ListingGridSliver extends StatelessWidget {
   final List<HomeProductItem> items;
   final ValueChanged<HomeProductItem>? onAddToCart;
 
-const ListingGridSliver({
-  super.key,
-  required this.items,
-  this.onAddToCart,
-});
+  const ListingGridSliver({super.key, required this.items, this.onAddToCart});
 
   @override
   Widget build(BuildContext context) {
@@ -42,20 +38,17 @@ const ListingGridSliver({
           }
 
           return SliverGrid(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final item = items[index];
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final item = items[index];
 
-                return ProductCard(
-                  item: item,
-                  onTap: (_) => AppNav.toNamed(
-                    AppRoutes.product,
-                    arguments: {'item': item},
-                  ),
-                );
-              },
-              childCount: items.length,
-            ),
+              return ProductCard(
+                item: item,
+                onTap: (_) => AppNav.toNamed(
+                  AppRoutes.product,
+                  arguments: {'item': item},
+                ),
+              );
+            }, childCount: items.length),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
               crossAxisSpacing: crossAxisSpacing,

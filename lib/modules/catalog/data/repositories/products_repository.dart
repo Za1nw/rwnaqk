@@ -18,6 +18,7 @@ abstract class IProductsRepository {
     double? maxPrice,
     String? categoryId,
     String? search,
+    bool? isFeatured,
   });
 
   /// جلب منتج محدد بالمعرف
@@ -36,6 +37,9 @@ abstract class IProductsRepository {
   });
 
   /// جلب قائمة الفئات
-  Future<List<HomeCategoryItem>> getCategories();
+  Future<List<HomeCategoryItem>> getCategories({
+    String? parentId,
+    bool? isFeatured,
+    bool? isTop,
+  });
 }
-

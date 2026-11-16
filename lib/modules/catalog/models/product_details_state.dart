@@ -5,6 +5,7 @@ import 'package:rwnaqk_frontend/modules/catalog/data/models/product_attribute_gr
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_color_option.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_size_guide.dart';
+import 'package:rwnaqk_frontend/modules/catalog/data/models/products_models.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 /// الحالة غير القابلة للتعديل لشاشة تفاصيل المنتج [ProductDetailsState]
@@ -69,6 +70,10 @@ class ProductDetailsState {
     return value.isEmpty ? Mk.productDefaultTitle.tr : value.tr;
   }
 
+  String get shortDescription {
+    return product?.shortDescription?.trim() ?? '';
+  }
+
   String get description {
     final value = product?.description.trim() ?? '';
     return value.isEmpty ? Mk.productDefaultDescription.tr : value.tr;
@@ -77,18 +82,58 @@ class ProductDetailsState {
   String get imageUrl => product?.imageUrl ?? '';
 
   String get brand => product?.brand ?? '';
-  String get sku => product?.sku ?? '';
-  String get stockText => product?.stockText ?? '';
-  String get salePriceText => (product?.salePrice ?? unitPrice).toStringAsFixed(2);
-  String get oldPriceText => price.toStringAsFixed(2);
 
-  double get price => product?.price ?? 0;
+  List<ProductVariationItem> get variations => product?.variations ?? const [];
+
+  bool get hasVariations =>
+      variations.isNotEmpty ||
+      availableColors.isNotEmpty ||
+      availableSizes.isNotEmpty ||
+      attributeGroups.isNotEmpty;
+
+  /// المتغير المطابق للمواصفات والسمات المحددة حالياً
+  ProductVariationItem? get selectedVariation {
+    return product?.findMatchingVariation(
+      colorId: selectedColorId,
+      colorName: selectedColorOption?.name,
+      size: selectedSize,
+      attributes: selectedAttributes,
+    );
+  }
+
+  String get sku {
+    final matched = selectedVariation;
+    if (matched != null && matched.sku.trim().isNotEmpty) {
+      return matched.sku;
+    }
+    return product?.sku ?? '';
+  }
+
+  String get stockText {
+    final matched = selectedVariation;
+    if (matched != null) {
+      return matched.stockQty > 0 ? '${matched.stockQty} متوفر' : 'غير متوفر';
+    }
+    return product?.stockText ?? '';
+  }
+
+  /// السعر المتغير ديناميكياً بحسب المتغير (Variation) المحدد
+  double get price {
+    final matched = selectedVariation;
+    if (matched != null && matched.price > 0) {
+      return matched.price;
+    }
+    return product?.price ?? 0;
+  }
 
   int get discount => product?.discountPercent ?? 0;
 
   bool get hasDiscount => discount > 0;
 
   double get unitPrice => hasDiscount ? (price * (1 - discount / 100)) : price;
+
+  String get salePriceText => unitPrice.toStringAsFixed(2);
+  String get oldPriceText => price.toStringAsFixed(2);
 
   double get totalPrice => unitPrice * quantity;
 
@@ -111,12 +156,7 @@ class ProductDetailsState {
     final raw = product?.availableColors;
     if (raw == null || raw.isEmpty) return const [];
     return raw
-        .where(
-          (e) =>
-              e.id.trim().isNotEmpty &&
-              e.name.trim().isNotEmpty &&
-              e.imageUrl.trim().isNotEmpty,
-        )
+        .where((e) => e.id.trim().isNotEmpty && e.name.trim().isNotEmpty)
         .toList();
   }
 
@@ -206,12 +246,12 @@ class ProductDetailsState {
     return summaryList.isEmpty ? 'اختر الخيارات' : summaryList.join(' • ');
   }
 
-  ProductSizeGuide get sizeGuide {
-    if (product?.sizeGuide != null) {
-      return product!.sizeGuide!;
-    }
-    return ProductSizeGuide.forProductTitle(title, availableSizes);
-  }
+  ProductSizeGuide? get sizeGuide => product?.sizeGuide;
+
+  bool get hasSizeGuide =>
+      sizeGuide != null &&
+      (sizeGuide!.rows.isNotEmpty ||
+          (sizeGuide!.note != null && sizeGuide!.note!.trim().isNotEmpty));
 
   int get photosCount => images.length;
 
@@ -281,20 +321,19 @@ class ProductDetailsState {
 
   @override
   int get hashCode => Object.hash(
-        product,
-        isLoading,
-        errorMessage,
-        selectedColorId,
-        selectedSize,
-        Object.hashAll(selectedAttributes.entries),
-        Object.hashAll(attributeGroups),
-        selectedThumb,
-        quantity,
-        deliverySelected,
-        Object.hashAll(reviews),
-        Object.hashAll(mostPopular),
-        Object.hashAll(recommended),
-        isFavorite,
-      );
+    product,
+    isLoading,
+    errorMessage,
+    selectedColorId,
+    selectedSize,
+    Object.hashAll(selectedAttributes.entries),
+    Object.hashAll(attributeGroups),
+    selectedThumb,
+    quantity,
+    deliverySelected,
+    Object.hashAll(reviews),
+    Object.hashAll(mostPopular),
+    Object.hashAll(recommended),
+    isFavorite,
+  );
 }
-

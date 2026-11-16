@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:rwnaqk_frontend/core/network/api_client.dart';
-import 'package:rwnaqk_frontend/core/network/api_endpoints.dart';
+import 'package:rwnaqk_frontend/modules/auth/data/auth_endpoints.dart';
 import 'package:rwnaqk_frontend/core/network/api_exceptions.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_token_storage.dart';
 import 'package:rwnaqk_frontend/modules/auth/controllers/login_service.dart';
@@ -38,7 +38,7 @@ class AuthRepositoryImpl implements IAuthRepository {
 
     try {
       final response = await _api.post<dynamic>(
-        ApiEndpoints.login,
+        AuthEndpoints.login,
         data: payload,
       );
 
@@ -163,7 +163,7 @@ class AuthRepositoryImpl implements IAuthRepository {
 
     try {
       final response = await _api.post<dynamic>(
-        ApiEndpoints.register,
+        AuthEndpoints.register,
         data: payload,
       );
 
@@ -248,7 +248,7 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<CustomerModel> me() async {
-    final response = await _api.get<dynamic>(ApiEndpoints.me);
+    final response = await _api.get<dynamic>(AuthEndpoints.me);
     final data = response.data;
     if (data is Map<String, dynamic> && data['customer'] is Map<String, dynamic>) {
       return CustomerModel.fromJson(data['customer'] as Map<String, dynamic>);
@@ -259,7 +259,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<void> logout() async {
     try {
-      await _api.post<dynamic>(ApiEndpoints.logout);
+      await _api.post<dynamic>(AuthEndpoints.logout);
     } finally {
       await _tokenStorage.clearToken();
     }
@@ -268,7 +268,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   @override
   Future<void> forgotPassword({required String email}) async {
     await _api.post<dynamic>(
-      ApiEndpoints.forgotPassword,
+      AuthEndpoints.forgotPassword,
       data: <String, dynamic>{'email': email.trim().toLowerCase()},
     );
   }
@@ -279,7 +279,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String code,
   }) async {
     await _api.post<dynamic>(
-      ApiEndpoints.verifyPasswordResetCode,
+      AuthEndpoints.verifyPasswordResetCode,
       data: <String, dynamic>{
         'email': email.trim().toLowerCase(),
         'code': code.trim(),
@@ -294,7 +294,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String password,
   }) async {
     await _api.post<dynamic>(
-      ApiEndpoints.resetPassword,
+      AuthEndpoints.resetPassword,
       data: <String, dynamic>{
         'token': token,
         'email': email.trim().toLowerCase(),
@@ -306,13 +306,13 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<void> sendEmailVerificationCode() async {
-    await _api.post<dynamic>(ApiEndpoints.sendVerificationCode);
+    await _api.post<dynamic>(AuthEndpoints.sendVerificationCode);
   }
 
   @override
   Future<void> verifyEmailCode({required String code}) async {
     await _api.post<dynamic>(
-      ApiEndpoints.verifyEmailCode,
+      AuthEndpoints.verifyEmailCode,
       data: <String, dynamic>{'code': code.trim()},
     );
   }
@@ -354,7 +354,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     }
 
     final response = await _api.post<dynamic>(
-      ApiEndpoints.updateProfile,
+      AuthEndpoints.updateProfile,
       data: postData,
     );
 
@@ -373,7 +373,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String newPasswordConfirmation,
   }) async {
     await _api.post<dynamic>(
-      ApiEndpoints.changePassword,
+      AuthEndpoints.changePassword,
       data: <String, dynamic>{
         'current_password': currentPassword,
         'password': newPassword,
@@ -384,7 +384,7 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<List<UserSessionModel>> getSessions() async {
-    final response = await _api.get<dynamic>(ApiEndpoints.sessions);
+    final response = await _api.get<dynamic>(AuthEndpoints.sessions);
     final data = response.data;
     if (data is Map<String, dynamic> && data['sessions'] is List) {
       final list = data['sessions'] as List;
@@ -398,17 +398,17 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<void> revokeSession(int id) async {
-    await _api.delete<dynamic>(ApiEndpoints.revokeSession(id));
+    await _api.delete<dynamic>(AuthEndpoints.revokeSession(id));
   }
 
   @override
   Future<void> revokeOtherSessions() async {
-    await _api.post<dynamic>(ApiEndpoints.revokeOtherSessions);
+    await _api.post<dynamic>(AuthEndpoints.revokeOtherSessions);
   }
 
   @override
   Future<List<PasskeyModel>> getPasskeys() async {
-    final response = await _api.get<dynamic>(ApiEndpoints.passkeys);
+    final response = await _api.get<dynamic>(AuthEndpoints.passkeys);
     final data = response.data;
     if (data is Map<String, dynamic> && data['passkeys'] is List) {
       final list = data['passkeys'] as List;
@@ -437,7 +437,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     }
 
     final response = await _api.post<dynamic>(
-      ApiEndpoints.passkeys,
+      AuthEndpoints.passkeys,
       data: payload,
     );
     final data = response.data;
@@ -465,7 +465,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     }
 
     final response = await _api.post<dynamic>(
-      ApiEndpoints.passkeyLogin,
+      AuthEndpoints.passkeyLogin,
       data: payload,
     );
     final data = response.data;
@@ -492,6 +492,6 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<void> deletePasskey(int id) async {
-    await _api.delete<dynamic>(ApiEndpoints.deletePasskey(id));
+    await _api.delete<dynamic>(AuthEndpoints.deletePasskey(id));
   }
 }

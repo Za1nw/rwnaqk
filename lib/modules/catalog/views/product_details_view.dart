@@ -5,13 +5,13 @@ import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/catalog/providers/catalog_providers.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_details_header_card.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_reviews_section.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_size_guide_sheet.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_specifications_card.dart';
-import 'package:rwnaqk_frontend/modules/catalog/widgets/product_trust_badges.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_variants_sheet.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_grid_section.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
@@ -48,9 +48,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           item = args['item'] as HomeProductItem;
           _productId = item.id;
         } else {
-          _productId = args['id']?.toString() ??
-              args['productId']?.toString() ??
-              '1';
+          _productId =
+              args['id']?.toString() ?? args['productId']?.toString() ?? '1';
         }
       } else if (args is String) {
         _productId = args;
@@ -59,10 +58,9 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       }
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(productDetailsFamily(_productId).notifier).loadProduct(
-              initialItem: item,
-              args: args,
-            );
+        ref
+            .read(productDetailsFamily(_productId).notifier)
+            .loadProduct(initialItem: item, args: args);
       });
     }
   }
@@ -76,8 +74,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     final justCols = width >= 1100
         ? 4
         : width >= 780
-            ? 3
-            : 2;
+        ? 3
+        : 2;
 
     return Scaffold(
       backgroundColor: context.background,
@@ -99,68 +97,63 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
           children: [
-            // 1. Header Card (Gallery, Info, and Variant Selector Tile)
+            // 1. Header Card (معرض الصور، البيانات الأساسية، والخصائص والكمية المباشرة)
             ProductDetailsHeaderCard(
               images: state.images,
               title: state.title,
+              shortDescription: state.shortDescription,
               description: state.description,
               brand: state.brand,
-              priceText: '\$${state.salePriceText.replaceAll('.00', '')}',
-              oldPriceText:
-                  state.hasDiscount ? '\$${state.oldPriceText}' : null,
-              discountText:
-                  state.hasDiscount ? '-${state.discount}%' : null,
+              priceText: AppMoneyUtils.riyal(state.unitPrice),
+              oldPriceText: state.hasDiscount
+                  ? AppMoneyUtils.riyal(state.price)
+                  : null,
+              discountText: state.hasDiscount ? '-${state.discount}%' : null,
               timerWidget: null,
               rating: state.hasReviews ? state.averageRating : null,
               reviewsCount: state.hasReviews ? state.reviewsCount : null,
               infoText: state.stockText,
               isFavorite: state.isFavorite,
               onFavorite: () => notifier.toggleFavorite(context),
-              availableColors: state.availableColors,
-              selectedColorId: state.selectedColorId,
-              onSelectColor: notifier.setSelectedColor,
-              availableSizes: state.availableSizes,
-              selectedSize: state.selectedSize,
-              onSelectSize: notifier.setSelectedSize,
-              variationsTitle: Tk.productDetailsVariations.tr,
+              hasVariations: state.hasVariations,
               selectedChips: state.selectedOptionChips,
-              variationImages: state.variationImages,
-              selectedVariationImageIndex: state.selectedThumb,
-              onSelectVariationImage: notifier.selectThumb,
-              onShare: notifier.shareProduct,
-              showArrowButton: true,
-              onArrowTap: () =>
-                  ProductVariantsSheet.show(context, productId: _productId),
+              attributeGroups: state.attributeGroups,
+              selectedAttributes: state.selectedAttributes,
+              onSelectAttribute: notifier.selectAttribute,
+              hasSizeGuide: state.hasSizeGuide,
+              onSizeGuideTap: state.hasSizeGuide
+                  ? () => ProductSizeGuideSheet.show(
+                      context,
+                      sizeGuide: state.sizeGuide,
+                      currentSelectedSize: state.selectedSize,
+                    )
+                  : null,
+              quantity: state.quantity,
+              onIncrementQuantity: notifier.incrementQuantity,
+              onDecrementQuantity: notifier.decrementQuantity,
+              totalPriceText: AppMoneyUtils.riyal(state.totalPrice),
               onOpenVariantsSheet: () =>
                   ProductVariantsSheet.show(context, productId: _productId),
-              onSizeGuideTap: () => ProductSizeGuideSheet.show(
-                context,
-                currentSelectedSize: state.selectedSize,
-                onSizeSelected: notifier.setSelectedSize,
-              ),
+              onShare: notifier.shareProduct,
             ),
 
             const SizedBox(height: _sectionGap),
 
-            // 2. E-Commerce Trust Badges (Authentic, Fast Delivery, 14-day returns, Secure Payment)
-            const ProductTrustBadges(),
-
-            const SizedBox(height: _sectionGap),
-
-            // 3. Specifications Card (Material, Origin, SKU, Care Instructions, and Size Guide link)
+            // 2. Specifications Card (المواصفات - محتوى الوصف والخصائص التفصيلية)
             ProductSpecificationsCard(
-              sku: state.sku,
-              selectedSize: state.selectedSize,
-              onSelectSize: notifier.setSelectedSize,
+              description: state.description,
             ),
-
             const SizedBox(height: _sectionGap),
 
             // 4. Product Reviews (With in-app review submission)
             ProductReviewsSection(
               reviews: state.reviews,
               onAddReview: (rating, comment, name) {
-                notifier.addReview(rating: rating, comment: comment, name: name);
+                notifier.addReview(
+                  rating: rating,
+                  comment: comment,
+                  name: name,
+                );
               },
               onViewAll: () => AppNav.toNamed(
                 AppRoutes.reviews,
@@ -310,9 +303,7 @@ class _ProductDetailsAppBar extends ConsumerWidget
                   ? Icons.favorite_rounded
                   : Icons.favorite_border_rounded,
               size: 18,
-              color: isFavorite
-                  ? context.destructive
-                  : context.mutedForeground,
+              color: isFavorite ? context.destructive : context.mutedForeground,
             ),
           ),
         ),
@@ -400,8 +391,9 @@ class _BottomBar extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: context.shadow
-                  .withValues(alpha: context.isDark ? 0.25 : 0.06),
+              color: context.shadow.withValues(
+                alpha: context.isDark ? 0.25 : 0.06,
+              ),
               blurRadius: 16,
               offset: const Offset(0, -4),
             ),
@@ -434,8 +426,7 @@ class _BottomBar extends StatelessWidget {
                   isFavorite
                       ? Icons.favorite_rounded
                       : Icons.favorite_border_rounded,
-                  color:
-                      isFavorite ? context.destructive : context.foreground,
+                  color: isFavorite ? context.destructive : context.foreground,
                   size: 22,
                 ),
               ),
@@ -453,10 +444,7 @@ class _BottomBar extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   padding: const EdgeInsets.symmetric(horizontal: 8),
-                  side: BorderSide(
-                    color: context.primary,
-                    width: 1.5,
-                  ),
+                  side: BorderSide(color: context.primary, width: 1.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),

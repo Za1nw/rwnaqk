@@ -95,8 +95,9 @@ class _ReviewTile extends StatelessWidget {
         border: Border.all(color: context.border.withValues(alpha: 0.35)),
         boxShadow: [
           BoxShadow(
-            color:
-                context.shadow.withValues(alpha: context.isDark ? 0.14 : 0.06),
+            color: context.shadow.withValues(
+              alpha: context.isDark ? 0.14 : 0.06,
+            ),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -203,15 +204,24 @@ class _StarsRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (i) {
         if (i < full) {
-          return const Icon(Icons.star_rounded,
-              size: 18, color: Color(0xFFF59E0B));
+          return const Icon(
+            Icons.star_rounded,
+            size: 18,
+            color: Color(0xFFF59E0B),
+          );
         }
         if (i == full && hasHalf) {
-          return const Icon(Icons.star_half_rounded,
-              size: 18, color: Color(0xFFF59E0B));
+          return const Icon(
+            Icons.star_half_rounded,
+            size: 18,
+            color: Color(0xFFF59E0B),
+          );
         }
-        return Icon(Icons.star_rounded,
-            size: 18, color: context.border.withValues(alpha: 0.8));
+        return Icon(
+          Icons.star_rounded,
+          size: 18,
+          color: context.border.withValues(alpha: 0.8),
+        );
       }),
     );
   }

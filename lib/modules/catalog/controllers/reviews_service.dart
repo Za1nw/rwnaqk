@@ -1,4 +1,4 @@
-﻿import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
+import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
 
 /// هذا الملف مسؤول عن منطق البيانات الخاص بشاشة المراجعات.
@@ -32,13 +32,11 @@ class ReviewsService {
       return arg.map((e) {
         if (e is ProductReview) return e;
         if (e is Map<String, dynamic>) return ProductReview.fromMap(e);
-        if (e is Map) return ProductReview.fromMap(Map<String, dynamic>.from(e));
+        if (e is Map) {
+          return ProductReview.fromMap(Map<String, dynamic>.from(e));
+        }
 
-        return const ProductReview(
-          name: 'Unknown',
-          rating: 0,
-          text: '',
-        );
+        return const ProductReview(name: 'Unknown', rating: 0, text: '');
       }).toList();
     }
 

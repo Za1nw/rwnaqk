@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
@@ -34,6 +35,14 @@ class _ProductDetailsHeaderGalleryState
   void initState() {
     super.initState();
     _pageController = PageController();
+  }
+
+  @override
+  void didUpdateWidget(covariant ProductDetailsHeaderGallery oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.images.isNotEmpty && _index >= widget.images.length) {
+      _index = widget.images.length - 1;
+    }
   }
 
   @override
@@ -101,9 +110,7 @@ class _ProductDetailsHeaderGalleryState
 
                     return GestureDetector(
                       onTap: () => _openFullScreenViewer(idx),
-                      child: _ZoomableGalleryImage(
-                        imageUrl: images[idx],
-                      ),
+                      child: _ZoomableGalleryImage(imageUrl: images[idx]),
                     );
                   },
                 ),
@@ -163,7 +170,9 @@ class _ProductDetailsHeaderGalleryState
                             borderRadius: BorderRadius.circular(999),
                             boxShadow: [
                               BoxShadow(
-                                color: context.destructive.withValues(alpha: 0.35),
+                                color: context.destructive.withValues(
+                                  alpha: 0.35,
+                                ),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -325,9 +334,7 @@ class _ProductDetailsHeaderGalleryState
 class _ZoomableGalleryImage extends StatefulWidget {
   final String imageUrl;
 
-  const _ZoomableGalleryImage({
-    required this.imageUrl,
-  });
+  const _ZoomableGalleryImage({required this.imageUrl});
 
   @override
   State<_ZoomableGalleryImage> createState() => _ZoomableGalleryImageState();
@@ -364,10 +371,7 @@ class _ZoomableGalleryImageState extends State<_ZoomableGalleryImage> {
         scaleEnabled: true,
         clipBehavior: Clip.none,
         child: SizedBox.expand(
-          child: AppNetworkImage(
-            url: widget.imageUrl,
-            fit: BoxFit.cover,
-          ),
+          child: AppNetworkImage(url: widget.imageUrl, fit: BoxFit.cover),
         ),
       ),
     );

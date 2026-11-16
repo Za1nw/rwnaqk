@@ -96,28 +96,18 @@ class _ProductsListingScreenState extends ConsumerState<ProductsListingScreen> {
               ),
               onFilter: () => _openFilters(context),
             ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 8),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
             if (isLoading)
               const ListingSkeletonSliver()
             else if (error != null)
-              ListingErrorSliver(
-                message: error,
-                onRetry: notifier.refreshList,
-              )
+              ListingErrorSliver(message: error, onRetry: notifier.refreshList)
             else if (items.isEmpty)
-              ListingEmptySliver(
-                onRefresh: notifier.refreshList,
-              )
+              ListingEmptySliver(onRefresh: notifier.refreshList)
             else
               ListingGridSliver(items: items),
             if (showGrid)
               ListingLoadingMoreSliver(isLoadingMore: state.isLoadingMore),
-            if (showGrid)
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 20),
-              ),
+            if (showGrid) const SliverToBoxAdapter(child: SizedBox(height: 20)),
           ],
         ),
       ),

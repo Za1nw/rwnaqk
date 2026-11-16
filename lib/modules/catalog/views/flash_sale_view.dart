@@ -132,8 +132,9 @@ class _FlashSaleHeroHeader extends StatelessWidget {
     final softCircle = context.isDark
         ? accent.withValues(alpha: 0.18)
         : accent.withValues(alpha: 0.90);
-    final deepCircle =
-        context.isDark ? primary.withValues(alpha: 0.85) : primary;
+    final deepCircle = context.isDark
+        ? primary.withValues(alpha: 0.85)
+        : primary;
 
     final hhStr = AppDateUtils.pad2(hh);
     final mmStr = AppDateUtils.pad2(mm);
@@ -228,17 +229,16 @@ class _FlashSaleHeroHeader extends StatelessWidget {
 class _FlashSaleCountdownBox extends StatelessWidget {
   final String text;
 
-  const _FlashSaleCountdownBox({
-    required this.text,
-  });
+  const _FlashSaleCountdownBox({required this.text});
 
   @override
   Widget build(BuildContext context) {
     final bg = context.isDark
         ? context.background.withValues(alpha: 0.35)
         : context.background;
-    final border =
-        context.border.withValues(alpha: context.isDark ? 0.55 : 0.35);
+    final border = context.border.withValues(
+      alpha: context.isDark ? 0.55 : 0.35,
+    );
 
     return Container(
       width: 32,
@@ -250,8 +250,9 @@ class _FlashSaleCountdownBox extends StatelessWidget {
         border: Border.all(color: border),
         boxShadow: [
           BoxShadow(
-            color:
-                context.shadow.withValues(alpha: context.isDark ? 0.20 : 0.12),
+            color: context.shadow.withValues(
+              alpha: context.isDark ? 0.20 : 0.12,
+            ),
             blurRadius: 10,
             offset: const Offset(0, 6),
           ),

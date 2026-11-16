@@ -47,13 +47,14 @@ final categoriesProvider = FutureProvider<List<HomeCategoryItem>>((ref) async {
 /// موفر حالة قائمة المنتجات والكتالوج [productsListingProvider]
 final productsListingProvider =
     NotifierProvider<ProductsListingNotifier, ProductsListingState>(
-  ProductsListingNotifier.new,
-);
+      ProductsListingNotifier.new,
+    );
 
 /// متحكم حالة قائمة المنتجات المعتمد على Riverpod 3
 class ProductsListingNotifier extends Notifier<ProductsListingState> {
   IProductsRepository get _repo => ref.read(productsRepositoryProvider);
-  ProductsListingService get _service => ref.read(productsListingServiceProvider);
+  ProductsListingService get _service =>
+      ref.read(productsListingServiceProvider);
 
   @override
   ProductsListingState build() {
@@ -66,6 +67,11 @@ class ProductsListingNotifier extends Notifier<ProductsListingState> {
     final t = map['title'];
     final s = map['source'];
     final raw = map['items'];
+    final catId =
+        map['categoryId']?.toString() ??
+        (s is String && s.startsWith('category_')
+            ? s.replaceFirst('category_', '')
+            : null);
 
     final initialList = _service.resolveItems(raw);
     state = state.copyWith(
@@ -75,6 +81,7 @@ class ProductsListingNotifier extends Notifier<ProductsListingState> {
       items: initialList,
       page: 1,
       hasMore: true,
+      categoryId: catId,
       errorMessage: () => null,
     );
 
@@ -106,6 +113,7 @@ class ProductsListingNotifier extends Notifier<ProductsListingState> {
               sort: state.sort,
               minPrice: minPrice,
               maxPrice: maxPrice,
+              categoryId: state.categoryId,
             );
 
       final sorted = _service.applySort(list: base, sort: state.sort);
@@ -146,13 +154,11 @@ class ProductsListingNotifier extends Notifier<ProductsListingState> {
         sort: state.sort,
         minPrice: minPrice,
         maxPrice: maxPrice,
+        categoryId: state.categoryId,
       );
 
       if (more.isEmpty) {
-        state = state.copyWith(
-          isLoadingMore: false,
-          hasMore: false,
-        );
+        state = state.copyWith(isLoadingMore: false, hasMore: false);
       } else {
         final merged = [...state.items, ...more];
         final sorted = _service.applySort(list: merged, sort: state.sort);
@@ -198,10 +204,7 @@ class ProductsListingNotifier extends Notifier<ProductsListingState> {
 
   /// إعادة تعيين الفلاتر
   void clearFilters() {
-    state = state.copyWith(
-      filterResult: () => null,
-      activeFilterCount: 0,
-    );
+    state = state.copyWith(filterResult: () => null, activeFilterCount: 0);
     _applySortAndFilter();
     if (state.initialItems.isEmpty) {
       refreshList();
@@ -209,7 +212,9 @@ class ProductsListingNotifier extends Notifier<ProductsListingState> {
   }
 
   void _applySortAndFilter() {
-    final base = state.initialItems.isNotEmpty ? state.initialItems : state.items;
+    final base = state.initialItems.isNotEmpty
+        ? state.initialItems
+        : state.items;
     final sorted = _service.applySort(list: base, sort: state.sort);
     final filtered = _service.applyFilters(
       list: sorted,
@@ -221,9 +226,11 @@ class ProductsListingNotifier extends Notifier<ProductsListingState> {
 
 /// موفر تفاصيل المنتج بالعائلة [productDetailsFamily]
 final productDetailsFamily =
-    NotifierProvider.family<ProductDetailsNotifier, ProductDetailsState, String>(
-  (arg) => ProductDetailsNotifier(arg),
-);
+    NotifierProvider.family<
+      ProductDetailsNotifier,
+      ProductDetailsState,
+      String
+    >((arg) => ProductDetailsNotifier(arg));
 
 /// متحكم تفاصيل المنتج وخيارات المقاس والألوان والمراجعات
 class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
@@ -242,16 +249,14 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
   }
 
   /// تحميل المنتج من الكائن الأولي أو عبر المستودع
-  Future<void> loadProduct({
-    HomeProductItem? initialItem,
-    dynamic args,
-  }) async {
+  Future<void> loadProduct({HomeProductItem? initialItem, dynamic args}) async {
     final map = (args is Map) ? args : const {};
 
     final reviews = _service.resolveReviews(map['reviews']);
     final mostPopular = _service.resolveItems(map['mostPopular']);
     final recommended = _service.resolveItems(map['recommended']);
 
+    // 1. تهيئة فورية بالكائن الأولي لضمان استجابة الواجهة بلا أي تأخير أو وميض شاشة
     if (initialItem != null) {
       _initFromProduct(
         item: initialItem,
@@ -262,18 +267,20 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
         incomingSize: map['selectedSize'],
         rawGroups: map['attributeGroups'],
       );
-      return;
+    } else {
+      state = state.copyWith(isLoading: true, errorMessage: () => null);
     }
 
-    state = state.copyWith(isLoading: true, errorMessage: () => null);
-
+    // 2. جلب كامل تفاصيل المنتج الحقيقية (المعرض، المتغيرات والأسعار، الوصف والمحتوى) من خادم Laravel API
     try {
       final product = await _repo.getProductById(arg);
       if (product == null) {
-        state = state.copyWith(
-          isLoading: false,
-          errorMessage: () => 'Product not found',
-        );
+        if (initialItem == null) {
+          state = state.copyWith(
+            isLoading: false,
+            errorMessage: () => 'Product not found',
+          );
+        }
         return;
       }
 
@@ -286,15 +293,21 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
         reviews: fetchedReviews,
         mostPopular: mostPopular,
         recommended: recommended,
-        incomingColor: map['selectedColorId'] ?? map['selectedColor'],
-        incomingSize: map['selectedSize'],
+        incomingColor: state.selectedColorId.isNotEmpty
+            ? state.selectedColorId
+            : (map['selectedColorId'] ?? map['selectedColor']),
+        incomingSize: state.selectedSize.isNotEmpty
+            ? state.selectedSize
+            : map['selectedSize'],
         rawGroups: map['attributeGroups'],
       );
     } catch (_) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: () => 'Failed to load product details',
-      );
+      if (initialItem == null) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: () => 'Failed to load product details',
+        );
+      }
     }
   }
 
@@ -307,63 +320,62 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
     dynamic incomingSize,
     dynamic rawGroups,
   }) {
-    final availableColors = item.availableColors;
-    final availableSizes = item.availableSizes;
-
-    final resolvedColorId = _service.resolveSelectedColorId(
-      incomingValue: incomingColor,
-      availableValues: availableColors,
-    );
-
-    final resolvedSize = _service.resolveSelectedSize(
-      incomingValue: incomingSize,
-      availableValues: availableSizes,
-    );
+    final groups = item.attributeGroups.isNotEmpty
+        ? item.attributeGroups
+        : (rawGroups is List<ProductAttributeGroup>
+            ? rawGroups
+            : <ProductAttributeGroup>[]);
 
     final attrs = <String, String>{};
-    final groups = <ProductAttributeGroup>[];
+    String defaultColor = '';
+    String defaultSize = '';
 
-    if (rawGroups is List<ProductAttributeGroup> && rawGroups.isNotEmpty) {
-      groups.addAll(rawGroups);
-      for (final g in rawGroups) {
-        if (g.options.isNotEmpty) {
-          attrs[g.id] = g.options.first.id;
+    // 1. إذا كان للمنتج متغيرات (variations)، نعين أول تشكيلة افتراضياً
+    if (item.variations.isNotEmpty) {
+      for (final combo in item.variations.first.combinations) {
+        attrs[combo.variationId.toString()] = combo.valueId.toString();
+        attrs[combo.variationName] = combo.valueName;
+
+        final vNameLower = combo.variationName.toLowerCase();
+        if (vNameLower.contains('color') || vNameLower.contains('لون') || combo.valueColor.isNotEmpty) {
+          if (defaultColor.isEmpty) defaultColor = combo.valueId.toString();
+        } else if (vNameLower.contains('size') || vNameLower.contains('مقاس')) {
+          if (defaultSize.isEmpty) defaultSize = combo.valueName;
         }
       }
-    } else {
-      if (availableColors.isNotEmpty) {
-        groups.add(
-          ProductAttributeGroup(
-            id: 'color',
-            name: Tk.productDetailsColorLabel.tr,
-            type: ProductAttributeType.color,
-            options: availableColors.map((c) {
-              return ProductAttributeOption(
-                id: c.id,
-                label: c.name.tr,
-                imageUrl: c.imageUrl,
-              );
-            }).toList(),
-          ),
-        );
-        attrs['color'] = resolvedColorId.isNotEmpty ? resolvedColorId : availableColors.first.id;
-      }
+    }
 
-      if (availableSizes.isNotEmpty) {
-        groups.add(
-          ProductAttributeGroup(
-            id: 'size',
-            name: Tk.productDetailsSizeLabel.tr,
-            type: ProductAttributeType.text,
-            options: availableSizes.map((s) {
-              return ProductAttributeOption(
-                id: s,
-                label: s,
-              );
-            }).toList(),
-          ),
-        );
-        attrs['size'] = resolvedSize.isNotEmpty ? resolvedSize : availableSizes.first;
+    // 2. ضمان وجود اختيار افتراضي لكل مجموعة خصائص
+    for (final g in groups) {
+      if (!attrs.containsKey(g.id) && g.options.isNotEmpty) {
+        attrs[g.id] = g.options.first.id;
+      }
+      if (g.type == ProductAttributeType.color && defaultColor.isEmpty && g.options.isNotEmpty) {
+        defaultColor = attrs[g.id] ?? g.options.first.id;
+      } else if (g.type == ProductAttributeType.text && defaultSize.isEmpty && g.options.isNotEmpty) {
+        defaultSize = attrs[g.id] ?? g.options.first.id;
+      }
+    }
+
+    // 3. مطابقة القيم الخارجية (incomingColor أو incomingSize) إن وجدت
+    if (incomingColor != null && incomingColor.toString().isNotEmpty) {
+      final colorStr = incomingColor.toString();
+      defaultColor = colorStr;
+      for (final g in groups) {
+        if (g.type == ProductAttributeType.color) {
+          attrs[g.id] = colorStr;
+          break;
+        }
+      }
+    }
+    if (incomingSize != null && incomingSize.toString().isNotEmpty) {
+      final sizeStr = incomingSize.toString();
+      defaultSize = sizeStr;
+      for (final g in groups) {
+        if (g.type == ProductAttributeType.text) {
+          attrs[g.id] = sizeStr;
+          break;
+        }
       }
     }
 
@@ -372,15 +384,15 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
     state = state.copyWith(
       product: () => item,
       isLoading: false,
-      selectedColorId: resolvedColorId,
-      selectedSize: resolvedSize,
+      selectedColorId: defaultColor,
+      selectedSize: defaultSize,
       selectedAttributes: attrs,
       attributeGroups: groups,
       reviews: reviews,
       mostPopular: mostPopular,
       recommended: recommended,
       isFavorite: isFav,
-      quantity: 1,
+      quantity: state.quantity > 0 ? state.quantity : 1,
     );
   }
 
@@ -391,16 +403,16 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
 
     String nextColor = state.selectedColorId;
     String nextSize = state.selectedSize;
-    int nextThumb = state.selectedThumb;
 
-    if (groupId == 'color') {
-      nextColor = optionId;
-    } else if (groupId == 'size') {
-      nextSize = optionId;
-    } else if (groupId == 'style') {
-      final index = int.tryParse(optionId.replaceAll('style_', ''));
-      if (index != null && index >= 0 && index < state.variationImages.length) {
-        nextThumb = index;
+    // تحديث اللون أو المقاس مباشرة وفقاً لنوع المجموعة
+    for (final g in state.attributeGroups) {
+      if (g.id == groupId) {
+        if (g.type == ProductAttributeType.color) {
+          nextColor = optionId;
+        } else if (g.type == ProductAttributeType.text) {
+          nextSize = optionId;
+        }
+        break;
       }
     }
 
@@ -408,7 +420,6 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
       selectedAttributes: nextAttrs,
       selectedColorId: nextColor,
       selectedSize: nextSize,
-      selectedThumb: nextThumb,
     );
   }
 
@@ -464,14 +475,19 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
       final variantText = AppProductUtils.joinInline(state.selectedOptionChips);
       final stableKey = state.stableVariantKey;
 
-      ref.read(cartProvider.notifier).addToCart(
-        current,
-        quantity: state.quantity,
-        variantText: variantText.trim().isEmpty ? null : variantText,
-        stableVariantId: stableKey.trim().isEmpty ? null : stableKey,
-        rating: state.hasReviews ? state.averageRating : null,
-        reviewsCount: state.hasReviews ? state.reviewsCount : null,
-      );
+      final effectivePrice = state.price;
+      final effectiveItem = current.copyWith(price: effectivePrice);
+
+      ref
+          .read(cartProvider.notifier)
+          .addToCart(
+            effectiveItem,
+            quantity: state.quantity,
+            variantText: variantText.trim().isEmpty ? null : variantText,
+            stableVariantId: stableKey.trim().isEmpty ? null : stableKey,
+            rating: state.hasReviews ? state.averageRating : null,
+            reviewsCount: state.hasReviews ? state.reviewsCount : null,
+          );
 
       final ctx = context ?? AppNav.currentContext;
       if (ctx != null) {
@@ -491,14 +507,19 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
 
     final variantText = AppProductUtils.joinInline(state.selectedOptionChips);
     final stableKey = state.stableVariantKey;
-    ref.read(cartProvider.notifier).addToCart(
-      current,
-      quantity: state.quantity,
-      variantText: variantText.trim().isEmpty ? null : variantText,
-      stableVariantId: stableKey.trim().isEmpty ? null : stableKey,
-      rating: state.hasReviews ? state.averageRating : null,
-      reviewsCount: state.hasReviews ? state.reviewsCount : null,
-    );
+    final effectivePrice = state.price;
+    final effectiveItem = current.copyWith(price: effectivePrice);
+
+    ref
+        .read(cartProvider.notifier)
+        .addToCart(
+          effectiveItem,
+          quantity: state.quantity,
+          variantText: variantText.trim().isEmpty ? null : variantText,
+          stableVariantId: stableKey.trim().isEmpty ? null : stableKey,
+          rating: state.hasReviews ? state.averageRating : null,
+          reviewsCount: state.hasReviews ? state.reviewsCount : null,
+        );
     AppNav.toNamed(AppRoutes.payment);
   }
 
@@ -516,9 +537,7 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
       text: comment.trim(),
       dateText: Tk.reviewsJustNow.tr,
     );
-    state = state.copyWith(
-      reviews: [newReview, ...state.reviews],
-    );
+    state = state.copyWith(reviews: [newReview, ...state.reviews]);
     AppToast.success(Tk.reviewsSuccessMessage.tr);
   }
 
@@ -580,8 +599,9 @@ class FlashSaleState {
   }
 }
 
-final flashSaleProvider =
-    NotifierProvider<FlashSaleNotifier, FlashSaleState>(FlashSaleNotifier.new);
+final flashSaleProvider = NotifierProvider<FlashSaleNotifier, FlashSaleState>(
+  FlashSaleNotifier.new,
+);
 
 class FlashSaleNotifier extends Notifier<FlashSaleState> {
   Timer? _timer;
@@ -617,10 +637,7 @@ class FlashSaleNotifier extends Notifier<FlashSaleState> {
 
   void selectDiscount(int discount) {
     final prods = _service.loadFlashSaleProducts(selectedDiscount: discount);
-    state = state.copyWith(
-      selectedDiscount: discount,
-      products: prods,
-    );
+    state = state.copyWith(selectedDiscount: discount, products: prods);
   }
 
   void openProduct(HomeProductItem item) {
@@ -628,8 +645,12 @@ class FlashSaleNotifier extends Notifier<FlashSaleState> {
       AppRoutes.product,
       arguments: {
         'item': item,
-        'selectedColorId': item.availableColors.isNotEmpty ? item.availableColors.first.id : null,
-        'selectedSize': item.availableSizes.isNotEmpty ? item.availableSizes.first : null,
+        'selectedColorId': item.availableColors.isNotEmpty
+            ? item.availableColors.first.id
+            : null,
+        'selectedSize': item.availableSizes.isNotEmpty
+            ? item.availableSizes.first
+            : null,
       },
     );
   }

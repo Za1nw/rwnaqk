@@ -1,6 +1,5 @@
-﻿import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
+import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
-import 'package:rwnaqk_frontend/modules/catalog/data/models/product_color_option.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/models/product_review.dart';
 
 class ProductDetailsService {
@@ -30,32 +29,5 @@ class ProductDetailsService {
     }
 
     return AppMockContentUtils.previewReviews;
-  }
-
-  String resolveSelectedColorId({
-    required dynamic incomingValue,
-    required List<ProductColorOption> availableValues,
-  }) {
-    final incoming = (incomingValue ?? '').toString().trim();
-
-    if (incoming.isNotEmpty) {
-      for (final item in availableValues) {
-        if (item.id == incoming) return item.id;
-      }
-    }
-
-    if (availableValues.isNotEmpty) return availableValues.first.id;
-    return '';
-  }
-
-  String resolveSelectedSize({
-    required dynamic incomingValue,
-    required List<String> availableValues,
-  }) {
-    final incoming = (incomingValue ?? '').toString().trim();
-
-    if (incoming.isNotEmpty) return incoming;
-    if (availableValues.isNotEmpty) return availableValues.first;
-    return '';
   }
 }

@@ -18,17 +18,13 @@ class AppShareButton extends StatelessWidget {
     final radius = BorderRadius.circular(14);
 
     return Material(
-      color: filled
-          ? context.primary
-          : context.primary.withValues(alpha: .10),
+      color: filled ? context.primary : context.primary.withValues(alpha: .10),
 
       shape: RoundedRectangleBorder(
         borderRadius: radius,
         side: filled
             ? BorderSide.none
-            : BorderSide(
-                color: context.primary.withValues(alpha: .35),
-              ),
+            : BorderSide(color: context.primary.withValues(alpha: .35)),
       ),
 
       clipBehavior: Clip.antiAlias,
@@ -42,9 +38,7 @@ class AppShareButton extends StatelessWidget {
             child: Icon(
               Icons.ios_share_rounded, // أجمل أيقونة مشاركة
               size: size * .50,
-              color: filled
-                  ? context.accentForeground
-                  : context.primary,
+              color: filled ? context.accentForeground : context.primary,
             ),
           ),
         ),

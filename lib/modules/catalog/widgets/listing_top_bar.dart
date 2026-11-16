@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/app_filter_button.dart';
 
@@ -29,10 +29,7 @@ class ListingTopBar extends StatelessWidget {
 
       leading: IconButton(
         onPressed: onBack,
-        icon: Icon(
-          Icons.arrow_back_ios_new_rounded,
-          color: context.foreground,
-        ),
+        icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.foreground),
       ),
 
       title: Text(
@@ -50,9 +47,7 @@ class ListingTopBar extends StatelessWidget {
           icon: Icon(Icons.swap_vert_rounded, color: context.foreground),
         ),
 
-        AppFilterButton(
-          onTap: onFilter,
-        ),
+        AppFilterButton(onTap: onFilter),
 
         const SizedBox(width: 6),
       ],

@@ -74,7 +74,8 @@ class _AppFilterSheetState extends State<AppFilterSheet> {
   @override
   void initState() {
     super.initState();
-    state = widget.initial ??
+    state =
+        widget.initial ??
         AppFilterResult(
           selectedCategories: <int>{0, 1, 8},
           selectedSizeIndex: 2,
@@ -177,9 +178,7 @@ class _AppFilterSheetState extends State<AppFilterSheet> {
                           selected.contains(i)
                               ? selected.remove(i)
                               : selected.add(i);
-                          state = state.copyWith(
-                            selectedCategories: selected,
-                          );
+                          state = state.copyWith(selectedCategories: selected);
                         });
                       },
                     ),
@@ -191,8 +190,7 @@ class _AppFilterSheetState extends State<AppFilterSheet> {
                         _SegmentedControl(
                           left: Tk.filterClothes,
                           right: Tk.filterShoes,
-                          index:
-                              state.segment == FilterSegment.clothes ? 0 : 1,
+                          index: state.segment == FilterSegment.clothes ? 0 : 1,
                           onChanged: (v) {
                             setState(() {
                               state = state.copyWith(
@@ -250,9 +248,8 @@ class _AppFilterSheetState extends State<AppFilterSheet> {
                         '\$${state.priceRange.start.toInt()}',
                         '\$${state.priceRange.end.toInt()}',
                       ),
-                      onChanged: (v) => setState(
-                        () => state = state.copyWith(priceRange: v),
-                      ),
+                      onChanged: (v) =>
+                          setState(() => state = state.copyWith(priceRange: v)),
                     ),
                     const SizedBox(height: 10),
                     Row(
@@ -513,7 +510,9 @@ class _SegmentedControl extends StatelessWidget {
           curve: Curves.easeOut,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
-            color: on ? context.primary.withValues(alpha: 0.14) : Colors.transparent,
+            color: on
+                ? context.primary.withValues(alpha: 0.14)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
@@ -537,10 +536,7 @@ class _SegmentedControl extends StatelessWidget {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          pill(left, 0),
-          pill(right, 1),
-        ],
+        children: [pill(left, 0), pill(right, 1)],
       ),
     );
   }
@@ -584,7 +580,9 @@ class _ChoiceWrap extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: on
                       ? context.primary.withValues(alpha: 0.14)
-                      : context.input.withValues(alpha: context.isDark ? 0.6 : 1),
+                      : context.input.withValues(
+                          alpha: context.isDark ? 0.6 : 1,
+                        ),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: on
@@ -636,7 +634,9 @@ class _ColorWrap extends StatelessWidget {
               color: colors[i],
               shape: BoxShape.circle,
               border: Border.all(
-                color: on ? context.primary : context.border.withValues(alpha: 0.35),
+                color: on
+                    ? context.primary
+                    : context.border.withValues(alpha: 0.35),
                 width: on ? 2.2 : 1,
               ),
             ),
@@ -655,11 +655,7 @@ class _SortPill extends StatelessWidget {
   final bool on;
   final VoidCallback onTap;
 
-  const _SortPill({
-    required this.text,
-    required this.on,
-    required this.onTap,
-  });
+  const _SortPill({required this.text, required this.on, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -672,7 +668,9 @@ class _SortPill extends StatelessWidget {
               : context.input.withValues(alpha: context.isDark ? 0.6 : 1),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: on ? context.primary : context.border.withValues(alpha: 0.35),
+            color: on
+                ? context.primary
+                : context.border.withValues(alpha: 0.35),
           ),
         ),
         child: InkWell(

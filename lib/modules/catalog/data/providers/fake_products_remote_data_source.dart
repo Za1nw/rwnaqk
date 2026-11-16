@@ -14,8 +14,8 @@ class FakeProductsRepository implements IProductsRepository {
   FakeProductsRepository({
     ProductsListingService? listingService,
     ProductDetailsService? detailsService,
-  })  : _listingService = listingService ?? ProductsListingService(),
-        _detailsService = detailsService ?? ProductDetailsService();
+  }) : _listingService = listingService ?? ProductsListingService(),
+       _detailsService = detailsService ?? ProductDetailsService();
 
   final ProductsListingService _listingService;
   final ProductDetailsService _detailsService;
@@ -29,6 +29,7 @@ class FakeProductsRepository implements IProductsRepository {
     double? maxPrice,
     String? categoryId,
     String? search,
+    bool? isFeatured,
   }) async {
     final list = _listingService.mockProducts(seed: seed);
     var filtered = list;
@@ -41,7 +42,9 @@ class FakeProductsRepository implements IProductsRepository {
     }
     if (search != null && search.trim().isNotEmpty) {
       final q = search.trim().toLowerCase();
-      filtered = filtered.where((p) => p.title.toLowerCase().contains(q)).toList();
+      filtered = filtered
+          .where((p) => p.title.toLowerCase().contains(q))
+          .toList();
     }
     return _listingService.applySort(list: filtered, sort: sort);
   }
@@ -79,7 +82,11 @@ class FakeProductsRepository implements IProductsRepository {
   }
 
   @override
-  Future<List<HomeCategoryItem>> getCategories() async {
+  Future<List<HomeCategoryItem>> getCategories({
+    String? parentId,
+    bool? isFeatured,
+    bool? isTop,
+  }) async {
     return const [
       HomeCategoryItem(
         id: '1',
@@ -108,4 +115,3 @@ class FakeProductsRepository implements IProductsRepository {
     ];
   }
 }
-

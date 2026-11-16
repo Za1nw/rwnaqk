@@ -308,7 +308,9 @@ class _ReviewCard extends StatelessWidget {
         border: Border.all(color: context.border.withValues(alpha: 0.45)),
         boxShadow: [
           BoxShadow(
-            color: context.shadow.withValues(alpha: context.isDark ? 0.08 : 0.03),
+            color: context.shadow.withValues(
+              alpha: context.isDark ? 0.08 : 0.03,
+            ),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -327,7 +329,10 @@ class _ReviewCard extends StatelessWidget {
                   review.name.isNotEmpty
                       ? review.name.characters.first.toUpperCase()
                       : '?',
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                  ),
                 ),
               ),
               const SizedBox(width: 10),

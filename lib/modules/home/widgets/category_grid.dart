@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_category_item.dart';
 
 class CategoryGrid extends StatelessWidget {
@@ -23,24 +24,62 @@ class CategoryGrid extends StatelessWidget {
 
   IconData _categoryIcon(String nameKey) {
     final lower = nameKey.toLowerCase();
-    if (lower.contains('cloth') || lower.contains('ملابس')) {
+    if (lower.contains('نساء') ||
+        lower.contains('نسائ') ||
+        lower.contains('women')) {
+      return Icons.woman_rounded;
+    }
+    if (lower.contains('رجال') ||
+        lower.contains('رجالي') ||
+        lower.contains('men')) {
+      return Icons.man_rounded;
+    }
+    if (lower.contains('منزل') ||
+        lower.contains('أثاث') ||
+        lower.contains('اثاث') ||
+        lower.contains('home') ||
+        lower.contains('furniture')) {
+      return Icons.chair_rounded;
+    }
+    if (lower.contains('مطبخ') ||
+        lower.contains('طهي') ||
+        lower.contains('kitchen')) {
+      return Icons.soup_kitchen_rounded;
+    }
+    if (lower.contains('ساعات') ||
+        lower.contains('ساعة') ||
+        lower.contains('watch')) {
+      return Icons.watch_rounded;
+    }
+    if (lower.contains('cloth') ||
+        lower.contains('ملابس') ||
+        lower.contains('فساتين') ||
+        lower.contains('قمصان')) {
       return Icons.checkroom_rounded;
     }
-    if (lower.contains('shoe') || lower.contains('أحذية')) {
+    if (lower.contains('shoe') ||
+        lower.contains('أحذية') ||
+        lower.contains('احذية')) {
       return Icons.hiking_rounded;
     }
-    if (lower.contains('bag') || lower.contains('حقائب')) {
+    if (lower.contains('bag') ||
+        lower.contains('حقائب') ||
+        lower.contains('شنط') ||
+        lower.contains('محافظ')) {
       return Icons.shopping_bag_rounded;
     }
     if (lower.contains('lingerie')) {
       return Icons.favorite_rounded;
     }
-    if (lower.contains('perfume') || lower.contains('عطور')) {
+    if (lower.contains('perfume') ||
+        lower.contains('عطور') ||
+        lower.contains('عطر')) {
       return Icons.local_florist_rounded;
     }
     if (lower.contains('jewel') ||
         lower.contains('access') ||
-        lower.contains('إكسسوار')) {
+        lower.contains('إكسسوار') ||
+        lower.contains('اكسسوار')) {
       return Icons.diamond_rounded;
     }
     return Icons.category_rounded;
@@ -146,12 +185,31 @@ class _CategoryPillState extends State<_CategoryPill> {
                     ),
                   ],
                 ),
-                child: Center(
-                  child: Icon(
-                    widget.icon,
-                    size: 26,
-                    color: isFirst ? Colors.white : primaryColor,
-                  ),
+                child: ClipOval(
+                  child:
+                      widget.item.imageUrls.isNotEmpty &&
+                          widget.item.imageUrls.first.isNotEmpty &&
+                          !widget.item.imageUrls.first.contains(
+                            'defaults/category.png',
+                          )
+                      ? AppNetworkImage(
+                          url: widget.item.imageUrls.first,
+                          fit: BoxFit.cover,
+                          errorWidget: Center(
+                            child: Icon(
+                              widget.icon,
+                              size: 26,
+                              color: isFirst ? Colors.white : primaryColor,
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: Icon(
+                            widget.icon,
+                            size: 26,
+                            color: isFirst ? Colors.white : primaryColor,
+                          ),
+                        ),
                 ),
               ),
 

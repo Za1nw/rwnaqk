@@ -131,4 +131,3 @@ class _PerkItem {
     required this.accentColor,
   });
 }
-

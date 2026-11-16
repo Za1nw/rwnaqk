@@ -36,8 +36,8 @@ class MainScreen extends ConsumerWidget {
     final String displayName = (fullName != null && fullName.isNotEmpty)
         ? fullName
         : ((firstName != null && firstName.isNotEmpty)
-            ? firstName
-            : 'رَوْنَقُك');
+              ? firstName
+              : 'رَوْنَقُك');
 
     return Scaffold(
       extendBody: true,

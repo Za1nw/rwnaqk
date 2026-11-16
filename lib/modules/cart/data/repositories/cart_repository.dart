@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:rwnaqk_frontend/core/network/api_client.dart';
-import 'package:rwnaqk_frontend/core/network/api_endpoints.dart';
+import 'package:rwnaqk_frontend/modules/cart/data/cart_endpoints.dart';
 import 'package:rwnaqk_frontend/core/network/api_exceptions.dart';
 import 'package:rwnaqk_frontend/modules/cart/data/models/cart_quote_model.dart';
 
@@ -42,7 +42,7 @@ class CartRepositoryImpl implements ICartRepository {
   }) async {
     try {
       final response = await _api.post<Map<String, dynamic>>(
-        ApiEndpoints.cartQuote,
+        CartEndpoints.cartQuote,
         data: {
           'address_id': addressId,
           'items': items,
@@ -86,7 +86,7 @@ class CartRepositoryImpl implements ICartRepository {
   }) async {
     try {
       final response = await _api.post<Map<String, dynamic>>(
-        ApiEndpoints.validateCoupon,
+        CartEndpoints.validateCoupon,
         data: {
           'coupon_code': couponCode.trim(),
           'subtotal': subtotal,

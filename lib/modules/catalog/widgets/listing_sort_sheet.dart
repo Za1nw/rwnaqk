@@ -34,10 +34,7 @@ void openListingSortSheet({
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.of(ctx).pop(),
-                  icon: Icon(
-                    Icons.close_rounded,
-                    color: ctx.mutedForeground,
-                  ),
+                  icon: Icon(Icons.close_rounded, color: ctx.mutedForeground),
                 ),
               ],
             ),
@@ -102,7 +99,9 @@ class _SortTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
           decoration: BoxDecoration(
-            color: context.background.withValues(alpha: context.isDark ? 0.18 : 0.7),
+            color: context.background.withValues(
+              alpha: context.isDark ? 0.18 : 0.7,
+            ),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: selected
@@ -123,11 +122,7 @@ class _SortTile extends StatelessWidget {
                 ),
               ),
               if (selected)
-                Icon(
-                  Icons.check_rounded,
-                  color: context.primary,
-                  size: 20,
-                ),
+                Icon(Icons.check_rounded, color: context.primary, size: 20),
             ],
           ),
         ),

@@ -1,4 +1,4 @@
-﻿import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
+import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mock_product_utils.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
@@ -49,6 +49,8 @@ class ProductsListingService {
           (a, b) => (b.discountPercent ?? 0).compareTo(a.discountPercent ?? 0),
         );
         return out;
+      case ListingSort.popular:
+        return out;
     }
   }
 
@@ -73,4 +75,4 @@ class ProductsListingService {
   }
 }
 
-enum ListingSort { newest, priceLow, priceHigh, discountHigh }
+enum ListingSort { newest, priceLow, priceHigh, discountHigh, popular }

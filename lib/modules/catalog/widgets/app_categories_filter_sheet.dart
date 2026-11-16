@@ -166,7 +166,10 @@ class _Tab extends StatelessWidget {
             color: on ? context.background : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: on
-                ? Border.all(color: context.primary.withValues(alpha: 0.2), width: 1)
+                ? Border.all(
+                    color: context.primary.withValues(alpha: 0.2),
+                    width: 1,
+                  )
                 : null,
             boxShadow: on
                 ? [

@@ -1,6 +1,6 @@
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/network/api_client.dart';
-import 'package:rwnaqk_frontend/core/network/api_endpoints.dart';
+import 'package:rwnaqk_frontend/modules/customer/data/customer_endpoints.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/shipping_address.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/providers/fake_addresses_remote_data_source.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/repositories/addresses_repository.dart';
@@ -24,7 +24,7 @@ class AddressesRepositoryImpl implements IAddressesRepository {
     }
 
     try {
-      final response = await _api.get<dynamic>(ApiEndpoints.customerAddresses);
+      final response = await _api.get<dynamic>(CustomerEndpoints.addresses);
       final data = response.data;
       final rawList = data is Map<String, dynamic> && data['data'] is List
           ? data['data'] as List
@@ -50,7 +50,7 @@ class AddressesRepositoryImpl implements IAddressesRepository {
 
     try {
       final response = await _api.post<dynamic>(
-        ApiEndpoints.customerAddresses,
+        CustomerEndpoints.addresses,
         data: address.toJson(),
       );
 
@@ -73,7 +73,7 @@ class AddressesRepositoryImpl implements IAddressesRepository {
 
     try {
       final response = await _api.put<dynamic>(
-        ApiEndpoints.customerAddressDetails(address.id),
+        CustomerEndpoints.addressDetails(address.id),
         data: address.toJson(),
       );
 
@@ -95,7 +95,7 @@ class AddressesRepositoryImpl implements IAddressesRepository {
     }
 
     try {
-      await _api.delete<dynamic>(ApiEndpoints.customerAddressDetails(id));
+      await _api.delete<dynamic>(CustomerEndpoints.addressDetails(id));
     } catch (_) {
       rethrow;
     }
@@ -109,7 +109,7 @@ class AddressesRepositoryImpl implements IAddressesRepository {
 
     try {
       final response = await _api.patch<dynamic>(
-        ApiEndpoints.customerAddressPrimary(id),
+        CustomerEndpoints.addressPrimary(id),
       );
 
       final data = response.data;

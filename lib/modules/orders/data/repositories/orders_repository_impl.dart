@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/network/api_client.dart';
-import 'package:rwnaqk_frontend/core/network/api_endpoints.dart';
+import 'package:rwnaqk_frontend/modules/orders/data/orders_endpoints.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_details_model.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/models/order_model.dart';
 import 'package:rwnaqk_frontend/modules/orders/data/providers/fake_orders_repository.dart';
@@ -30,7 +30,7 @@ class OrdersRepositoryImpl implements IOrdersRepository {
       return _fallback.getOrders();
     }
 
-    final response = await _api.get<dynamic>(ApiEndpoints.orders);
+    final response = await _api.get<dynamic>(OrdersEndpoints.orders);
     final data = response.data;
     final rawList = data is Map<String, dynamic> && data['data'] is List
         ? data['data'] as List
@@ -50,7 +50,7 @@ class OrdersRepositoryImpl implements IOrdersRepository {
       return _fallback.getOrderById(orderId);
     }
 
-    final response = await _api.get<dynamic>(ApiEndpoints.orderDetails(orderId));
+    final response = await _api.get<dynamic>(OrdersEndpoints.orderDetails(orderId));
     final data = response.data;
     if (data is Map<String, dynamic>) {
       final orderJson = data['data'] is Map<String, dynamic>
@@ -68,7 +68,7 @@ class OrdersRepositoryImpl implements IOrdersRepository {
     }
 
     try {
-      final response = await _api.get<dynamic>(ApiEndpoints.orderDetails(order.id));
+      final response = await _api.get<dynamic>(OrdersEndpoints.orderDetails(order.id));
       final data = response.data;
       if (data is Map<String, dynamic>) {
         final orderJson = data['data'] is Map<String, dynamic>
@@ -96,7 +96,7 @@ class OrdersRepositoryImpl implements IOrdersRepository {
     final idempotencyKey = _uuid.v4();
 
     final response = await _api.post<dynamic>(
-      ApiEndpoints.orders,
+      OrdersEndpoints.orders,
       data: order.toJson(),
       options: Options(
         headers: <String, dynamic>{
@@ -176,7 +176,7 @@ class OrdersRepositoryImpl implements IOrdersRepository {
     }
 
     final response = await _api.post<dynamic>(
-      ApiEndpoints.orders,
+      OrdersEndpoints.orders,
       data: payload,
       options: Options(
         headers: <String, dynamic>{
@@ -206,7 +206,7 @@ class OrdersRepositoryImpl implements IOrdersRepository {
     }
 
     final response =
-        await _api.post<dynamic>(ApiEndpoints.cancelOrder(orderId));
+        await _api.post<dynamic>(OrdersEndpoints.cancelOrder(orderId));
     final data = response.data;
     if (data is Map<String, dynamic>) {
       final orderJson = data['data'] is Map<String, dynamic>

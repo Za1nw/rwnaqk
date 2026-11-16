@@ -8,10 +8,7 @@ import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 class AddReviewSheet extends StatefulWidget {
   final Function(double rating, String comment, String name) onSubmit;
 
-  const AddReviewSheet({
-    super.key,
-    required this.onSubmit,
-  });
+  const AddReviewSheet({super.key, required this.onSubmit});
 
   static Future<void> show(
     BuildContext context, {
@@ -223,22 +220,25 @@ class _AddReviewSheetState extends State<AddReviewSheet> {
                 hintText: 'مثال: سارة محمد',
                 filled: true,
                 fillColor: context.card,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: context.border.withValues(alpha: 0.45)),
+                  borderSide: BorderSide(
+                    color: context.border.withValues(alpha: 0.45),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: context.border.withValues(alpha: 0.45)),
+                  borderSide: BorderSide(
+                    color: context.border.withValues(alpha: 0.45),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: context.primary, width: 1.5),
+                  borderSide: BorderSide(color: context.primary, width: 1.5),
                 ),
               ),
             ),
@@ -265,18 +265,19 @@ class _AddReviewSheetState extends State<AddReviewSheet> {
                 contentPadding: const EdgeInsets.all(14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: context.border.withValues(alpha: 0.45)),
+                  borderSide: BorderSide(
+                    color: context.border.withValues(alpha: 0.45),
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: context.border.withValues(alpha: 0.45)),
+                  borderSide: BorderSide(
+                    color: context.border.withValues(alpha: 0.45),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: context.primary, width: 1.5),
+                  borderSide: BorderSide(color: context.primary, width: 1.5),
                 ),
               ),
             ),
@@ -312,4 +313,3 @@ class _AddReviewSheetState extends State<AddReviewSheet> {
     );
   }
 }
-

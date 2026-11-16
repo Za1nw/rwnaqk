@@ -16,9 +16,7 @@ class ListingSkeletonSliver extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.card,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: context.border.withValues(alpha: 0.35),
-          ),
+          border: Border.all(color: context.border.withValues(alpha: 0.35)),
         ),
       );
     }
@@ -53,10 +51,7 @@ class ListingSkeletonSliver extends StatelessWidget {
 class ListingEmptySliver extends StatelessWidget {
   final VoidCallback onRefresh;
 
-  const ListingEmptySliver({
-    super.key,
-    required this.onRefresh,
-  });
+  const ListingEmptySliver({super.key, required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {

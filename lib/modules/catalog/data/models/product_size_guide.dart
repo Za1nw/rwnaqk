@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class ProductSizeGuideColumn {
   final String id;
   final String label; // e.g. "محيط الصدر", "محيط الخصر", "الطول الكلي"
@@ -17,38 +19,29 @@ class ProductSizeGuideColumn {
     );
   }
 
-  Map<String, dynamic> toMap() => {
-    'id': id,
-    'label': label,
-    'width': width,
-  };
+  Map<String, dynamic> toMap() => {'id': id, 'label': label, 'width': width};
 }
 
 class ProductSizeGuideRow {
   final String size; // e.g. "XS", "S", "M", "L", "XL", "XXL", "3XL"
   final Map<String, String> measurements; // columnId -> measurement value in cm
 
-  const ProductSizeGuideRow({
-    required this.size,
-    required this.measurements,
-  });
+  const ProductSizeGuideRow({required this.size, required this.measurements});
 
   String getVal(String columnId) => measurements[columnId] ?? '-';
 
   factory ProductSizeGuideRow.fromMap(Map<String, dynamic> map) {
     return ProductSizeGuideRow(
       size: (map['size'] ?? '').toString(),
-      measurements: (map['measurements'] as Map?)?.map(
+      measurements:
+          (map['measurements'] as Map?)?.map(
             (k, v) => MapEntry(k.toString(), v.toString()),
           ) ??
           {},
     );
   }
 
-  Map<String, dynamic> toMap() => {
-    'size': size,
-    'measurements': measurements,
-  };
+  Map<String, dynamic> toMap() => {'size': size, 'measurements': measurements};
 }
 
 class ProductSizeGuide {
@@ -68,14 +61,22 @@ class ProductSizeGuide {
     return ProductSizeGuide(
       title: (map['title'] ?? 'دليل المقاسات').toString(),
       note: map['note']?.toString(),
-      columns: (map['columns'] as List?)
-              ?.map((e) =>
-                  ProductSizeGuideColumn.fromMap(Map<String, dynamic>.from(e as Map)))
+      columns:
+          (map['columns'] as List?)
+              ?.map(
+                (e) => ProductSizeGuideColumn.fromMap(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
               .toList() ??
           [],
-      rows: (map['rows'] as List?)
-              ?.map((e) =>
-                  ProductSizeGuideRow.fromMap(Map<String, dynamic>.from(e as Map)))
+      rows:
+          (map['rows'] as List?)
+              ?.map(
+                (e) => ProductSizeGuideRow.fromMap(
+                  Map<String, dynamic>.from(e as Map),
+                ),
+              )
               .toList() ??
           [],
     );
@@ -87,6 +88,86 @@ class ProductSizeGuide {
     'columns': columns.map((e) => e.toMap()).toList(),
     'rows': rows.map((e) => e.toMap()).toList(),
   };
+
+  /// تحليل ذكي لدليل المقاسات سواء كان قادماً بصيغة JSON String من Laravel،
+  /// أو Map يحتوي على headers و rows، أو الصيغة القياسية لـ Flutter.
+  static ProductSizeGuide? tryParse(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is ProductSizeGuide) return raw;
+
+    dynamic data = raw;
+    if (raw is String) {
+      final str = raw.trim();
+      if (str.isEmpty || str == 'null' || str == '[]' || str == '{}') {
+        return null;
+      }
+      try {
+        data = jsonDecode(str);
+      } catch (_) {
+        return ProductSizeGuide(
+          title: 'دليل المقاسات',
+          note: str,
+          columns: const [ProductSizeGuideColumn(id: 'guide', label: 'المقاس')],
+          rows: [
+            ProductSizeGuideRow(size: '', measurements: {'guide': str}),
+          ],
+        );
+      }
+    }
+
+    if (data is Map) {
+      if (data.containsKey('columns')) {
+        return ProductSizeGuide.fromMap(Map<String, dynamic>.from(data));
+      }
+
+      if (data.containsKey('headers') && data['headers'] is List) {
+        final headers = (data['headers'] as List)
+            .map((e) => e.toString())
+            .toList();
+        final rowsRaw = data['rows'] as List? ?? [];
+
+        if (headers.isEmpty) return null;
+
+        final columns = <ProductSizeGuideColumn>[];
+        for (int i = 1; i < headers.length; i++) {
+          columns.add(ProductSizeGuideColumn(id: 'col_$i', label: headers[i]));
+        }
+        if (columns.isEmpty) {
+          columns.add(ProductSizeGuideColumn(id: 'col_0', label: headers[0]));
+        }
+
+        final rows = <ProductSizeGuideRow>[];
+        for (final r in rowsRaw) {
+          if (r is List && r.isNotEmpty) {
+            final sizeLabel = r[0]?.toString() ?? '';
+            final measurements = <String, String>{};
+            for (int i = 1; i < r.length && (i - 1) < columns.length; i++) {
+              measurements[columns[i - 1].id] = r[i]?.toString() ?? '-';
+            }
+            if (columns.length == 1 && measurements.isEmpty && r.isNotEmpty) {
+              measurements[columns[0].id] = r[0].toString();
+            }
+            rows.add(
+              ProductSizeGuideRow(size: sizeLabel, measurements: measurements),
+            );
+          }
+        }
+
+        return ProductSizeGuide(
+          title: data['title']?.toString() ?? 'دليل المقاسات',
+          note: data['note']?.toString(),
+          columns: columns,
+          rows: rows,
+        );
+      }
+
+      if (data.containsKey('guide')) {
+        return tryParse(data['guide']);
+      }
+    }
+
+    return null;
+  }
 
   // Standard dress and clothing guide (in cm)
   static ProductSizeGuide defaultClothingGuide() {
@@ -189,7 +270,11 @@ class ProductSizeGuide {
       title: 'دليل مقاسات العبايات والجلابيات',
       note: 'مقاس العباية يعتمد أساساً على طولكِ الإجمالي بالسنتيمتر (سم)',
       columns: [
-        ProductSizeGuideColumn(id: 'height_rec', label: 'طول القامة الموصى به', width: 140),
+        ProductSizeGuideColumn(
+          id: 'height_rec',
+          label: 'طول القامة الموصى به',
+          width: 140,
+        ),
         ProductSizeGuideColumn(id: 'length', label: 'طول العباية', width: 95),
         ProductSizeGuideColumn(id: 'chest', label: 'محيط الصدر', width: 95),
         ProductSizeGuideColumn(id: 'sleeve', label: 'طول الكم', width: 90),
@@ -254,7 +339,10 @@ class ProductSizeGuide {
   }
 
   // Resolver for any product
-  static ProductSizeGuide forProductTitle(String title, [List<String>? availableSizes]) {
+  static ProductSizeGuide forProductTitle(
+    String title, [
+    List<String>? availableSizes,
+  ]) {
     final lower = title.toLowerCase();
     if (lower.contains('عباية') ||
         lower.contains('عبايه') ||
@@ -266,4 +354,3 @@ class ProductSizeGuide {
     return defaultClothingGuide();
   }
 }
-

@@ -25,10 +25,7 @@ class HomeCategoriesSection extends ConsumerWidget {
         ),
         const SizedBox(height: HomeLayout.innerGap),
         if (state.categories.isNotEmpty)
-          CategoryGrid(
-            items: state.categories,
-            onTap: notifier.openCategory,
-          ),
+          CategoryGrid(items: state.categories, onTap: notifier.openCategory),
       ],
     );
   }

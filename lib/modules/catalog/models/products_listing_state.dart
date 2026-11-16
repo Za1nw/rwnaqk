@@ -19,6 +19,7 @@ class ProductsListingState {
     this.sort = ListingSort.newest,
     this.filterResult,
     this.activeFilterCount = 0,
+    this.categoryId,
   });
 
   final List<HomeProductItem> items;
@@ -33,6 +34,7 @@ class ProductsListingState {
   final ListingSort sort;
   final AppFilterResult? filterResult;
   final int activeFilterCount;
+  final String? categoryId;
 
   factory ProductsListingState.initial() {
     return const ProductsListingState(
@@ -48,6 +50,7 @@ class ProductsListingState {
       sort: ListingSort.newest,
       filterResult: null,
       activeFilterCount: 0,
+      categoryId: null,
     );
   }
 
@@ -64,6 +67,7 @@ class ProductsListingState {
     ListingSort? sort,
     AppFilterResult? Function()? filterResult,
     int? activeFilterCount,
+    String? categoryId,
   }) {
     return ProductsListingState(
       items: items ?? this.items,
@@ -78,6 +82,7 @@ class ProductsListingState {
       sort: sort ?? this.sort,
       filterResult: filterResult != null ? filterResult() : this.filterResult,
       activeFilterCount: activeFilterCount ?? this.activeFilterCount,
+      categoryId: categoryId ?? this.categoryId,
     );
   }
 
@@ -101,18 +106,17 @@ class ProductsListingState {
 
   @override
   int get hashCode => Object.hash(
-        Object.hashAll(items),
-        Object.hashAll(initialItems),
-        isLoading,
-        isLoadingMore,
-        hasMore,
-        page,
-        title,
-        source,
-        errorMessage,
-        sort,
-        filterResult,
-        activeFilterCount,
-      );
+    Object.hashAll(items),
+    Object.hashAll(initialItems),
+    isLoading,
+    isLoadingMore,
+    hasMore,
+    page,
+    title,
+    source,
+    errorMessage,
+    sort,
+    filterResult,
+    activeFilterCount,
+  );
 }
-

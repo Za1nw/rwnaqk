@@ -5,11 +5,7 @@ class AppFilterButton extends StatelessWidget {
   final VoidCallback onTap;
   final double size;
 
-  const AppFilterButton({
-    super.key,
-    required this.onTap,
-    this.size = 44,
-  });
+  const AppFilterButton({super.key, required this.onTap, this.size = 44});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +20,9 @@ class AppFilterButton extends StatelessWidget {
           border: Border.all(color: context.border.withValues(alpha: 0.45)),
           boxShadow: [
             BoxShadow(
-              color: context.shadow.withValues(alpha: context.isDark ? 0.14 : 0.06),
+              color: context.shadow.withValues(
+                alpha: context.isDark ? 0.14 : 0.06,
+              ),
               blurRadius: 10,
               offset: const Offset(0, 6),
             ),
@@ -33,11 +31,7 @@ class AppFilterButton extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,
-          child: Icon(
-            Icons.tune_rounded,
-            color: context.primary,
-            size: 22,
-          ),
+          child: Icon(Icons.tune_rounded, color: context.primary, size: 22),
         ),
       ),
     );

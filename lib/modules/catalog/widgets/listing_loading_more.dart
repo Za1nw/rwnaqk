@@ -4,10 +4,7 @@ import 'package:rwnaqk_frontend/core/widgets/common/app_page_loading.dart';
 class ListingLoadingMoreSliver extends StatelessWidget {
   final bool isLoadingMore;
 
-  const ListingLoadingMoreSliver({
-    super.key,
-    this.isLoadingMore = false,
-  });
+  const ListingLoadingMoreSliver({super.key, this.isLoadingMore = false});
 
   @override
   Widget build(BuildContext context) {

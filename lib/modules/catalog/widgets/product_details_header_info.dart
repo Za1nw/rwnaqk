@@ -5,6 +5,7 @@ import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 
 class ProductDetailsHeaderInfo extends StatefulWidget {
   final String title;
+  final String? shortDescription;
   final String description;
   final String? brand;
 
@@ -28,6 +29,7 @@ class ProductDetailsHeaderInfo extends StatefulWidget {
   const ProductDetailsHeaderInfo({
     super.key,
     required this.title,
+    this.shortDescription,
     required this.description,
     this.brand,
     required this.priceText,
@@ -51,13 +53,9 @@ class ProductDetailsHeaderInfo extends StatefulWidget {
 }
 
 class _ProductDetailsHeaderInfoState extends State<ProductDetailsHeaderInfo> {
-  bool _isDescriptionExpanded = false;
-
   bool get hasDiscount =>
-      (widget.oldPriceText != null &&
-          widget.oldPriceText!.trim().isNotEmpty) &&
-      (widget.discountText != null &&
-          widget.discountText!.trim().isNotEmpty);
+      (widget.oldPriceText != null && widget.oldPriceText!.trim().isNotEmpty) &&
+      (widget.discountText != null && widget.discountText!.trim().isNotEmpty);
 
   bool get hasMeta =>
       widget.rating != null ||
@@ -153,26 +151,6 @@ class _ProductDetailsHeaderInfoState extends State<ProductDetailsHeaderInfo> {
                       ],
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  // VAT included note
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.verified_outlined,
-                        size: 13,
-                        color: context.mutedForeground,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        Tk.productDetailsVatIncluded.tr,
-                        style: TextStyle(
-                          color: context.mutedForeground,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -186,51 +164,30 @@ class _ProductDetailsHeaderInfoState extends State<ProductDetailsHeaderInfo> {
           ],
         ),
 
-        SizedBox(height: widget.rowGap + 2),
-
-        // Description with Read More / Read Less
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.description,
-              maxLines: _isDescriptionExpanded
-                  ? null
-                  : (widget.isWide ? 4 : 3),
-              overflow: _isDescriptionExpanded
-                  ? TextOverflow.visible
-                  : TextOverflow.ellipsis,
-              style: TextStyle(
-                color: context.mutedForeground,
-                height: 1.45,
-                fontWeight: FontWeight.w600,
-                fontSize: widget.descSize,
+        // Short Description (الوصف المختصر)
+        if ((widget.shortDescription ?? '').trim().isNotEmpty) ...[
+          SizedBox(height: widget.rowGap + 2),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: context.primary.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: BorderDirectional(
+                start: BorderSide(color: context.primary, width: 3.5),
               ),
             ),
-            if (widget.description.length > 90) ...[
-              const SizedBox(height: 4),
-              InkWell(
-                onTap: () => setState(
-                  () => _isDescriptionExpanded = !_isDescriptionExpanded,
-                ),
-                borderRadius: BorderRadius.circular(4),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Text(
-                    _isDescriptionExpanded
-                        ? Tk.productDetailsReadLess.tr
-                        : Tk.productDetailsReadMore.tr,
-                    style: TextStyle(
-                      color: context.primary,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
+            child: Text(
+              (widget.shortDescription ?? '').trim(),
+              style: TextStyle(
+                color: context.foreground.withValues(alpha: 0.90),
+                fontWeight: FontWeight.w700,
+                fontSize: widget.descSize,
+                height: 1.45,
               ),
-            ],
-          ],
-        ),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -241,11 +198,7 @@ class _MetaRow extends StatelessWidget {
   final int? reviewsCount;
   final String? infoText;
 
-  const _MetaRow({
-    this.rating,
-    this.reviewsCount,
-    this.infoText,
-  });
+  const _MetaRow({this.rating, this.reviewsCount, this.infoText});
 
   @override
   Widget build(BuildContext context) {
