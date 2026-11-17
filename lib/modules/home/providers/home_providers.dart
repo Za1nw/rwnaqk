@@ -167,6 +167,11 @@ class HomeContentNotifier extends Notifier<HomeContentState> {
 
     try {
       final repo = ref.read(productsRepositoryProvider);
+      final service = ref.read(homeServiceProvider);
+      final apiClient = ref.read(apiClientProvider);
+
+      // جلب البانرات الإعلانية الحقيقية من خادم Laravel
+      final bannersFuture = service.fetchBanners(apiClient);
 
       // 1. جلب قائمة الفئات الرئيسية من الباك إند (parent_id = null)
       var fetchedCategories = await repo.getCategories(parentId: 'null');
@@ -187,6 +192,7 @@ class HomeContentNotifier extends Notifier<HomeContentState> {
       final newestProducts = results[0];
       final popularProducts = results[1];
       final discountProducts = results[2];
+      final fetchedBanners = await bannersFuture;
 
       // فلترة المنتجات التي تحتوي على خصومات فعلية للـ Flash Sale
       final discountOnly = discountProducts
@@ -202,6 +208,7 @@ class HomeContentNotifier extends Notifier<HomeContentState> {
 
       state = state.copyWith(
         isLoading: false,
+        banners: fetchedBanners.isNotEmpty ? fetchedBanners : state.banners,
         categories: fetchedCategories.isNotEmpty
             ? fetchedCategories
             : state.categories,

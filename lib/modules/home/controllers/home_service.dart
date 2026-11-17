@@ -1,4 +1,6 @@
-﻿import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
+import 'package:flutter/foundation.dart';
+import 'package:rwnaqk_frontend/core/network/api_client.dart';
+import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mock_product_utils.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_banner_item.dart';
@@ -51,6 +53,25 @@ class HomeService {
       mostPopular: sampleProducts(6, seed: 400, tagKey: Tk.homeTagsHot),
       justForYou: sampleProducts(8, seed: 500),
     );
+  }
+
+  /// جلب البانرات الإعلانية المباشرة من خادم Laravel API
+  Future<List<HomeBannerItem>> fetchBanners(ApiClient apiClient) async {
+    try {
+      final response = await apiClient.get('/api/v1/banners');
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['data'] is List) {
+        final list = data['data'] as List;
+        return list
+            .whereType<Map<String, dynamic>>()
+            .map(HomeBannerItem.fromJson)
+            .toList();
+      }
+      return const [];
+    } catch (e) {
+      debugPrint('[HomeService] Error fetching banners from API: $e');
+      return const [];
+    }
   }
 
   List<HomeProductItem> sampleProducts(
