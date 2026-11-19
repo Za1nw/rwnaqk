@@ -84,8 +84,9 @@ class LoginFormNotifier extends Notifier<LoginFormState> {
     );
   }
 
-  Future<void> login() async {
-    final isValid = formKey.currentState?.validate() ?? false;
+  Future<void> login({GlobalKey<FormState>? key}) async {
+    final activeKey = key ?? formKey;
+    final isValid = activeKey.currentState?.validate() ?? false;
     if (!isValid || state.isLoading) {
       return;
     }
@@ -640,8 +641,9 @@ class ForgotPasswordFlowNotifier extends Notifier<ForgotPasswordFlowState> {
     }
   }
 
-  Future<void> resetPassword({required String code}) async {
-    final isValid = resetFormKey.currentState?.validate() ?? false;
+  Future<void> resetPassword({required String code, GlobalKey<FormState>? key}) async {
+    final activeKey = key ?? resetFormKey;
+    final isValid = activeKey.currentState?.validate() ?? false;
     final pwd = passwordController.text;
     final confirm = confirmPasswordController.text;
 

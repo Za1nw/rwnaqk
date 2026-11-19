@@ -27,6 +27,7 @@ class HomeProductItem {
 
   final List<String> images;
   final bool hasVariation;
+  final bool hasSizeGuide;
   final List<ProductColorOption> availableColors;
   final List<String> availableSizes;
   final ProductSizeGuide? sizeGuide;
@@ -51,6 +52,7 @@ class HomeProductItem {
     this.soldText = '',
     this.images = const [],
     this.hasVariation = false,
+    this.hasSizeGuide = false,
     this.availableColors = const [],
     this.availableSizes = const [],
     this.sizeGuide,
@@ -89,6 +91,7 @@ class HomeProductItem {
     String? soldText,
     List<String>? images,
     bool? hasVariation,
+    bool? hasSizeGuide,
     List<ProductColorOption>? availableColors,
     List<String>? availableSizes,
     ProductSizeGuide? sizeGuide,
@@ -113,6 +116,7 @@ class HomeProductItem {
       soldText: soldText ?? this.soldText,
       images: images ?? this.images,
       hasVariation: hasVariation ?? this.hasVariation,
+      hasSizeGuide: hasSizeGuide ?? this.hasSizeGuide,
       availableColors: availableColors ?? this.availableColors,
       availableSizes: availableSizes ?? this.availableSizes,
       sizeGuide: sizeGuide ?? this.sizeGuide,
@@ -140,6 +144,9 @@ class HomeProductItem {
       'soldText': soldText,
       'images': images,
       'hasVariation': hasVariation,
+      'has_variation': hasVariation,
+      'hasSizeGuide': hasSizeGuide,
+      'has_size_guide': hasSizeGuide,
       'availableColors': availableColors.map((e) => e.toMap()).toList(),
       'availableSizes': availableSizes,
       'sizeGuide': sizeGuide?.toMap(),
@@ -355,9 +362,16 @@ class HomeProductItem {
               .toString(),
       soldText: (json['soldText'] ?? '').toString(),
       images: rawImagesList,
-      hasVariation: json['has_variation'] == true ||
-          json['hasVariation'] == true ||
-          (json['variations'] is List && (json['variations'] as List).isNotEmpty),
+      hasVariation: () {
+        final val = json['has_variation'] ?? json['hasVariation'];
+        if (val != null) {
+          if (val is bool) return val;
+          if (val is num) return val != 0;
+          final s = val.toString().trim().toLowerCase();
+          return s == 'true' || s == '1';
+        }
+        return json['variations'] is List && (json['variations'] as List).isNotEmpty;
+      }(),
       availableColors: () {
         final raw = json['availableColors'] ?? json['colors'];
         if (raw is List) {
@@ -379,6 +393,17 @@ class HomeProductItem {
               .toList();
         }
         return const <String>[];
+      }(),
+      hasSizeGuide: () {
+        final val = json['has_size_guide'] ?? json['hasSizeGuide'];
+        if (val != null) {
+          if (val is bool) return val;
+          if (val is num) return val != 0;
+          final s = val.toString().trim().toLowerCase();
+          return s == 'true' || s == '1';
+        }
+        final guide = ProductSizeGuide.tryParse(json['size_guide'] ?? json['sizeGuide']);
+        return guide != null && (guide.rows.isNotEmpty || (guide.note != null && guide.note!.trim().isNotEmpty));
       }(),
       sizeGuide: ProductSizeGuide.tryParse(
         json['size_guide'] ?? json['sizeGuide'],

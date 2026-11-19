@@ -53,10 +53,17 @@ class _WishlistTabContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(wishlistProvider);
+    final hasLoaded = ref.watch(wishlistProvider.select((s) => s.hasLoaded));
+    final items = ref.watch(wishlistProvider.select((s) => s.items));
     final notifier = ref.read(wishlistProvider.notifier);
 
-    if (state.items.isEmpty) {
+    if (!hasLoaded && items.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (items.isEmpty) {
       return _WishlistEmptyState(onExplore: notifier.goToHome);
     }
 
@@ -64,7 +71,7 @@ class _WishlistTabContent extends ConsumerWidget {
       children: [
         // Bulk Actions Bar (Add All to Cart)
         _WishlistBulkActionBar(
-          count: state.items.length,
+          count: items.length,
           onAddAll: notifier.addAllToCart,
           onClear: notifier.clearWishlist,
         ),
@@ -77,10 +84,10 @@ class _WishlistTabContent extends ConsumerWidget {
             key: const ValueKey('wishlist_list'),
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(0, 4, 0, 110),
-            itemCount: state.items.length,
+            itemCount: items.length,
             separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (_, i) {
-              final item = state.items[i];
+              final item = items[i];
 
               return WishlistItemTile(
                 item: item,

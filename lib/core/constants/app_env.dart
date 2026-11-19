@@ -45,10 +45,9 @@ class AppEnv {
 
     final configured = _safeGet('ENABLE_MOCK_DATA', '').toLowerCase();
     if (configured == 'true') return true;
-    if (configured == 'false') return false;
-
-    // تفعيل الموك افتراضياً فقط في بيئة التطوير لتشغيل الشاشات دون الحاجة إلى خادم حي
-    return isDevelopment;
+    
+    // تعطيل الموك والبيانات الوهمية افتراضياً للاعتماد الكامل على بيانات السيرفر الحقيقية
+    return false;
   }
   static int get defaultPageSize =>
       int.tryParse(_safeGet('DEFAULT_PAGE_SIZE', '15')) ?? 15;

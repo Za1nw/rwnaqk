@@ -37,11 +37,13 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final customer = ref.watch(currentCustomerProvider);
+    final authSession = ref.watch(authSessionProvider);
     final settings = ref.watch(customerSettingsProvider);
     final settingsNotifier = ref.read(customerSettingsProvider.notifier);
     final currentTheme = ref.watch(appThemeModeProvider);
     final currentLocale = ref.watch(appLocaleProvider);
-    final ordersCount = ref.watch(ordersProvider).orders.length;
+    final allOrders = ref.watch(ordersProvider).orders;
+    final ordersCount = allOrders.length;
     final twoFactorState = ref.watch(twoFactorSettingsNotifierProvider);
     final is2FaEnabled = twoFactorState.isEnabled;
 
@@ -53,12 +55,42 @@ class SettingsScreen extends ConsumerWidget {
         ? firstName
         : ((fullName != null && fullName.isNotEmpty)
             ? fullName.split(RegExp(r'\s+')).first
-            : 'عميل رَوْنَقُك');
+            : '');
 
-    final phone = customer?.phone;
-    final String displayPhone = (phone != null && phone.isNotEmpty)
-        ? phone
-        : '+967 777 000 000';
+    final phone = customer?.phone?.trim() ?? '';
+
+    final pendingCount = allOrders
+        .where(
+          (o) =>
+              o.status.toLowerCase().contains('pending') ||
+              o.status.contains('انتظار'),
+        )
+        .length;
+    final processingCount = allOrders
+        .where(
+          (o) =>
+              o.status.toLowerCase().contains('process') ||
+              o.status.contains('تجهيز'),
+        )
+        .length;
+    final shippingCount = allOrders
+        .where(
+          (o) =>
+              o.status.toLowerCase().contains('ship') ||
+              o.status.contains('طريق'),
+        )
+        .length;
+    final reviewCount = allOrders
+        .where(
+          (o) =>
+              o.status.toLowerCase().contains('deliver') ||
+              o.status.contains('تقييم'),
+        )
+        .length;
+
+    final walletText = customer?.walletBalance != null
+        ? '${customer!.walletBalance!.toStringAsFixed(0)} ر.ي'
+        : '0 ر.ي';
 
     String themeBadge;
     switch (currentTheme) {
@@ -137,29 +169,44 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
 
-              // 2. بطاقة العضوية الملكية الفاخرة للعميل (Executive VIP Membership Card)
-              SettingsUserHeader(
-                name: displayName,
-                phone: displayPhone,
-                avatarPath: '',
-                avatarUrl: customer?.avatarUrl ?? '',
-                onTap: () => AppNav.toNamed(AppRoutes.profile),
-                onEdit: () => AppNav.toNamed(AppRoutes.editProfile),
-              ),
+              // 2. بطاقة العضوية الملكية الفاخرة للعميل (أو بطاقة الزائر/حالة انقطاع الاتصال)
+              if (customer != null)
+                SettingsUserHeader(
+                  name: displayName,
+                  phone: phone,
+                  avatarPath: '',
+                  avatarUrl: customer.avatarUrl ?? '',
+                  isVerified: customer.hasVerifiedEmail,
+                  onTap: () => AppNav.toNamed(AppRoutes.profile),
+                  onEdit: () => AppNav.toNamed(AppRoutes.editProfile),
+                )
+              else if (authSession.isAuthenticated)
+                _OfflineProfileHeader(
+                  onRetry: () =>
+                      ref.read(authSessionProvider.notifier).bootstrapSession(),
+                )
+              else
+                _GuestProfileHeader(
+                  onLogin: () => AppNav.toNamed(AppRoutes.login),
+                ),
               const SizedBox(height: 16),
 
               // 3. مركز متابعة الطلبات والشحنات
               EcommerceOrdersHub(
                 totalOrders: ordersCount,
+                pendingCount: pendingCount,
+                processingCount: processingCount,
+                shippingCount: shippingCount,
+                reviewCount: reviewCount,
                 onAllOrders: () => AppNav.toNamed(AppRoutes.orders),
               ),
               const SizedBox(height: 16),
 
               // 4. المحفظة والمكافآت
               EcommerceWalletHub(
-                walletBalance: '0 ر.ي',
-                activeCouponsCount: '3 كوبونات',
-                loyaltyPoints: '2,450 نقطة',
+                walletBalance: walletText,
+                activeCouponsCount: '0 كوبونات',
+                loyaltyPoints: '0 نقطة',
                 onWalletTap: () {},
                 onCouponsTap: () {},
                 onPointsTap: () {},
@@ -518,6 +565,241 @@ class _TopActionButton extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// بطاقة تظهر عند تعذر الاتصال بالسيرفر لجلب بيانات الحساب
+class _OfflineProfileHeader extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _OfflineProfileHeader({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  const Color(0xFF3B1525),
+                  const Color(0xFF260815),
+                ]
+              : [
+                  const Color(0xFF5E102F),
+                  const Color(0xFF380017),
+                ],
+        ),
+        border: Border.all(
+          color: BrandColors.gold.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.10),
+              border: Border.all(
+                color: BrandColors.gold.withValues(alpha: 0.4),
+                width: 1,
+              ),
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.cloud_off_rounded,
+                color: BrandColors.gold,
+                size: 24,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'تعذر الاتصال بالخادم',
+                  style: AppTextTheme.cairo(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'لم نتمكن من جلب بيانات حسابك المسجل',
+                  style: AppTextTheme.cairo(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: onRetry,
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: BrandColors.gold,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.refresh_rounded,
+                    size: 15,
+                    color: Color(0xFF1E0A17),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'إعادة المحاولة',
+                    style: AppTextTheme.cairo(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF1E0A17),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// بطاقة الزائر غير المسجل مع زر تسجيل الدخول
+class _GuestProfileHeader extends StatelessWidget {
+  final VoidCallback onLogin;
+
+  const _GuestProfileHeader({required this.onLogin});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  const Color(0xFF38081D),
+                  const Color(0xFF220310),
+                ]
+              : [
+                  const Color(0xFF6B0733),
+                  const Color(0xFF45011F),
+                ],
+        ),
+        border: Border.all(
+          color: BrandColors.gold.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.30 : 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.10),
+              border: Border.all(
+                color: BrandColors.gold.withValues(alpha: 0.4),
+                width: 1,
+              ),
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.person_outline_rounded,
+                color: BrandColors.gold,
+                size: 24,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'أهلاً بك عزيزي الزائر',
+                  style: AppTextTheme.cairo(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'سجّل الدخول لتصفح ومتابعة طلباتك',
+                  style: AppTextTheme.cairo(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: onLogin,
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: BrandColors.gold,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'تسجيل الدخول',
+                style: AppTextTheme.cairo(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF1E0A17),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

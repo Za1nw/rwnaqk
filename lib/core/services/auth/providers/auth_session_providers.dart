@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/di/core_providers.dart';
+import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/network/api_exceptions.dart';
 import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/services/auth/models/auth_session_state.dart';
@@ -89,6 +91,19 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
       );
     }
 
+    // استرجاع بيانات العميل الحقيقية المحفوظة محلياً مسبقاً لحماية الجلسة عند انقطاع السيرفر
+    final prefs = ref.read(sharedPreferencesInstanceProvider);
+    final cachedCustomerJson = prefs?.getString('cached_customer_profile');
+    if (cachedCustomerJson != null && cachedCustomerJson.isNotEmpty && state.customer == null) {
+      try {
+        final decoded = jsonDecode(cachedCustomerJson) as Map<String, dynamic>;
+        final cached = CustomerModel.fromJson(decoded);
+        state = state.copyWith(customer: cached);
+      } catch (e) {
+        debugPrint('[AuthSession] Error restoring cached customer: $e');
+      }
+    }
+
     if (AppEnv.enableMockData) {
       final mockCustomer = CustomerModel(
         id: 1,
@@ -143,6 +158,10 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
         sessionGeneration: nextGen,
       );
 
+      try {
+        prefs?.setString('cached_customer_profile', jsonEncode(customer.toJson()));
+      } catch (_) {}
+
       _syncSessionScopedProviders(
         userId: customer.id.toString(),
         generation: nextGen,
@@ -162,6 +181,88 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
       await _clearSessionAndRedirectToLogin();
     } catch (e) {
       debugPrint('[AuthSession] bootstrapSession transient error: $e');
+      state = state.copyWith(
+        status: AuthSessionStatus.serverError,
+        errorMessage: e.toString(),
+      );
+      if (AppNav.context != null) {
+        AppNav.offAllNamed(AppRoutes.networkError);
+      }
+    }
+  }
+
+  /// إعادة محاولة الاتصال بالخادم والتحقق من الجلسة
+  Future<bool> retryBootstrap() async {
+    state = state.copyWith(
+      status: AuthSessionStatus.authenticating,
+      clearErrorMessage: true,
+    );
+
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      final customer = await authRepo.me();
+
+      if (customer.isBanned == true) {
+        markAsBanned(customerPayload: customer);
+        return false;
+      }
+
+      final requiresVerification = customer.emailVerifiedAt == null;
+      final nextGen = state.sessionGeneration + 1;
+
+      if (requiresVerification) {
+        state = state.copyWith(
+          status: AuthSessionStatus.emailVerificationRequired,
+          customer: customer,
+          sessionGeneration: nextGen,
+        );
+        AppNav.offAllNamed(
+          AppRoutes.emailVerify,
+          arguments: <String, dynamic>{'email': customer.email},
+        );
+        return false;
+      }
+
+      state = state.copyWith(
+        status: AuthSessionStatus.authenticated,
+        customer: customer,
+        sessionGeneration: nextGen,
+      );
+
+      try {
+        final prefs = ref.read(sharedPreferencesInstanceProvider);
+        prefs?.setString('cached_customer_profile', jsonEncode(customer.toJson()));
+      } catch (_) {}
+
+      _syncSessionScopedProviders(
+        userId: customer.id.toString(),
+        generation: nextGen,
+      );
+
+      AppNav.offAllNamed(AppRoutes.main);
+      return true;
+    } on AccountBannedException catch (bannedEx) {
+      CustomerModel? customer;
+      if (bannedEx.customerData != null) {
+        try {
+          customer = CustomerModel.fromJson(bannedEx.customerData!);
+        } catch (_) {}
+      }
+      markAsBanned(
+        customerPayload: customer,
+        reason: bannedEx.message,
+      );
+      return false;
+    } on UnauthorizedException {
+      await _clearSessionAndRedirectToLogin();
+      return false;
+    } catch (e) {
+      debugPrint('[AuthSession] retryBootstrap failed: $e');
+      state = state.copyWith(
+        status: AuthSessionStatus.serverError,
+        errorMessage: e.toString(),
+      );
+      return false;
     }
   }
 
@@ -195,6 +296,7 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
     _syncSessionScopedProviders(
       userId: customerPayload?.id.toString(),
       generation: nextGen,
+      isLogin: true,
     );
   }
 
@@ -315,6 +417,10 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
     final storage = ref.read(authTokenStorageProvider);
     unawaited(storage.clearToken());
 
+    try {
+      ref.read(sharedPreferencesInstanceProvider)?.remove('cached_customer_profile');
+    } catch (_) {}
+
     final nextGen = state.sessionGeneration + 1;
 
     state = state.copyWith(
@@ -427,7 +533,8 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
         currentRoute == AppRoutes.otp ||
         currentRoute == AppRoutes.reset ||
         currentRoute == AppRoutes.twoFactorChallenge ||
-        currentRoute == AppRoutes.banned) {
+        currentRoute == AppRoutes.banned ||
+        currentRoute == AppRoutes.networkError) {
       return;
     }
 
@@ -440,6 +547,7 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
   void _syncSessionScopedProviders({
     required String? userId,
     required int generation,
+    bool isLogin = false,
   }) {
     final previousUserId = _activeSessionUserId;
     final isAccountBoundary =
@@ -453,6 +561,7 @@ class AuthSessionNotifier extends Notifier<AuthSessionState> {
       ref.read(wishlistProvider.notifier).syncWithSession(
             userId: userId,
             generation: generation,
+            isLogin: isLogin,
           );
     } catch (e, st) {
       // استثناء فقط عدم توفر المزود أثناء الاختبارات المعزولة

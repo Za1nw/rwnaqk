@@ -7,6 +7,7 @@ import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
+import 'package:rwnaqk_frontend/modules/catalog/controllers/products_listing_service.dart';
 import 'package:rwnaqk_frontend/modules/catalog/data/repositories/products_repository.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 import 'package:rwnaqk_frontend/modules/search/controllers/search_service.dart';
@@ -53,12 +54,18 @@ class ProductSearchNotifier extends Notifier<SearchState> {
 
     final history = _service.initialHistory();
     final recommendations = _service.initialRecommendations();
-    final discover = _service.sampleProducts(10, seed: 900);
+
+    Future.microtask(() async {
+      try {
+        final prods = await _repo.getProducts(limit: 10, sort: ListingSort.popular);
+        state = state.copyWith(discover: prods);
+      } catch (_) {}
+    });
 
     return SearchState(
       history: history,
       recommendations: recommendations,
-      discover: discover,
+      discover: const [],
       results: const [],
       query: '',
       isLoading: false,
@@ -201,11 +208,8 @@ class ProductSearchNotifier extends Notifier<SearchState> {
           // تم الإلغاء عمداً بسبب كتابة استعلام جديد - نتجاهله بأمان
           return;
         }
-        // Fallback إلى البحث المحلي في منتجات Discover إذا فشلت الشبكة
-        results = _service.runLocalSearch(
-          source: state.discover,
-          rawQuery: query,
-        );
+        // لا نعرض بيانات وهمية مطلقاً عند انقطاع الشبكة أو حدوث خطأ بالسيرفر
+        results = const [];
       }
 
       // 3. رفض الاستجابة المتأخرة إذا تم بدء استعلام أحدث أثناء التنفيذ (Stale Query Rejection)

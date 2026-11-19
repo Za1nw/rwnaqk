@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
+import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
 
 /// ويدجت الصورة الشخصية القابلة للتعديل والرفع
 class EditableAvatarBadge extends StatelessWidget {
@@ -219,13 +220,12 @@ class EditableAvatarBadge extends StatelessWidget {
                                 _InitialText(initial: initial),
                           )
                         : hasRealNetworkImage
-                        ? Image.network(
-                            safeUrl,
+                        ? AppNetworkImage(
+                            url: safeUrl,
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
-                            errorBuilder: (_, _, _) =>
-                                _InitialText(initial: initial),
+                            errorWidget: _InitialText(initial: initial),
                           )
                         : _InitialText(initial: initial),
                   ),

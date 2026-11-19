@@ -11,32 +11,41 @@ enum RecentFilter { today, yesterday, date }
 /// يدير قائمة المفضلة، وسجل المشاهدة الأخيرة، والتبويبات، ونطاق جلسة المستخدم.
 class WishlistState {
   final List<HomeProductItem> items;
+  final Set<String> favoriteIds;
   final List<HomeProductItem> recentlyViewed;
   final int tabIndex;
   final RecentFilter recentFilter;
   final DateTime? selectedDate;
   final String? activeUserId;
   final int sessionGeneration;
+  final int cachedItemCount;
+  final bool hasLoaded;
 
   const WishlistState({
     this.items = const [],
+    this.favoriteIds = const {},
     this.recentlyViewed = const [],
     this.tabIndex = 0,
     this.recentFilter = RecentFilter.today,
     this.selectedDate,
     this.activeUserId,
     this.sessionGeneration = 0,
+    this.cachedItemCount = 0,
+    this.hasLoaded = false,
   });
 
-  /// التحقق هل المنتج مضاف للمفضلة الحالية
+  /// التحقق هل المنتج مضاف للمفضلة الحالية (سواء من الكاش المحلي السريع أو المنتجات المحملة)
   bool isInWishlist(String productId) {
-    return items.any((item) => item.id == productId);
+    return favoriteIds.contains(productId) ||
+        items.any((item) => item.id == productId);
   }
 
-  int get count => items.length;
+  int get count => hasLoaded
+      ? items.length
+      : (favoriteIds.isNotEmpty ? favoriteIds.length : cachedItemCount);
   int get itemCount => count;
   int get recentCount => recentlyViewed.length;
-  bool get isEmpty => items.isEmpty;
+  bool get isEmpty => count == 0;
 
   /// تسمية الفلتر الحالي للواجهة
   String get recentFilterLabel {
@@ -53,6 +62,7 @@ class WishlistState {
 
   WishlistState copyWith({
     List<HomeProductItem>? items,
+    Set<String>? favoriteIds,
     List<HomeProductItem>? recentlyViewed,
     int? tabIndex,
     RecentFilter? recentFilter,
@@ -61,9 +71,14 @@ class WishlistState {
     String? activeUserId,
     bool clearActiveUserId = false,
     int? sessionGeneration,
+    int? cachedItemCount,
+    bool? hasLoaded,
   }) {
     return WishlistState(
       items: items != null ? List.unmodifiable(items) : this.items,
+      favoriteIds: favoriteIds != null
+          ? Set.unmodifiable(favoriteIds)
+          : this.favoriteIds,
       recentlyViewed: recentlyViewed != null
           ? List.unmodifiable(recentlyViewed)
           : this.recentlyViewed,
@@ -72,6 +87,8 @@ class WishlistState {
       selectedDate: clearSelectedDate ? null : (selectedDate ?? this.selectedDate),
       activeUserId: clearActiveUserId ? null : (activeUserId ?? this.activeUserId),
       sessionGeneration: sessionGeneration ?? this.sessionGeneration,
+      cachedItemCount: cachedItemCount ?? this.cachedItemCount,
+      hasLoaded: hasLoaded ?? this.hasLoaded,
     );
   }
 }

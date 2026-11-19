@@ -25,6 +25,7 @@ class ResetPasswordScreen extends ConsumerStatefulWidget {
 
 class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
     with SingleTickerProviderStateMixin {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final AnimationController _animController;
   late final Animation<double> _fadeAnim;
   late final Animation<Offset> _slideAnim;
@@ -127,7 +128,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
               child: SlideTransition(
                 position: _slideAnim,
                 child: Form(
-                  key: notifier.resetFormKey,
+                  key: _formKey,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -232,7 +233,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
                         borderRadius: 16,
                         onPressed: state.isLoading
                             ? null
-                            : () => notifier.resetPassword(code: activeCode),
+                            : () => notifier.resetPassword(
+                                  code: activeCode,
+                                  key: _formKey,
+                                ),
                       ),
                       const SizedBox(height: 12),
 

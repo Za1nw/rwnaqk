@@ -8,6 +8,7 @@ abstract class AppRoutes {
   static const otp = '/otp';
   static const reset = '/reset';
   static const banned = '/banned';
+  static const networkError = '/network-error';
   static const home = '/home';
   static const search = '/Search';
   static const searchResults = '/searchResults';

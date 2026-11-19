@@ -10,6 +10,7 @@ import 'core/constants/local_storage_keys.dart';
 import 'core/di/core_providers.dart';
 import 'core/localization/app_localizations.dart';
 import 'core/routing/app_nav.dart';
+import 'core/services/cache/app_image_storage_service.dart';
 import 'core/theme/dark_theme.dart';
 import 'core/theme/light_theme.dart';
 import 'modules/customer/providers/customer_profile_providers.dart';
@@ -18,6 +19,9 @@ import 'routes/app_routes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ضبط سياسة كاش الذاكرة (RAM) لمحرك فلاتر لحماية الأجهزة الضعيفة من استهلاك الذاكرة
+  AppImageStorageService.instance.configureImageMemoryCache();
 
   try {
     await dotenv.load(fileName: ".env");

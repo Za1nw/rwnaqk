@@ -1,14 +1,15 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/di/core_providers.dart';
 import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/catalog/controllers/products_listing_service.dart';
 import 'package:rwnaqk_frontend/modules/home/controllers/home_service.dart';
+import 'package:rwnaqk_frontend/modules/home/data/home_local_cache.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_banner_item.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_category_item.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
@@ -39,6 +40,16 @@ class MainNavigationNotifier extends Notifier<int> {
 // 2. HOME CONTENT STATE & NOTIFIER
 // ==========================================
 
+enum HomeSection {
+  banners,
+  categories,
+  flashSale,
+  topProducts,
+  newItems,
+  mostPopular,
+  justForYou,
+}
+
 class HomeContentState {
   const HomeContentState({
     this.banners = const [],
@@ -54,6 +65,11 @@ class HomeContentState {
     this.mm = 36,
     this.ss = 58,
     this.isLoading = false,
+    this.isRefreshing = false,
+    this.hasLoaded = false,
+    this.hasError = false,
+    this.errorMessage,
+    this.loadingSections = const {},
   });
 
   final List<HomeBannerItem> banners;
@@ -69,6 +85,14 @@ class HomeContentState {
   final int mm;
   final int ss;
   final bool isLoading;
+  final bool isRefreshing;
+  final bool hasLoaded;
+  final bool hasError;
+  final String? errorMessage;
+  final Set<HomeSection> loadingSections;
+
+  bool isSectionLoading(HomeSection section) =>
+      loadingSections.contains(section) || (!hasLoaded && !isRefreshing);
 
   HomeContentState copyWith({
     List<HomeBannerItem>? banners,
@@ -84,6 +108,11 @@ class HomeContentState {
     int? mm,
     int? ss,
     bool? isLoading,
+    bool? isRefreshing,
+    bool? hasLoaded,
+    bool? hasError,
+    String? errorMessage,
+    Set<HomeSection>? loadingSections,
   }) {
     return HomeContentState(
       banners: banners ?? this.banners,
@@ -99,11 +128,24 @@ class HomeContentState {
       mm: mm ?? this.mm,
       ss: ss ?? this.ss,
       isLoading: isLoading ?? this.isLoading,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
+      hasLoaded: hasLoaded ?? this.hasLoaded,
+      hasError: hasError ?? this.hasError,
+      errorMessage: errorMessage ?? this.errorMessage,
+      loadingSections: loadingSections ?? this.loadingSections,
     );
   }
 }
 
-final homeServiceProvider = Provider<HomeService>((ref) => HomeService());
+final homeLocalCacheProvider = Provider<HomeLocalCache>((ref) {
+  final prefs = ref.watch(sharedPreferencesInstanceProvider);
+  return HomeLocalCache(prefs);
+});
+
+final homeServiceProvider = Provider<HomeService>((ref) {
+  final localCache = ref.watch(homeLocalCacheProvider);
+  return HomeService(localCache: localCache);
+});
 
 final homeContentProvider =
     NotifierProvider<HomeContentNotifier, HomeContentState>(
@@ -112,32 +154,35 @@ final homeContentProvider =
 
 class HomeContentNotifier extends Notifier<HomeContentState> {
   Timer? _timer;
+  bool _disposed = false;
+  CancelToken? _cancelToken;
   final searchController = TextEditingController();
 
   @override
   HomeContentState build() {
     ref.onDispose(() {
+      _disposed = true;
+      _cancelToken?.cancel('Home disposed');
       _timer?.cancel();
       searchController.dispose();
     });
 
-    final service = ref.read(homeServiceProvider);
-    final data = service.getInitialData();
-
     _startFlashTimer();
 
-    // جلب البيانات الحقيقية من خادم Laravel API في الخلفية
+    // جلب البيانات الحقيقية من خادم Laravel API في الخلفية مع تفعيل الهيكل Skeleton
     Future.microtask(() => loadHomeData());
 
-    return HomeContentState(
-      banners: data.banners,
-      categories: data.categories,
-      topProducts: data.topProducts,
-      newItems: data.newItems,
-      flashSale: data.flashSale,
-      mostPopular: data.mostPopular,
-      justForYou: data.justForYou,
-      isLoading: !AppEnv.enableMockData,
+    return const HomeContentState(
+      banners: [],
+      categories: [],
+      topProducts: [],
+      newItems: [],
+      flashSale: [],
+      mostPopular: [],
+      justForYou: [],
+      isLoading: true,
+      hasLoaded: false,
+      hasError: false,
     );
   }
 
@@ -160,39 +205,81 @@ class HomeContentNotifier extends Notifier<HomeContentState> {
   }
 
   /// جلب البيانات الحقيقية من الكتالوج وقاعدة بيانات Laravel
-  Future<void> loadHomeData() async {
-    if (AppEnv.enableMockData) return;
+  /// يطبق أفضل الممارسات: محاولة جلب نقطة النهاية المجمعة أولاً (BFF Composite API)
+  /// لتقليص 5 اتصالات إلى طلب واحد، مع بديل متوازٍ بـ Dart 3 Records مع إلغاء الطلبات القديمة (CancelToken)
+  Future<void> loadHomeData({bool isRefresh = false}) async {
+    _cancelToken?.cancel('New home request started');
+    _cancelToken = CancelToken();
+    final cancelToken = _cancelToken;
 
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(
+      isLoading: !isRefresh && !state.hasLoaded,
+      isRefreshing: isRefresh,
+      hasError: false,
+      errorMessage: null,
+    );
 
     try {
       final repo = ref.read(productsRepositoryProvider);
       final service = ref.read(homeServiceProvider);
       final apiClient = ref.read(apiClientProvider);
 
-      // جلب البانرات الإعلانية الحقيقية من خادم Laravel
-      final bannersFuture = service.fetchBanners(apiClient);
+      // 1. محاولة جلب نقطة النهاية المجمعة (Composite Bootstrap Endpoint) أولاً
+      // لتقليل 5 إلى 6 طلبات إلى طلب واحد فقط فائق السرعة
+      final bootstrap = await service.fetchHomeBootstrap(
+        apiClient,
+        cancelToken: cancelToken,
+        isRefresh: isRefresh,
+      );
 
-      // 1. جلب قائمة الفئات الرئيسية من الباك إند (parent_id = null)
-      var fetchedCategories = await repo.getCategories(parentId: 'null');
-      if (fetchedCategories.isEmpty) {
-        fetchedCategories = await repo.getCategories();
+      if (bootstrap != null) {
+        if (_disposed) return;
+
+        final topProductsList = bootstrap.popularItems.isNotEmpty
+            ? bootstrap.popularItems
+            : bootstrap.newItems;
+
+        state = state.copyWith(
+          isLoading: false,
+          isRefreshing: false,
+          hasLoaded: true,
+          hasError: false,
+          banners: bootstrap.banners,
+          categories: bootstrap.categories,
+          topProducts: topProductsList,
+          newItems: bootstrap.newItems,
+          flashSale: bootstrap.flashSale,
+          mostPopular: bootstrap.popularItems,
+          justForYou: bootstrap.newItems,
+        );
+        return;
       }
 
-      // 2. جلب قوائم المنتجات لمختلف أقسام الشاشة الرئيسية بالتوازي
-      final results = await Future.wait([
-        // المنتجات الجديدة / الكتالوج الأحدث
-        repo.getProducts(limit: 15, sort: ListingSort.newest),
-        // المنتجات الأكثر طلباً / رواجاً
-        repo.getProducts(limit: 10, sort: ListingSort.popular),
-        // منتجات التخفيضات العالية
-        repo.getProducts(limit: 10, sort: ListingSort.discountHigh),
-      ]);
-
-      final newestProducts = results[0];
-      final popularProducts = results[1];
-      final discountProducts = results[2];
-      final fetchedBanners = await bannersFuture;
+      // 2. خطة بديلة فائقة التزامن باستخدام Dart 3 Records مع عزل الأخطاء الجزئية
+      final (fetchedBanners, fetchedCategories, newestProducts, popularProducts, discountProducts) = await (
+        service.fetchBanners(apiClient, cancelToken: cancelToken),
+        repo.getCategories(parentId: 'null', cancelToken: cancelToken).then((cats) async {
+          if (cats.isEmpty) {
+            return await repo.getCategories(cancelToken: cancelToken);
+          }
+          return cats;
+        }).catchError((e) {
+          debugPrint('[HomeContentNotifier] Error fetching categories: $e');
+          return <HomeCategoryItem>[];
+        }),
+        repo.getProducts(limit: 15, sort: ListingSort.newest, cancelToken: cancelToken).catchError((e) {
+          debugPrint('[HomeContentNotifier] Error fetching newest products: $e');
+          return <HomeProductItem>[];
+        }),
+        repo.getProducts(limit: 10, sort: ListingSort.popular, cancelToken: cancelToken).catchError((e) {
+          debugPrint('[HomeContentNotifier] Error fetching popular products: $e');
+          return <HomeProductItem>[];
+        }),
+        repo.getProducts(limit: 10, sort: ListingSort.discountHigh, cancelToken: cancelToken).catchError((e) {
+          debugPrint('[HomeContentNotifier] Error fetching discount products: $e');
+          return <HomeProductItem>[];
+        }),
+      ).wait;
 
       // فلترة المنتجات التي تحتوي على خصومات فعلية للـ Flash Sale
       final discountOnly = discountProducts
@@ -200,52 +287,106 @@ class HomeContentNotifier extends Notifier<HomeContentState> {
           .toList();
       final flashSaleList = discountOnly.isNotEmpty
           ? discountOnly
-          : (discountProducts.isNotEmpty ? discountProducts : state.flashSale);
+          : discountProducts;
 
       final topProductsList = popularProducts.isNotEmpty
           ? popularProducts
-          : (newestProducts.isNotEmpty ? newestProducts : state.topProducts);
+          : newestProducts;
+
+      if (_disposed) return;
 
       state = state.copyWith(
         isLoading: false,
+        isRefreshing: false,
+        hasLoaded: true,
+        hasError: false,
         banners: fetchedBanners.isNotEmpty ? fetchedBanners : state.banners,
-        categories: fetchedCategories.isNotEmpty
-            ? fetchedCategories
-            : state.categories,
-        topProducts: topProductsList,
+        categories: fetchedCategories.isNotEmpty ? fetchedCategories : state.categories,
+        topProducts: topProductsList.isNotEmpty ? topProductsList : state.topProducts,
         newItems: newestProducts.isNotEmpty ? newestProducts : state.newItems,
-        flashSale: flashSaleList,
-        mostPopular: popularProducts.isNotEmpty
-            ? popularProducts
-            : (newestProducts.isNotEmpty ? newestProducts : state.mostPopular),
-        justForYou: newestProducts.isNotEmpty
-            ? newestProducts
-            : state.justForYou,
+        flashSale: flashSaleList.isNotEmpty ? flashSaleList : state.flashSale,
+        mostPopular: popularProducts.isNotEmpty ? popularProducts : state.mostPopular,
+        justForYou: newestProducts.isNotEmpty ? newestProducts : state.justForYou,
       );
     } catch (e, st) {
+      if (_disposed) return;
+      if (e is DioException && CancelToken.isCancel(e)) {
+        // تم إلغاء الطلب بأمان بسبب إعادة المحاولة أو مغادرة الشاشة
+        return;
+      }
       debugPrint(
         '[HomeContentNotifier] Error loading home data from API: $e\n$st',
       );
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(
+        isLoading: false,
+        isRefreshing: false,
+        hasLoaded: true,
+        hasError: true,
+        errorMessage: e.toString(),
+      );
     }
   }
 
   Future<void> refreshHome() async {
-    if (AppEnv.enableMockData) {
+    await loadHomeData(isRefresh: true);
+  }
+
+  /// إعادة محاولة تحميل قسم محدد فقط مع إظهار هيكل الـ Skeleton الخاص به حصراً
+  Future<void> retrySection(HomeSection section) async {
+    state = state.copyWith(
+      loadingSections: {...state.loadingSections, section},
+    );
+
+    try {
+      final repo = ref.read(productsRepositoryProvider);
       final service = ref.read(homeServiceProvider);
-      final data = service.getInitialData();
-      state = state.copyWith(
-        banners: data.banners,
-        categories: data.categories,
-        topProducts: data.topProducts,
-        newItems: data.newItems,
-        flashSale: data.flashSale,
-        mostPopular: data.mostPopular,
-        justForYou: data.justForYou,
-      );
-      return;
+      final apiClient = ref.read(apiClientProvider);
+
+      switch (section) {
+        case HomeSection.banners:
+          final banners = await service.fetchBanners(apiClient);
+          state = state.copyWith(banners: banners);
+          break;
+        case HomeSection.categories:
+          final cats = await repo.getCategories(parentId: 'null').then((list) async {
+            if (list.isEmpty) return await repo.getCategories();
+            return list;
+          });
+          state = state.copyWith(categories: cats);
+          break;
+        case HomeSection.flashSale:
+          final prods = await repo.getProducts(limit: 10, sort: ListingSort.discountHigh);
+          final discountOnly = prods.where((p) => p.hasDiscount).toList();
+          state = state.copyWith(
+            flashSale: discountOnly.isNotEmpty ? discountOnly : prods,
+          );
+          break;
+        case HomeSection.topProducts:
+          final prods = await repo.getProducts(limit: 10, sort: ListingSort.popular);
+          state = state.copyWith(topProducts: prods);
+          break;
+        case HomeSection.newItems:
+          final prods = await repo.getProducts(limit: 15, sort: ListingSort.newest);
+          state = state.copyWith(newItems: prods);
+          break;
+        case HomeSection.mostPopular:
+          final prods = await repo.getProducts(limit: 10, sort: ListingSort.popular);
+          state = state.copyWith(mostPopular: prods);
+          break;
+        case HomeSection.justForYou:
+          final prods = await repo.getProducts(limit: 15, sort: ListingSort.newest);
+          state = state.copyWith(justForYou: prods);
+          break;
+      }
+    } catch (e) {
+      debugPrint('[HomeContentNotifier] Error retrying section $section: $e');
+    } finally {
+      if (!_disposed) {
+        state = state.copyWith(
+          loadingSections: Set.from(state.loadingSections)..remove(section),
+        );
+      }
     }
-    await loadHomeData();
   }
 
   void onSeeAllCategories() {

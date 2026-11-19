@@ -11,16 +11,27 @@ import 'package:rwnaqk_frontend/modules/orders/views/orders_view.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/providers/wishlist_providers.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/views/wishlist_view.dart';
 
-class MainScreen extends ConsumerWidget {
+class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends ConsumerState<MainScreen> {
+  /// مجموعة التبويبات التي زارها المستخدم فقط (التحميل الكسول لمنع طلبات الشبكة وإعادة البناء غير الضرورية عند فتح التطبيق)
+  final Set<int> _activatedTabs = {0};
+
+  @override
+  Widget build(BuildContext context) {
     final currentIndex = ref.watch(mainNavigationProvider);
     final navNotifier = ref.read(mainNavigationProvider.notifier);
 
-    final cartCount = ref.watch(cartProvider).itemCount;
-    final wishlistCount = ref.watch(wishlistProvider).itemCount;
+    // تفعيل التبويب المطلوب عند التنقل إليه لأول مرة
+    _activatedTabs.add(currentIndex);
+
+    final cartCount = ref.watch(cartProvider.select((s) => s.itemCount));
+    final wishlistCount = ref.watch(wishlistProvider.select((s) => s.itemCount));
     final customer = ref.watch(currentCustomerProvider);
 
     final pages = [
@@ -41,7 +52,15 @@ class MainScreen extends ConsumerWidget {
 
     return Scaffold(
       extendBody: true,
-      body: IndexedStack(index: currentIndex, children: pages),
+      body: IndexedStack(
+        index: currentIndex,
+        children: List.generate(
+          pages.length,
+          (index) => _activatedTabs.contains(index)
+              ? pages[index]
+              : const SizedBox.shrink(),
+        ),
+      ),
       bottomNavigationBar: AppBottomNav(
         currentIndex: currentIndex,
         onChanged: navNotifier.changeTab,

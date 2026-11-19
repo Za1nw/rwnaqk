@@ -6,6 +6,7 @@ import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/app_input_field.dart';
+import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/app_dialog_shell.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/rating_stars_input.dart';
 
@@ -215,10 +216,10 @@ class _AvatarCircle extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: hasAvatar
-          ? Image.network(
-              avatarUrl!,
+          ? AppNetworkImage(
+              url: avatarUrl!,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) =>
+              errorWidget:
                   Icon(Icons.person_rounded, color: context.muted, size: 20),
             )
           : Icon(Icons.person_rounded, color: context.muted, size: 20),

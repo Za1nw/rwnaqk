@@ -15,8 +15,10 @@ class WishlistScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(wishlistProvider);
-    final isWishlist = state.tabIndex == 0;
+    // جلب عناصر المفضلة الحقيقية من السيرفر بشكل كسول فقط عند دخول هذه الشاشة
+    ref.read(wishlistProvider.notifier).ensureLoaded();
+
+    final isWishlist = ref.watch(wishlistProvider.select((s) => s.tabIndex == 0));
 
     return Scaffold(
       backgroundColor: context.background,

@@ -10,11 +10,19 @@ import 'package:rwnaqk_frontend/routes/app_routes.dart';
 /// يوفر وصولاً مباشراً وفورياً للمراحل الأربع للطلبات (قيد الانتظار، التجهيز، في الطريق، التقييم)
 class EcommerceOrdersHub extends StatelessWidget {
   final int totalOrders;
+  final int pendingCount;
+  final int processingCount;
+  final int shippingCount;
+  final int reviewCount;
   final VoidCallback? onAllOrders;
 
   const EcommerceOrdersHub({
     super.key,
     required this.totalOrders,
+    this.pendingCount = 0,
+    this.processingCount = 0,
+    this.shippingCount = 0,
+    this.reviewCount = 0,
     this.onAllOrders,
   });
 
@@ -120,26 +128,26 @@ class EcommerceOrdersHub extends StatelessWidget {
                 _OrderStatusItem(
                   icon: Icons.hourglass_top_rounded,
                   label: 'قيد الانتظار',
-                  badgeCount: 1,
+                  badgeCount: pendingCount,
                   onTap: () => AppNav.toNamed(AppRoutes.orders),
                 ),
                 _OrderStatusItem(
                   icon: Icons.inventory_2_outlined,
                   label: 'قيد التجهيز',
-                  badgeCount: 2,
+                  badgeCount: processingCount,
                   onTap: () => AppNav.toNamed(AppRoutes.orders),
                 ),
                 _OrderStatusItem(
                   icon: Icons.local_shipping_outlined,
                   label: 'في الطريق',
-                  badgeCount: 1,
-                  isHighlighted: true,
+                  badgeCount: shippingCount,
+                  isHighlighted: shippingCount > 0,
                   onTap: () => AppNav.toNamed(AppRoutes.orders),
                 ),
                 _OrderStatusItem(
                   icon: Icons.rate_review_outlined,
                   label: 'بانتظار التقييم',
-                  badgeCount: 0,
+                  badgeCount: reviewCount,
                   onTap: () => AppNav.toNamed(AppRoutes.orders),
                 ),
               ],

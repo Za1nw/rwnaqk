@@ -1,18 +1,12 @@
-import 'package:rwnaqk_frontend/core/utils/app_mock_product_utils.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
+/// خدمة العمليات المحلية الحسابية والقوائم لموديول المفضلة [WishlistService]
 class WishlistService {
-  List<HomeProductItem> seedWishlist() {
-    return sampleProducts(4, seed: 900, discount: 20, tagKey: 'Pink');
-  }
+  /// البداية بقائمة فارغة حقيقية ونظيفة (حذف البيانات الوهمية Mock)
+  List<HomeProductItem> initialWishlistItems() => const [];
 
-  List<HomeProductItem> seedRecentlyViewed() {
-    return sampleProducts(6, seed: 800);
-  }
-
-  List<HomeProductItem> initialWishlistItems() => seedWishlist();
-
-  List<HomeProductItem> initialRecentlyViewedItems() => seedRecentlyViewed();
+  /// البداية بقائمة مشاهدات أخيرة فارغة حقيقية ونظيفة
+  List<HomeProductItem> initialRecentlyViewedItems() => const [];
 
   List<HomeProductItem> toggleItem({
     required List<HomeProductItem> currentList,
@@ -39,19 +33,5 @@ class WishlistService {
   }) {
     final filtered = currentList.where((e) => e.id != item.id).toList();
     return [item, ...filtered];
-  }
-
-  List<HomeProductItem> sampleProducts(
-    int count, {
-    required int seed,
-    int? discount,
-    String tagKey = '',
-  }) {
-    return AppMockProductUtils.buildProducts(
-      count,
-      seed: seed,
-      discount: discount,
-      tagKey: tagKey,
-    );
   }
 }

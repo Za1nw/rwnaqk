@@ -15,6 +15,7 @@ class SettingsUserHeader extends StatelessWidget {
   final String phone;
   final String? avatarPath;
   final String? avatarUrl;
+  final bool isVerified;
   final VoidCallback? onEdit;
   final VoidCallback? onTap;
 
@@ -24,6 +25,7 @@ class SettingsUserHeader extends StatelessWidget {
     required this.phone,
     this.avatarPath,
     this.avatarUrl,
+    this.isVerified = true,
     this.onEdit,
     this.onTap,
   });
@@ -34,7 +36,7 @@ class SettingsUserHeader extends StatelessWidget {
     final trimmedName = name.trim();
     final firstOnly = trimmedName.split(RegExp(r'\s+')).first;
     final displayName = firstOnly.isEmpty
-        ? 'عميل رَوْنَقُك الفاخر'
+        ? 'مستخدم رَوْنَقُك'
         : firstOnly;
     final displayPhone = phone.trim().isEmpty
         ? 'لم يتم ربط رقم الهاتف'
@@ -135,7 +137,7 @@ class SettingsUserHeader extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              if (phone.trim().isNotEmpty) ...[
+                              if (isVerified && phone.trim().isNotEmpty) ...[
                                 const SizedBox(width: 6),
                                 Container(
                                   padding: const EdgeInsets.symmetric(

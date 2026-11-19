@@ -6,6 +6,7 @@ import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_horizontal_list.dart';
 import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/home_layout.dart';
+import 'package:rwnaqk_frontend/modules/home/widgets/home_skeletons.dart';
 
 class HomeNewItemsSection extends ConsumerWidget {
   final double itemWidth;
@@ -19,7 +20,10 @@ class HomeNewItemsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(homeContentProvider);
+    final newItems = ref.watch(homeContentProvider.select((s) => s.newItems));
+    final isLoading = ref.watch(
+      homeContentProvider.select((s) => s.isSectionLoading(HomeSection.newItems)),
+    );
     final notifier = ref.read(homeContentProvider.notifier);
 
     return Column(
@@ -27,16 +31,28 @@ class HomeNewItemsSection extends ConsumerWidget {
       children: [
         AppSectionHeader(
           title: Tk.homeNewItems.tr,
-          actionText: Tk.homeSeeAll.tr,
-          onActionTap: notifier.onSeeAllNewItems,
+          actionText: newItems.isNotEmpty ? Tk.homeSeeAll.tr : null,
+          onActionTap: newItems.isNotEmpty ? notifier.onSeeAllNewItems : null,
         ),
         const SizedBox(height: HomeLayout.innerGap),
-        if (state.newItems.isNotEmpty)
+        if (isLoading && newItems.isEmpty)
+          HomeProductHorizontalListSkeleton(
+            itemWidth: itemWidth,
+            height: height,
+          )
+        else if (newItems.isNotEmpty)
           ProductHorizontalList(
-            items: state.newItems,
+            items: newItems,
             itemWidth: itemWidth,
             height: height,
             onTap: notifier.openProduct,
+          )
+        else
+          HomeSectionEmptyWidget(
+            message: 'لا توجد منتجات جديدة حالياً',
+            icon: Icons.new_releases_outlined,
+            height: 125,
+            onRetry: () => notifier.retrySection(HomeSection.newItems),
           ),
       ],
     );

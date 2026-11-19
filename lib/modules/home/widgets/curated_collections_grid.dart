@@ -11,10 +11,9 @@ class CuratedCollectionsGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(homeContentProvider);
+    final items = ref.watch(homeContentProvider.select((s) => s.categories));
     final notifier = ref.read(homeContentProvider.notifier);
 
-    final items = state.categories;
     if (items.isEmpty) return const SizedBox.shrink();
 
     return Column(

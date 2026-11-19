@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 class ProductAvatarRow extends StatelessWidget {
@@ -73,18 +74,16 @@ class ProductAvatarRow extends StatelessWidget {
                         ),
                       ),
                       clipBehavior: Clip.antiAlias,
-                      child: Image.network(
-                        p.imageUrl,
+                      child: AppNetworkImage(
+                        url: p.imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) {
-                          return Center(
-                            child: Icon(
-                              Icons.star_rounded,
-                              size: 20,
-                              color: BrandColors.gold,
-                            ),
-                          );
-                        },
+                        errorWidget: Center(
+                          child: Icon(
+                            Icons.star_rounded,
+                            size: 20,
+                            color: BrandColors.gold,
+                          ),
+                        ),
                       ),
                     ),
                   ),

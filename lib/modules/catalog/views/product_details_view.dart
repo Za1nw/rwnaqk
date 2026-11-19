@@ -9,6 +9,7 @@ import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/catalog/providers/catalog_providers.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_details_header_card.dart';
+import 'package:rwnaqk_frontend/modules/catalog/widgets/product_details_skeleton.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_reviews_section.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_size_guide_sheet.dart';
 import 'package:rwnaqk_frontend/modules/catalog/widgets/product_specifications_card.dart';
@@ -32,6 +33,7 @@ class ProductDetailsScreen extends ConsumerStatefulWidget {
 class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   bool _initialized = false;
   late String _productId;
+  HomeProductItem? _initialItem;
 
   @override
   void didChangeDependencies() {
@@ -47,6 +49,22 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         if (args['item'] is HomeProductItem) {
           item = args['item'] as HomeProductItem;
           _productId = item.id;
+        } else if (args['item'] is Map) {
+          try {
+            item = HomeProductItem.fromJson(
+              Map<String, dynamic>.from(args['item'] as Map),
+            );
+            _productId = item.id;
+          } catch (_) {
+            _productId = args['id']?.toString() ?? '1';
+          }
+        } else if (args.containsKey('title') || args.containsKey('name')) {
+          try {
+            item = HomeProductItem.fromJson(Map<String, dynamic>.from(args));
+            _productId = item.id;
+          } catch (_) {
+            _productId = args['id']?.toString() ?? '1';
+          }
         } else {
           _productId =
               args['id']?.toString() ?? args['productId']?.toString() ?? '1';
@@ -56,6 +74,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
       } else {
         _productId = '1';
       }
+      _initialItem = item;
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref
@@ -77,6 +96,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         ? 3
         : 2;
 
+    final hasVars = state.product != null
+        ? state.hasVariations
+        : (_initialItem?.hasVariation ?? false);
+
+    final hasGuide = state.product != null
+        ? state.hasSizeGuide
+        : (_initialItem?.hasSizeGuide ?? false);
+
     return Scaffold(
       backgroundColor: context.background,
       appBar: _ProductDetailsAppBar(
@@ -85,18 +112,72 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         onFavorite: () => notifier.toggleFavorite(context),
         onShare: notifier.shareProduct,
       ),
-      bottomNavigationBar: _BottomBar(
-        isFavorite: state.isFavorite,
-        onFavorite: () => notifier.toggleFavorite(context),
-        onAdd: () => notifier.addToCart(context),
-        onBuy: notifier.buyNow,
-      ),
+      bottomNavigationBar: state.isLoading || state.product == null
+          ? (state.isLoading
+              ? const ProductDetailsBottomBarSkeleton()
+              : const SizedBox.shrink())
+          : _BottomBar(
+              isFavorite: state.isFavorite,
+              onFavorite: () => notifier.toggleFavorite(context),
+              onAdd: () => notifier.addToCart(context),
+              onBuy: notifier.buyNow,
+            ),
       body: SafeArea(
         top: false,
-        child: ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
-          children: [
+        child: state.isLoading
+            ? ProductDetailsSkeleton(
+                crossAxisCount: justCols,
+                hasVariations: hasVars,
+                hasSizeGuide: hasGuide,
+              )
+            : state.product == null
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline_rounded,
+                            size: 64,
+                            color: context.primary,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            state.errorMessage ?? 'المنتج غير متاح حالياً أو تعذر الاتصال بالخادم',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: context.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              notifier.loadProduct(initialItem: _initialItem);
+                            },
+                            icon: const Icon(Icons.refresh_rounded),
+                            label: const Text('إعادة المحاولة'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : ListView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 18),
+                children: [
             // 1. Header Card (معرض الصور، البيانات الأساسية، والخصائص والكمية المباشرة)
             ProductDetailsHeaderCard(
               images: state.images,

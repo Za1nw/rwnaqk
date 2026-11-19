@@ -30,6 +30,7 @@ class FakeProductsRepository implements IProductsRepository {
     String? categoryId,
     String? search,
     bool? isFeatured,
+    CancelToken? cancelToken,
   }) async {
     final list = _listingService.mockProducts(seed: seed);
     var filtered = list;
@@ -86,6 +87,7 @@ class FakeProductsRepository implements IProductsRepository {
     String? parentId,
     bool? isFeatured,
     bool? isTop,
+    CancelToken? cancelToken,
   }) async {
     return const [
       HomeCategoryItem(

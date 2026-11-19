@@ -85,11 +85,17 @@ class ProductDetailsState {
 
   List<ProductVariationItem> get variations => product?.variations ?? const [];
 
-  bool get hasVariations =>
-      variations.isNotEmpty ||
-      availableColors.isNotEmpty ||
-      availableSizes.isNotEmpty ||
-      attributeGroups.isNotEmpty;
+  bool get hasVariations {
+    // 1. إذا كان المنتج محدداً من خادم Laravel كمنتج بسيط (hasVariation = false)
+    if (product != null && !product!.hasVariation) {
+      return false;
+    }
+    // 2. التحقق من توفر مجموعات خصائص أو متغيرات فعلية قابلة للاختيار
+    return attributeGroups.isNotEmpty ||
+        variations.isNotEmpty ||
+        availableColors.isNotEmpty ||
+        availableSizes.isNotEmpty;
+  }
 
   /// المتغير المطابق للمواصفات والسمات المحددة حالياً
   ProductVariationItem? get selectedVariation {
@@ -248,10 +254,16 @@ class ProductDetailsState {
 
   ProductSizeGuide? get sizeGuide => product?.sizeGuide;
 
-  bool get hasSizeGuide =>
-      sizeGuide != null &&
-      (sizeGuide!.rows.isNotEmpty ||
-          (sizeGuide!.note != null && sizeGuide!.note!.trim().isNotEmpty));
+  bool get hasSizeGuide {
+    // 1. إذا كان المنتج محدداً من خادم Laravel بدون دليل مقاسات (has_size_guide = false)
+    if (product != null && !product!.hasSizeGuide) {
+      return false;
+    }
+    // 2. التحقق من توفر بيانات قياسات أو ملاحظات صالحة
+    return sizeGuide != null &&
+        (sizeGuide!.rows.isNotEmpty ||
+            (sizeGuide!.note != null && sizeGuide!.note!.trim().isNotEmpty));
+  }
 
   int get photosCount => images.length;
 

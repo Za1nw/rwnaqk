@@ -9,7 +9,7 @@ import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart'
 /// هذا العقد مستقل تماماً عن GetX ولا يحتوي على أي Rx Types أو Widgets،
 /// مما يسمح بإعادة استخدامه لاحقاً مع Riverpod أو BLoC أو أي مدير حالة آخر.
 abstract class IProductsRepository {
-  /// جلب قائمة المنتجات مع دعم الترتيب والفلاتر
+  /// جلب قائمة المنتجات مع دعم الترتيب والفلاتر وإلغاء الطلب عبر CancelToken
   Future<List<HomeProductItem>> getProducts({
     int seed = 1,
     int limit = 10,
@@ -19,6 +19,7 @@ abstract class IProductsRepository {
     String? categoryId,
     String? search,
     bool? isFeatured,
+    CancelToken? cancelToken,
   });
 
   /// جلب منتج محدد بالمعرف
@@ -36,10 +37,11 @@ abstract class IProductsRepository {
     CancelToken? cancelToken,
   });
 
-  /// جلب قائمة الفئات
+  /// جلب قائمة الفئات مع دعم إلغاء الطلب عبر CancelToken
   Future<List<HomeCategoryItem>> getCategories({
     String? parentId,
     bool? isFeatured,
     bool? isTop,
+    CancelToken? cancelToken,
   });
 }

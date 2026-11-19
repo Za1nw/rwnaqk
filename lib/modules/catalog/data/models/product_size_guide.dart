@@ -98,20 +98,30 @@ class ProductSizeGuide {
     dynamic data = raw;
     if (raw is String) {
       final str = raw.trim();
-      if (str.isEmpty || str == 'null' || str == '[]' || str == '{}') {
+      final lower = str.toLowerCase();
+      if (str.isEmpty ||
+          lower == 'null' ||
+          lower == 'none' ||
+          str == '[]' ||
+          str == '{}' ||
+          str == '0' ||
+          lower == 'false') {
         return null;
       }
       try {
         data = jsonDecode(str);
       } catch (_) {
-        return ProductSizeGuide(
-          title: 'دليل المقاسات',
-          note: str,
-          columns: const [ProductSizeGuideColumn(id: 'guide', label: 'المقاس')],
-          rows: [
-            ProductSizeGuideRow(size: '', measurements: {'guide': str}),
-          ],
-        );
+        if (str.length > 5) {
+          return ProductSizeGuide(
+            title: 'دليل المقاسات',
+            note: str,
+            columns: const [ProductSizeGuideColumn(id: 'guide', label: 'المقاس')],
+            rows: [
+              ProductSizeGuideRow(size: '', measurements: {'guide': str}),
+            ],
+          );
+        }
+        return null;
       }
     }
 
@@ -126,7 +136,12 @@ class ProductSizeGuide {
             .toList();
         final rowsRaw = data['rows'] as List? ?? [];
 
-        if (headers.isEmpty) return null;
+        final noteStr = data['note']?.toString().trim();
+        final hasValidNote = noteStr != null && noteStr.isNotEmpty && noteStr != 'null';
+
+        if (headers.isEmpty || (rowsRaw.isEmpty && !hasValidNote)) {
+          return null;
+        }
 
         final columns = <ProductSizeGuideColumn>[];
         for (int i = 1; i < headers.length; i++) {
@@ -153,9 +168,13 @@ class ProductSizeGuide {
           }
         }
 
+        if (rows.isEmpty && !hasValidNote) {
+          return null;
+        }
+
         return ProductSizeGuide(
           title: data['title']?.toString() ?? 'دليل المقاسات',
-          note: data['note']?.toString(),
+          note: hasValidNote ? noteStr : null,
           columns: columns,
           rows: rows,
         );

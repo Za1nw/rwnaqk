@@ -34,20 +34,32 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   final storage = ref.watch(authTokenStorageProvider);
   return ApiClient(
     tokenStorage: storage,
-    getSessionGeneration: () => ref.read(authSessionProvider).sessionGeneration,
+    getSessionGeneration: () {
+      try {
+        return ref.read(authSessionProvider).sessionGeneration;
+      } catch (_) {
+        return 0;
+      }
+    },
     onUnauthorizedWithDetails: (failedToken, staleGen) {
-      ref.read(authSessionProvider.notifier).handleUnauthorized(
-            failedToken: failedToken,
-            staleGeneration: staleGen,
-          );
+      try {
+        ref.read(authSessionProvider.notifier).handleUnauthorized(
+              failedToken: failedToken,
+              staleGeneration: staleGen,
+            );
+      } catch (_) {}
     },
     onUnauthorizedWithToken: (failedToken) {
-      ref.read(authSessionProvider.notifier).handleUnauthorized(
-            failedToken: failedToken,
-          );
+      try {
+        ref.read(authSessionProvider.notifier).handleUnauthorized(
+              failedToken: failedToken,
+            );
+      } catch (_) {}
     },
     onUnauthorized: () {
-      ref.read(authSessionProvider.notifier).handleUnauthorized();
+      try {
+        ref.read(authSessionProvider.notifier).handleUnauthorized();
+      } catch (_) {}
     },
     onAccountBanned: (customerData, reason) {
       CustomerModel? customer;
@@ -56,10 +68,12 @@ final apiClientProvider = Provider<ApiClient>((ref) {
           customer = CustomerModel.fromJson(customerData);
         } catch (_) {}
       }
-      ref.read(authSessionProvider.notifier).markAsBanned(
-            customerPayload: customer,
-            reason: reason,
-          );
+      try {
+        ref.read(authSessionProvider.notifier).markAsBanned(
+              customerPayload: customer,
+              reason: reason,
+            );
+      } catch (_) {}
     },
   );
 });

@@ -1,6 +1,12 @@
+import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/services/cache/app_image_cache_manager.dart';
+import 'package:rwnaqk_frontend/core/services/cache/app_image_storage_service.dart';
+import 'package:rwnaqk_frontend/core/services/cache/image_cache_config.dart';
 
+/// مكون موحد ومركزي لعرض الصور الشبكية مع كاش محلي محدد الحجم (100 MB) وتحسين استهلاك الذاكرة
 class AppNetworkImage extends StatelessWidget {
   final String url;
   final BoxFit fit;
@@ -14,6 +20,10 @@ class AppNetworkImage extends StatelessWidget {
   final Widget? loadingWidget;
   final Widget? errorWidget;
   final Color? backgroundColor;
+
+  /// تخصيص أبعاد فك التشفير في الذاكرة العشوائية يدوياً إن رغب المطور
+  final int? memCacheWidth;
+  final int? memCacheHeight;
 
   const AppNetworkImage({
     super.key,
@@ -29,7 +39,31 @@ class AppNetworkImage extends StatelessWidget {
     this.loadingWidget,
     this.errorWidget,
     this.backgroundColor,
+    this.memCacheWidth,
+    this.memCacheHeight,
   });
+
+  /// حساب العرض المناسب لفك التشفير في الرام لتفادي استهلاك الذاكرة OOM مع مراعاة كثافة الشاشة الحقيقية
+  int? _resolveMemCacheWidth(BuildContext context) {
+    if (memCacheWidth != null) return memCacheWidth;
+    if (width != null && width! > 0) {
+      final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0;
+      final calculated = (width! * dpr).round();
+      return calculated.clamp(100, ImageCacheConfig.defaultMaxMemCacheWidth);
+    }
+    return ImageCacheConfig.defaultMaxMemCacheWidth;
+  }
+
+  /// حساب الارتفاع المناسب لفك التشفير في الرام
+  int? _resolveMemCacheHeight(BuildContext context) {
+    if (memCacheHeight != null) return memCacheHeight;
+    if (height != null && height! > 0) {
+      final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0;
+      final calculated = (height! * dpr).round();
+      return calculated.clamp(100, ImageCacheConfig.defaultMaxMemCacheWidth);
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,8 +111,13 @@ class AppNetworkImage extends StatelessWidget {
       return buildError();
     }
 
-    final imageWidget = Image.network(
-      resolvedUrl,
+    // صيانة كاش الصور في الخلفية مع كبح زمني وفحص سريع لسقف المساحة
+    unawaited(AppImageStorageService.instance.runMaintenanceIfNeeded());
+    unawaited(AppImageStorageService.instance.checkAndEvictIfOverLimit());
+
+    final imageWidget = CachedNetworkImage(
+      imageUrl: resolvedUrl,
+      cacheManager: AppImageCacheManager.instance,
       width: width,
       height: height,
       fit: fit,
@@ -86,11 +125,12 @@ class AppNetworkImage extends StatelessWidget {
       color: color,
       colorBlendMode: colorBlendMode,
       filterQuality: filterQuality,
-      errorBuilder: (_, _, _) => buildError(),
-      loadingBuilder: (_, child, progress) {
-        if (progress == null) return child;
-        return buildPlaceholder();
-      },
+      memCacheWidth: _resolveMemCacheWidth(context),
+      memCacheHeight: _resolveMemCacheHeight(context),
+      maxWidthDiskCache: 1440,
+      maxHeightDiskCache: 1440,
+      placeholder: (_, _) => buildPlaceholder(),
+      errorWidget: (_, _, _) => buildError(),
     );
 
     if (borderRadius == null) return imageWidget;

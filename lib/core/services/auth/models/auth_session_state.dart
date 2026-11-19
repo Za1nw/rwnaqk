@@ -21,6 +21,9 @@ enum AuthSessionStatus {
   /// تم حظر الحساب من قبل إدارة المتجر
   banned,
 
+  /// تعذر الاتصال بالخادم أو انقطاع الإنترنت عند فحص الجلسة
+  serverError,
+
   /// الجلسة مصادقة بالكامل ومؤكدة مع الخادم
   authenticated,
 }
@@ -78,6 +81,9 @@ class AuthSessionState {
   /// التحقق هل يلزم تأكيد البريد الإلكتروني
   bool get requiresEmailVerification =>
       status == AuthSessionStatus.emailVerificationRequired;
+
+  /// التحقق هل هناك خطأ في الاتصال بالخادم
+  bool get hasServerError => status == AuthSessionStatus.serverError;
 
   /// معرف العميل المسجل كنص
   String? get customerId => customer?.id.toString();

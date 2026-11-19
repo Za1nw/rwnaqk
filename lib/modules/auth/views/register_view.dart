@@ -57,7 +57,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
   @override
   void initState() {
     super.initState();
-    ref.read(registerFormProvider.notifier).formKey = _formKey;
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 650),

@@ -3,6 +3,7 @@ import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mock_content_utils.dart';
+import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
 
 class AppCategoriesFilterSheet extends StatefulWidget {
   const AppCategoriesFilterSheet({super.key});
@@ -228,22 +229,20 @@ class _CategoryTile extends StatelessWidget {
             ),
             child: Row(
               children: [
-                ClipRRect(
+                AppNetworkImage(
+                  url: data.imageUrl,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    data.imageUrl,
+                  errorWidget: Container(
                     width: 48,
                     height: 48,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => Container(
-                      width: 48,
-                      height: 48,
-                      color: context.primary.withValues(alpha: 0.08),
-                      child: Icon(
-                        Icons.category_outlined,
-                        color: context.primary,
-                        size: 22,
-                      ),
+                    color: context.primary.withValues(alpha: 0.08),
+                    child: Icon(
+                      Icons.category_outlined,
+                      color: context.primary,
+                      size: 22,
                     ),
                   ),
                 ),

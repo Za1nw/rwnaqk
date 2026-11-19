@@ -31,6 +31,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
     String? categoryId,
     String? search,
     bool? isFeatured,
+    CancelToken? cancelToken,
   }) async {
     if (AppEnv.enableMockData) {
       return _fallback.getProducts(
@@ -61,6 +62,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
       final response = await _api.get<dynamic>(
         CatalogEndpoints.products,
         queryParameters: queryParams,
+        cancelToken: cancelToken,
       );
 
       final data = response.data;
@@ -170,6 +172,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
     String? parentId,
     bool? isFeatured,
     bool? isTop,
+    CancelToken? cancelToken,
   }) async {
     if (AppEnv.enableMockData) {
       return _fallback.getCategories(
@@ -189,6 +192,7 @@ class ProductsRepositoryImpl implements IProductsRepository {
       final response = await _api.get<dynamic>(
         CatalogEndpoints.categories,
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
+        cancelToken: cancelToken,
       );
       final data = response.data;
       final rawList = data is Map<String, dynamic> && data['data'] is List

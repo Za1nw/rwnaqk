@@ -16,15 +16,13 @@ class WishlistTopBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(wishlistProvider);
+    final idx = ref.watch(wishlistProvider.select((s) => s.tabIndex));
+    final wishlistCount = ref.watch(wishlistProvider.select((s) => s.items.length));
+    final recentCount = ref.watch(wishlistProvider.select((s) => s.recentlyViewed.length));
+    final count = idx == 0 ? wishlistCount : recentCount;
+    final cartCount = ref.watch(cartProvider.select((s) => s.itemCount));
     final notifier = ref.read(wishlistProvider.notifier);
     final isDark = context.isDark;
-
-    final idx = state.tabIndex;
-    final wishlistCount = state.items.length;
-    final recentCount = state.recentlyViewed.length;
-    final count = idx == 0 ? wishlistCount : recentCount;
-    final cartCount = ref.watch(cartProvider).itemCount;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

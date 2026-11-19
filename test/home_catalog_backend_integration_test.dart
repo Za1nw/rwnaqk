@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,6 +27,7 @@ class MockTestProductsRepository extends FakeProductsRepository {
     String? parentId,
     bool? isFeatured,
     bool? isTop,
+    CancelToken? cancelToken,
   }) async {
     return categoriesToReturn;
   }
@@ -40,6 +42,7 @@ class MockTestProductsRepository extends FakeProductsRepository {
     String? categoryId,
     String? search,
     bool? isFeatured,
+    CancelToken? cancelToken,
   }) async {
     return productsToReturn;
   }

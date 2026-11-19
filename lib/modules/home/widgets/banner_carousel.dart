@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
+import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_banner_item.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
@@ -214,34 +215,29 @@ class _BannerCard extends StatelessWidget {
             children: [
               // 1. صورة الخلفية أو تدرج ألوان بديل
               if (item.imageUrl.isNotEmpty)
-                Image.network(
-                  item.imageUrl,
+                AppNetworkImage(
+                  url: item.imageUrl,
                   fit: BoxFit.fill,
                   width: double.infinity,
                   height: double.infinity,
                   filterQuality: FilterQuality.high,
-                  loadingBuilder: (context, child, progress) {
-                    if (progress == null) return child;
-                    return Container(
-                      color: isDark
-                          ? const Color(0xFF2A0014)
-                          : const Color(0xFFFFF0F5),
-                      alignment: Alignment.center,
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            isDark ? BrandColors.gold : BrandColors.burgundy,
-                          ),
+                  errorWidget: _buildFallbackBackground(isDark),
+                  loadingWidget: Container(
+                    color: isDark
+                        ? const Color(0xFF2A0014)
+                        : const Color(0xFFFFF0F5),
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isDark ? BrandColors.gold : BrandColors.burgundy,
                         ),
                       ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildFallbackBackground(isDark);
-                  },
+                    ),
+                  ),
                 )
               else
                 _buildFallbackBackground(isDark),

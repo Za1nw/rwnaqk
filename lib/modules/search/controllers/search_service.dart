@@ -1,4 +1,3 @@
-﻿import 'package:rwnaqk_frontend/core/utils/app_mock_product_utils.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
 class SearchService {
@@ -11,12 +10,7 @@ class SearchService {
   }
 
   List<HomeProductItem> sampleProducts(int count, {required int seed}) {
-    return AppMockProductUtils.buildProducts(
-      count,
-      seed: seed,
-      basePrice: 12,
-      discountBuilder: (index) => index % 4 == 0 ? 15 : null,
-    );
+    return const [];
   }
 
   List<HomeProductItem> runLocalSearch({

@@ -23,6 +23,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen>
     with SingleTickerProviderStateMixin {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final AnimationController _animController;
   late final Animation<double> _fadeAnim;
   late final Animation<Offset> _slideAnim;
@@ -210,7 +211,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       padding: const EdgeInsets.all(20),
                       decoration: _podDecoration(context, isDark),
                       child: Form(
-                        key: notifier.formKey,
+                        key: _formKey,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
@@ -296,7 +297,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     onPressed: (state.isLoading ||
                                             state.isBiometricLoading)
                                         ? null
-                                        : notifier.login,
+                                        : () => notifier.login(key: _formKey),
                                   ),
                                 ),
                                 const SizedBox(width: 10),

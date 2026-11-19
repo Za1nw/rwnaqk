@@ -210,17 +210,17 @@ final customerProfileDataProvider = Provider<CustomerProfileData>((ref) {
       ? firstName
       : ((fullName != null && fullName.isNotEmpty)
           ? fullName.split(RegExp(r'\s+')).first
-          : 'عميل رَوْنَقُك');
+          : (customer != null ? 'مستخدم' : 'زائر'));
 
   final phone = customer?.phone;
   final String displayPhone = (phone != null && phone.isNotEmpty)
       ? phone
-      : '+967 777 000 000';
+      : (customer != null ? 'لم يتم ربط رقم الهاتف' : '');
 
   final email = customer?.email;
   final String displayEmail = (email != null && email.isNotEmpty)
       ? email
-      : 'customer@rawnaqk.com';
+      : '';
 
   final stats = [
     ProfileStatsItem(
@@ -237,12 +237,12 @@ final customerProfileDataProvider = Provider<CustomerProfileData>((ref) {
     ),
     ProfileStatsItem(
       label: 'نقاط رونق',
-      value: '2,450',
+      value: '0 نقطة',
       icon: Icons.diamond_outlined,
     ),
     ProfileStatsItem(
       label: 'القسائم',
-      value: '3 كود',
+      value: '0 كود',
       icon: Icons.confirmation_number_outlined,
     ),
   ];

@@ -24,6 +24,7 @@ import 'package:rwnaqk_frontend/modules/catalog/models/products_listing_state.da
 import 'package:rwnaqk_frontend/modules/catalog/widgets/app_filter_sheet.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_category_item.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
+import 'package:rwnaqk_frontend/modules/wishlist/models/wishlist_state.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/providers/wishlist_providers.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 import 'package:share_plus/share_plus.dart';
@@ -243,39 +244,50 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
 
   @override
   ProductDetailsState build() {
-    // مراقبة حالة المفضلة لمزامنتها مباشرة مع المنتج الحالي
-    final isFav = ref.watch(wishlistProvider).isInWishlist(arg);
-    return ProductDetailsState.initial().copyWith(isFavorite: isFav);
+    // الاستماع لتغيرات المفضلة دون إعادة بناء كامل المتحكم وحذف بيانات المنتج المحملة
+    ref.listen<WishlistState>(wishlistProvider, (previous, next) {
+      final nextFav = next.isInWishlist(arg);
+      if (state.isFavorite != nextFav) {
+        state = state.copyWith(isFavorite: nextFav);
+      }
+    });
+
+    final isFav = ref.read(wishlistProvider).isInWishlist(arg);
+    return ProductDetailsState.initial().copyWith(
+      isFavorite: isFav,
+      isLoading: true,
+    );
   }
 
   /// تحميل المنتج من الكائن الأولي أو عبر المستودع
   Future<void> loadProduct({HomeProductItem? initialItem, dynamic args}) async {
+    state = state.copyWith(
+      isLoading: true,
+      errorMessage: () => null,
+      product: initialItem != null ? () => initialItem : null,
+    );
+
     final map = (args is Map) ? args : const {};
 
     final reviews = _service.resolveReviews(map['reviews']);
     final mostPopular = _service.resolveItems(map['mostPopular']);
     final recommended = _service.resolveItems(map['recommended']);
 
-    // 1. تهيئة فورية بالكائن الأولي لضمان استجابة الواجهة بلا أي تأخير أو وميض شاشة
-    if (initialItem != null) {
-      _initFromProduct(
-        item: initialItem,
-        reviews: reviews,
-        mostPopular: mostPopular,
-        recommended: recommended,
-        incomingColor: map['selectedColorId'] ?? map['selectedColor'],
-        incomingSize: map['selectedSize'],
-        rawGroups: map['attributeGroups'],
-      );
-    } else {
-      state = state.copyWith(isLoading: true, errorMessage: () => null);
-    }
-
     // 2. جلب كامل تفاصيل المنتج الحقيقية (المعرض، المتغيرات والأسعار، الوصف والمحتوى) من خادم Laravel API
     try {
       final product = await _repo.getProductById(arg);
       if (product == null) {
-        if (initialItem == null) {
+        if (initialItem != null) {
+          _initFromProduct(
+            item: initialItem,
+            reviews: reviews,
+            mostPopular: mostPopular,
+            recommended: recommended,
+            incomingColor: map['selectedColorId'] ?? map['selectedColor'],
+            incomingSize: map['selectedSize'],
+            rawGroups: map['attributeGroups'],
+          );
+        } else {
           state = state.copyWith(
             isLoading: false,
             errorMessage: () => 'Product not found',
@@ -302,7 +314,17 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
         rawGroups: map['attributeGroups'],
       );
     } catch (_) {
-      if (initialItem == null) {
+      if (initialItem != null) {
+        _initFromProduct(
+          item: initialItem,
+          reviews: reviews,
+          mostPopular: mostPopular,
+          recommended: recommended,
+          incomingColor: map['selectedColorId'] ?? map['selectedColor'],
+          incomingSize: map['selectedSize'],
+          rawGroups: map['attributeGroups'],
+        );
+      } else {
         state = state.copyWith(
           isLoading: false,
           errorMessage: () => 'Failed to load product details',
@@ -606,6 +628,8 @@ final flashSaleProvider = NotifierProvider<FlashSaleNotifier, FlashSaleState>(
 class FlashSaleNotifier extends Notifier<FlashSaleState> {
   Timer? _timer;
   final FlashSaleService _service = FlashSaleService();
+  IProductsRepository get _repo => ref.read(productsRepositoryProvider);
+  List<HomeProductItem> _allDiscounted = const [];
 
   @override
   FlashSaleState build() {
@@ -614,8 +638,17 @@ class FlashSaleNotifier extends Notifier<FlashSaleState> {
     });
 
     _startTimer();
-    final initialProducts = _service.loadFlashSaleProducts(selectedDiscount: 0);
-    return FlashSaleState(products: initialProducts);
+    Future.microtask(() => _fetchDiscountedProducts());
+    return FlashSaleState(products: const []);
+  }
+
+  Future<void> _fetchDiscountedProducts() async {
+    try {
+      final items = await _repo.getProducts(limit: 20, sort: ListingSort.discountHigh);
+      _allDiscounted = items;
+      final filtered = _service.filterByDiscount(_allDiscounted, state.selectedDiscount);
+      state = state.copyWith(products: filtered);
+    } catch (_) {}
   }
 
   void _startTimer() {
@@ -636,7 +669,7 @@ class FlashSaleNotifier extends Notifier<FlashSaleState> {
   }
 
   void selectDiscount(int discount) {
-    final prods = _service.loadFlashSaleProducts(selectedDiscount: discount);
+    final prods = _service.filterByDiscount(_allDiscounted, discount);
     state = state.copyWith(selectedDiscount: discount, products: prods);
   }
 

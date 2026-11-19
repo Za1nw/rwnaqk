@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/theme/app_text_theme.dart';
+import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
 
 /// أفاتار الحساب الملكي الموحد مع احتواء متكامل وحرف أحادي ناصع
 class ProfileAvatar extends StatelessWidget {
@@ -69,12 +70,12 @@ class ProfileAvatar extends StatelessWidget {
         ),
       );
     } else if (hasRealNetworkImage) {
-      content = Image.network(
-        safeUrl,
+      content = AppNetworkImage(
+        url: safeUrl,
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        errorBuilder: (_, _, _) => _AvatarFallback(
+        errorWidget: _AvatarFallback(
           initial: initial,
           fontSize: fontSize,
           color: avatarFg,

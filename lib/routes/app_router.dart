@@ -7,6 +7,7 @@ import 'package:rwnaqk_frontend/modules/auth/views/banned_view.dart';
 import 'package:rwnaqk_frontend/modules/auth/views/email_verification_view.dart';
 import 'package:rwnaqk_frontend/modules/auth/views/forgot_password_method_view.dart';
 import 'package:rwnaqk_frontend/modules/auth/views/login_view.dart';
+import 'package:rwnaqk_frontend/modules/auth/views/network_error_view.dart';
 import 'package:rwnaqk_frontend/modules/auth/views/otp_verify_view.dart';
 import 'package:rwnaqk_frontend/modules/auth/views/register_view.dart';
 import 'package:rwnaqk_frontend/modules/auth/views/reset_password_view.dart';
@@ -142,6 +143,20 @@ abstract final class AppRouter {
         return isAuth ? AppRoutes.main : AppRoutes.login;
       }
 
+      // خطأ الاتصال بالخادم: إذا كان المستخدم مسجلاً وفشل الاتصال، يُقفل التصفح ويُوجّه لشاشة الخطأ
+      final hasServerError = session.hasServerError;
+      if (hasServerError) {
+        if (route == AppRoutes.networkError) {
+          return null;
+        }
+        return AppRoutes.networkError;
+      }
+
+      // منع الدخول المباشر لشاشة خطأ الاتصال عند عدم وجود خطأ
+      if (route == AppRoutes.networkError) {
+        return isAuth ? AppRoutes.main : AppRoutes.login;
+      }
+
       // الحماية الإلزامية: لا يمكن للعميل غير المؤكد استخدام التطبيق أو تصفحه إطلاقاً
       // يُقفل الوصول إلى جميع مسارات المتجر ويُحوّل مباشرة إلى شاشة تأكيد البريد الإلكتروني
       if (requiresVerification) {
@@ -191,6 +206,8 @@ abstract final class AppRouter {
         return (_) => const ResetPasswordScreen();
       case AppRoutes.banned:
         return (_) => const BannedScreen();
+      case AppRoutes.networkError:
+        return (_) => const NetworkErrorScreen();
       case AppRoutes.home:
         return (_) => const HomeScreen();
       case AppRoutes.search:

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_horizontal_list.dart';
 import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/flash_sale_header.dart';
+import 'package:rwnaqk_frontend/modules/home/widgets/home_skeletons.dart';
 
 class HomeFlashSaleSection extends ConsumerWidget {
   final double itemWidth;
@@ -16,27 +17,60 @@ class HomeFlashSaleSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(homeContentProvider);
+    final flashSale = ref.watch(homeContentProvider.select((s) => s.flashSale));
+    final isLoading = ref.watch(
+      homeContentProvider.select((s) => s.isSectionLoading(HomeSection.flashSale)),
+    );
     final notifier = ref.read(homeContentProvider.notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        FlashSaleHeader(
-          hh: state.hh,
-          mm: state.mm,
-          ss: state.ss,
-          onSeeAll: notifier.openFlashSaleScreen,
-        ),
+        const _HomeFlashSaleHeaderConsumer(),
         const SizedBox(height: 12),
-        if (state.flashSale.isNotEmpty)
+        if (isLoading && flashSale.isEmpty)
+          HomeProductHorizontalListSkeleton(
+            itemWidth: itemWidth,
+            height: height,
+          )
+        else if (flashSale.isNotEmpty)
           ProductHorizontalList(
-            items: state.flashSale,
+            items: flashSale,
             itemWidth: itemWidth,
             height: height,
             onTap: notifier.openProduct,
+          )
+        else
+          HomeSectionEmptyWidget(
+            message: 'لا توجد عروض وتخفيضات فلاش متاحة حالياً',
+            icon: Icons.flash_off_rounded,
+            height: 125,
+            onRetry: () => notifier.retrySection(HomeSection.flashSale),
           ),
       ],
+    );
+  }
+}
+
+/// ودجت معزولة لاستهلاك العداد التنازلي دون إعادة بناء قائمة المنتجات الثقيلة كل ثانية
+class _HomeFlashSaleHeaderConsumer extends ConsumerWidget {
+  const _HomeFlashSaleHeaderConsumer();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final (hh, mm, ss) = ref.watch(
+      homeContentProvider.select((s) => (s.hh, s.mm, s.ss)),
+    );
+    final hasItems = ref.watch(
+      homeContentProvider.select((s) => s.flashSale.isNotEmpty),
+    );
+    final notifier = ref.read(homeContentProvider.notifier);
+
+    return FlashSaleHeader(
+      hh: hh,
+      mm: mm,
+      ss: ss,
+      onSeeAll: hasItems ? notifier.openFlashSaleScreen : null,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
+import 'package:rwnaqk_frontend/core/widgets/app_network_image.dart';
 
 class MiniItemPriceTile extends StatelessWidget {
   final String imageUrl;
@@ -138,10 +139,12 @@ class _AvatarWithBadge extends StatelessWidget {
               ),
             ),
             clipBehavior: Clip.antiAlias,
-            child: Image.network(
-              imageUrl,
+            child: AppNetworkImage(
+              url: imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(
+              width: size,
+              height: size,
+              errorWidget: Container(
                 color: context.muted.withValues(
                   alpha: context.isDark ? .25 : .5,
                 ),

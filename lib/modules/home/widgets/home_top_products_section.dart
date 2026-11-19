@@ -11,6 +11,7 @@ import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_card_image_section.dart';
 import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
+import 'package:rwnaqk_frontend/modules/home/widgets/home_skeletons.dart';
 
 class HomeTopProductsSection extends ConsumerWidget {
   final double itemWidth;
@@ -24,7 +25,10 @@ class HomeTopProductsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(homeContentProvider);
+    final topProducts = ref.watch(homeContentProvider.select((s) => s.topProducts));
+    final isLoading = ref.watch(
+      homeContentProvider.select((s) => s.isSectionLoading(HomeSection.topProducts)),
+    );
     final notifier = ref.read(homeContentProvider.notifier);
 
     return Column(
@@ -32,30 +36,42 @@ class HomeTopProductsSection extends ConsumerWidget {
       children: [
         AppSectionHeader(
           title: Tk.homeTopProducts.tr,
-          actionText: Tk.homeSeeAll.tr,
-          onActionTap: notifier.onSeeAllMostPopular,
+          actionText: topProducts.isNotEmpty ? Tk.homeSeeAll.tr : null,
+          onActionTap: topProducts.isNotEmpty ? notifier.onSeeAllMostPopular : null,
         ),
         const SizedBox(height: 12),
-        if (state.topProducts.isNotEmpty)
+        if (isLoading && topProducts.isEmpty)
+          HomeTopProductsSkeleton(
+            itemWidth: itemWidth,
+            height: height,
+          )
+        else if (topProducts.isNotEmpty)
           SizedBox(
             height: height,
             child: ListView.separated(
               clipBehavior: Clip.none,
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              itemCount: state.topProducts.length,
+              itemCount: topProducts.length,
               separatorBuilder: (_, _) => const SizedBox(width: 12),
               itemBuilder: (context, i) {
                 return SizedBox(
                   width: itemWidth,
                   child: _RankedProductCard(
-                    item: state.topProducts[i],
+                    item: topProducts[i],
                     rank: i + 1,
-                    onTap: () => notifier.openProduct(state.topProducts[i]),
+                    onTap: () => notifier.openProduct(topProducts[i]),
                   ),
                 );
               },
             ),
+          )
+        else
+          HomeSectionEmptyWidget(
+            message: 'لا توجد منتجات متصدرة حالياً',
+            icon: Icons.leaderboard_outlined,
+            height: 125,
+            onRetry: () => notifier.retrySection(HomeSection.topProducts),
           ),
       ],
     );

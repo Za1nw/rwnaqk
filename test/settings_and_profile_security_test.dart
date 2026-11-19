@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwnaqk_frontend/core/di/core_providers.dart';
+import 'package:rwnaqk_frontend/core/services/auth/models/auth_session_state.dart';
+import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
 import 'package:rwnaqk_frontend/modules/customer/views/edit_profile_view.dart';
 import 'package:rwnaqk_frontend/modules/customer/views/profile_view.dart';
@@ -165,6 +167,46 @@ void main() {
       // Advance timer for delayed pop
       await tester.pump(const Duration(seconds: 1));
     });
+
+    testWidgets('SettingsScreen does not show fake customer when server is down (customer == null)', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authSessionProvider.overrideWith(
+              () => _StubAuthSessionNotifier(
+                const AuthSessionState(
+                  status: AuthSessionStatus.authenticated,
+                  token: 'valid_token',
+                  customer: null,
+                ),
+              ),
+            ),
+          ],
+          child: const MaterialApp(
+            home: SettingsScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Must NOT display fake placeholders
+      expect(find.text('عميل'), findsNothing);
+      expect(find.text('+967 777 000 000'), findsNothing);
+      expect(find.text('3 كوبونات'), findsNothing);
+      expect(find.text('2,450 نقطة'), findsNothing);
+
+      // Must display honest offline notice with retry
+      expect(find.text('تعذر الاتصال بالخادم'), findsOneWidget);
+      expect(find.text('إعادة المحاولة'), findsOneWidget);
+    });
   });
+}
+
+class _StubAuthSessionNotifier extends AuthSessionNotifier {
+  final AuthSessionState _initial;
+  _StubAuthSessionNotifier(this._initial);
+
+  @override
+  AuthSessionState build() => _initial;
 }
 

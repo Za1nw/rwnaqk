@@ -6,6 +6,7 @@ import 'package:rwnaqk_frontend/core/widgets/common/app_section_header.dart';
 import 'package:rwnaqk_frontend/modules/checkout/widgets/product_grid_section.dart';
 import 'package:rwnaqk_frontend/modules/home/providers/home_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/widgets/home_layout.dart';
+import 'package:rwnaqk_frontend/modules/home/widgets/home_skeletons.dart';
 
 class HomeJustForYouSection extends ConsumerWidget {
   final int crossAxisCount;
@@ -14,7 +15,10 @@ class HomeJustForYouSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(homeContentProvider);
+    final justForYou = ref.watch(homeContentProvider.select((s) => s.justForYou));
+    final isLoading = ref.watch(
+      homeContentProvider.select((s) => s.isSectionLoading(HomeSection.justForYou)),
+    );
     final notifier = ref.read(homeContentProvider.notifier);
 
     return Column(
@@ -22,18 +26,27 @@ class HomeJustForYouSection extends ConsumerWidget {
       children: [
         AppSectionHeader(
           title: Tk.homeJustForYou.tr,
-          actionText: Tk.homeSeeAll.tr,
-          onActionTap: notifier.onSeeAllJustForYou,
+          actionText: justForYou.isNotEmpty ? Tk.homeSeeAll.tr : null,
+          onActionTap: justForYou.isNotEmpty ? notifier.onSeeAllJustForYou : null,
         ),
         const SizedBox(height: HomeLayout.innerGap),
-        if (state.justForYou.isNotEmpty)
+        if (isLoading && justForYou.isEmpty)
+          HomeProductGridSkeleton(crossAxisCount: crossAxisCount)
+        else if (justForYou.isNotEmpty)
           ProductGridSection(
-            items: state.justForYou,
+            items: justForYou,
             crossAxisCount: crossAxisCount,
             crossAxisSpacing: HomeLayout.gridSpacing,
             mainAxisSpacing: HomeLayout.gridSpacing,
             onTap: notifier.openProduct,
             childAspectRatio: 1.0,
+          )
+        else
+          HomeSectionEmptyWidget(
+            message: 'لا توجد توصيات متوفرة حالياً',
+            icon: Icons.recommend_outlined,
+            height: 125,
+            onRetry: () => notifier.retrySection(HomeSection.justForYou),
           ),
       ],
     );

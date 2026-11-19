@@ -213,6 +213,10 @@ class _ProductSelectionAndQuantitySection extends StatelessWidget {
     this.onSelectAttribute,
   });
 
+  bool get _shouldShowVariations =>
+      hasVariations &&
+      (attributeGroups.isNotEmpty || selectedChips.isNotEmpty);
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -224,8 +228,8 @@ class _ProductSelectionAndQuantitySection extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
-          // إذا كان للمنتج خيارات/خصائص (hasVariations)
-          if (hasVariations) ...[
+          // 1. إذا كان للمنتج خيارات/خصائص فعلية (_shouldShowVariations)
+          if (_shouldShowVariations) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 4),
               child: Row(
@@ -253,46 +257,9 @@ class _ProductSelectionAndQuantitySection extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
+                  // يظهر زرار دليل المقاسات فقط إذا كان للمنتج دليل مقاسات حقيقي
                   if (hasSizeGuide && onSizeGuideTap != null) ...[
-                    InkWell(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        onSizeGuideTap!();
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4.5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.primary.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: context.primary.withValues(alpha: 0.22),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.straighten_rounded,
-                              size: 14,
-                              color: context.primary,
-                            ),
-                            const SizedBox(width: 5),
-                            Text(
-                              Tk.productDetailsSizeGuide.tr,
-                              style: TextStyle(
-                                color: context.primary,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    _buildSizeGuideButton(context),
                     const SizedBox(width: 6),
                   ],
                   if (onOpenVariantsSheet != null)
@@ -334,6 +301,22 @@ class _ProductSelectionAndQuantitySection extends StatelessWidget {
               child: _buildInteractiveOptions(context),
             ),
 
+            Divider(
+              height: 1,
+              thickness: 0.6,
+              color: context.border.withValues(alpha: 0.4),
+            ),
+          ] else if (hasSizeGuide && onSizeGuideTap != null) ...[
+            // 2. إذا كان للمنتج دليل مقاسات فقط بدون خصائص (يظهر زرار دليل المقاسات فقط)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  _buildSizeGuideButton(context),
+                ],
+              ),
+            ),
             Divider(
               height: 1,
               thickness: 0.6,
@@ -428,6 +411,49 @@ class _ProductSelectionAndQuantitySection extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSizeGuideButton(BuildContext context) {
+    if (!hasSizeGuide || onSizeGuideTap == null) return const SizedBox.shrink();
+    return InkWell(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onSizeGuideTap!();
+      },
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 4.5,
+        ),
+        decoration: BoxDecoration(
+          color: context.primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: context.primary.withValues(alpha: 0.22),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.straighten_rounded,
+              size: 14,
+              color: context.primary,
+            ),
+            const SizedBox(width: 5),
+            Text(
+              Tk.productDetailsSizeGuide.tr,
+              style: TextStyle(
+                color: context.primary,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

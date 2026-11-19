@@ -48,6 +48,8 @@ dependencies:
   flutter_riverpod: ^3.5.0
   qr_flutter: ^4.1.0
   local_auth: ^3.0.2
+  cached_network_image: ^4.0.3
+  flutter_cache_manager: ^3.4.1
 
 dev_dependencies:
   flutter_test:
