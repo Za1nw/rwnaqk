@@ -65,7 +65,7 @@ class WishlistRepositoryImpl implements IWishlistRepository {
       }
       return const [];
     } catch (_) {
-      return const [];
+      rethrow;
     }
   }
 

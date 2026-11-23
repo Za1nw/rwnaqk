@@ -110,8 +110,8 @@ class AuthSessionService {
   void dispose() => onClose();
 
   /// تمكين وضع الضيف لتجاوز تسجيل الدخول لأغراض التصميم والتطوير
-  void enterGuestMode() {
-    _notifier.enterGuestMode();
+  Future<void> enterGuestMode() async {
+    await _notifier.enterGuestMode();
   }
 
   /// استعادة الجلسة عند بدء تشغيل التطبيق

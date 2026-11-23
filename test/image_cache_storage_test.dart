@@ -410,5 +410,25 @@ void main() {
       expect(find.byKey(customKey), findsOneWidget);
       expect(find.text('خطأ في تحميل الصورة'), findsOneWidget);
     });
+
+    testWidgets('Handles double.infinity width and height without throwing UnsupportedError', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 300,
+              height: 200,
+              child: AppNetworkImage(
+                url: 'https://example.com/banner.jpg',
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+    });
   });
 }

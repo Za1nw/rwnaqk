@@ -46,8 +46,8 @@ class AppNetworkImage extends StatelessWidget {
   /// حساب العرض المناسب لفك التشفير في الرام لتفادي استهلاك الذاكرة OOM مع مراعاة كثافة الشاشة الحقيقية
   int? _resolveMemCacheWidth(BuildContext context) {
     if (memCacheWidth != null) return memCacheWidth;
-    if (width != null && width! > 0) {
-      final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0;
+    if (width != null && width!.isFinite && width! > 0) {
+      final dpr = (MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0).clamp(1.0, 4.0);
       final calculated = (width! * dpr).round();
       return calculated.clamp(100, ImageCacheConfig.defaultMaxMemCacheWidth);
     }
@@ -57,8 +57,8 @@ class AppNetworkImage extends StatelessWidget {
   /// حساب الارتفاع المناسب لفك التشفير في الرام
   int? _resolveMemCacheHeight(BuildContext context) {
     if (memCacheHeight != null) return memCacheHeight;
-    if (height != null && height! > 0) {
-      final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0;
+    if (height != null && height!.isFinite && height! > 0) {
+      final dpr = (MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0).clamp(1.0, 4.0);
       final calculated = (height! * dpr).round();
       return calculated.clamp(100, ImageCacheConfig.defaultMaxMemCacheWidth);
     }

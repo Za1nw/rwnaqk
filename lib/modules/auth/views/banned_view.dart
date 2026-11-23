@@ -104,10 +104,15 @@ class _BannedScreenState extends ConsumerState<BannedScreen>
     }
   }
 
-  void _switchAccount() {
+  Future<void> _switchAccount() async {
     HapticFeedback.mediumImpact();
-    ref.read(authSessionProvider.notifier).clearSession();
-    AppNav.offAllNamed(AppRoutes.login);
+    try {
+      await ref.read(authSessionProvider.notifier).clearSession();
+    } catch (e, st) {
+      debugPrint('[BannedView] Error in clearSession during switch account: $e\n$st');
+    } finally {
+      AppNav.offAllNamed(AppRoutes.login);
+    }
   }
 
   @override

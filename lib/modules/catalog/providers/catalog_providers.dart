@@ -11,6 +11,7 @@ import 'package:rwnaqk_frontend/core/utils/app_filter_utils.dart';
 import 'package:rwnaqk_frontend/core/utils/app_product_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/favorite_added_dialog.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/guest_auth_prompt_dialog.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/catalog/controllers/flash_sale_service.dart';
@@ -485,11 +486,24 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
   }
 
   /// إضافة المنتج الحالي للسلة مع كامل خيارات المتغيرات والكمية
-  /// يعيد true إذا نجحت الإضافة، أو false إذا تعذرت أو كان CartController غير مسجل
+  /// يعيد true إذا نجحت الإضافة، أو false إذا تعذرت أو كان CartController غير مسجل أو المستخدم زائر
   bool addToCart([BuildContext? context]) {
     final current = state.product;
     if (current == null) {
       AppToast.error(Tk.commonError.tr);
+      return false;
+    }
+
+    final session = ref.read(authSessionProvider);
+    if (!session.isAuthenticated || session.isGuest) {
+      final ctx = context ?? AppNav.currentContext;
+      if (ctx != null) {
+        GuestAuthPromptDialog.show(
+          ctx,
+          returnRoute: AppNav.currentRoute,
+          returnArgs: AppNav.currentArguments,
+        );
+      }
       return false;
     }
 
@@ -500,7 +514,7 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
       final effectivePrice = state.price;
       final effectiveItem = current.copyWith(price: effectivePrice);
 
-      ref
+      final added = ref
           .read(cartProvider.notifier)
           .addToCart(
             effectiveItem,
@@ -510,6 +524,10 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
             rating: state.hasReviews ? state.averageRating : null,
             reviewsCount: state.hasReviews ? state.reviewsCount : null,
           );
+
+      if (!added) {
+        return false;
+      }
 
       final ctx = context ?? AppNav.currentContext;
       if (ctx != null) {
@@ -523,16 +541,29 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
   }
 
   /// الشراء الفوري والانتقال للدفع
-  void buyNow() {
+  void buyNow([BuildContext? context]) {
     final current = state.product;
     if (current == null) return;
+
+    final session = ref.read(authSessionProvider);
+    if (!session.isAuthenticated || session.isGuest) {
+      final ctx = context ?? AppNav.currentContext;
+      if (ctx != null) {
+        GuestAuthPromptDialog.show(
+          ctx,
+          returnRoute: AppNav.currentRoute,
+          returnArgs: AppNav.currentArguments,
+        );
+      }
+      return;
+    }
 
     final variantText = AppProductUtils.joinInline(state.selectedOptionChips);
     final stableKey = state.stableVariantKey;
     final effectivePrice = state.price;
     final effectiveItem = current.copyWith(price: effectivePrice);
 
-    ref
+    final added = ref
         .read(cartProvider.notifier)
         .addToCart(
           effectiveItem,
@@ -542,7 +573,10 @@ class ProductDetailsNotifier extends Notifier<ProductDetailsState> {
           rating: state.hasReviews ? state.averageRating : null,
           reviewsCount: state.hasReviews ? state.reviewsCount : null,
         );
-    AppNav.toNamed(AppRoutes.payment);
+
+    if (added) {
+      AppNav.toNamed(AppRoutes.payment);
+    }
   }
 
   /// إضافة مراجعة جديدة

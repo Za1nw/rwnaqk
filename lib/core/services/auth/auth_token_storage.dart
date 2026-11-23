@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rwnaqk_frontend/core/constants/local_storage_keys.dart';
+import 'package:rwnaqk_frontend/core/errors/exceptions.dart';
 
 /// واجهة تخزين توكن الجلسة بشكل آمن
 abstract class IAuthTokenStorage {
@@ -41,13 +42,32 @@ class SecureAuthTokenStorage implements IAuthTokenStorage {
         } catch (_) {}
         return secureToken.trim();
       }
-    } on PlatformException catch (e) {
-      debugPrint('[SecureStorage] PlatformException on read: $e');
-      try {
-        await _storage.deleteAll();
-      } catch (_) {}
-    } catch (e) {
-      debugPrint('[SecureStorage] Warning on read secure token: $e');
+    } on PlatformException catch (e, st) {
+      debugPrint('[SecureStorage] Platform exception occurred while reading secure token.');
+      // لا نقوم إطلاقاً بمسح كافة مفاتيح SecureStorage عبر deleteAll() لحماية بيانات البصمة ومفاتيح المرور
+      final isDefiniteKeyCorruption = e.code.contains('KEY_PERMANENTLY_INVALIDATED') ||
+          (e.message != null && e.message!.contains('KeyPermanentlyInvalidatedException'));
+
+      if (isDefiniteKeyCorruption) {
+        try {
+          await _storage.delete(key: LocalStorageKeys.authToken);
+        } catch (_) {}
+      }
+
+      // نعيد رمي الخطأ مع الـ StackTrace كـ CacheException حتى تدرك الطبقات العليا وجود عطل منصة مؤقت
+      Error.throwWithStackTrace(
+        const CacheException(message: 'تعذر الوصول إلى التخزين الآمن.'),
+        st,
+      );
+    } catch (e, st) {
+      if (e is CacheException) {
+        rethrow;
+      }
+      debugPrint('[SecureStorage] Unexpected error occurred while reading secure token.');
+      Error.throwWithStackTrace(
+        const CacheException(message: 'خطأ غير متوقع أثناء قراءة التوكن.'),
+        st,
+      );
     }
 
     // ترحيل تلقائي لبيانات التوكن غير المشفرة من SharedPreferences إن وجدت
@@ -62,8 +82,8 @@ class SecureAuthTokenStorage implements IAuthTokenStorage {
         await prefs.remove(LocalStorageKeys.authToken);
         return normalized;
       }
-    } catch (e) {
-      debugPrint('[SecureStorage] Fallback check on SharedPreferences: $e');
+    } catch (_) {
+      debugPrint('[SecureStorage] Fallback check on SharedPreferences failed.');
     }
 
     return null;
@@ -82,13 +102,12 @@ class SecureAuthTokenStorage implements IAuthTokenStorage {
         key: LocalStorageKeys.authToken,
         value: normalized,
       );
-    } catch (e) {
-      debugPrint('[SecureStorage] Error writing to secure storage: $e');
-      // لا نقوم إطلاقاً بكتابة التوكن كـ plaintext في SharedPreferences لحماية أمان الإنتاج
-      if (kReleaseMode) {
-        rethrow;
-      }
-      return;
+    } catch (_, st) {
+      debugPrint('[SecureStorage] Failed to write auth token.');
+      Error.throwWithStackTrace(
+        const CacheException(message: 'تعذر حفظ بيانات الجلسة بشكل آمن.'),
+        st,
+      );
     }
 
     // حفظ علامة وجود جلسة سريعة في SharedPreferences لتفادي قفل الواجهة عند الإقلاع
@@ -105,8 +124,14 @@ class SecureAuthTokenStorage implements IAuthTokenStorage {
   Future<void> clearToken() async {
     try {
       await _storage.delete(key: LocalStorageKeys.authToken);
-    } catch (e) {
-      debugPrint('[SecureStorage] Warning deleting secure token: $e');
+    } catch (_, st) {
+      debugPrint('[SecureStorage] Failed to delete auth token.');
+      Error.throwWithStackTrace(
+        const CacheException(
+          message: 'تعذر حذف بيانات الجلسة بشكل آمن.',
+        ),
+        st,
+      );
     }
 
     try {

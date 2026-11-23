@@ -33,6 +33,12 @@ class CartNotifier extends Notifier<CartState> {
     double? rating,
     int? reviewsCount,
   }) {
+    // حماية مركزية قطعية (SSOT): منع الزائر وغير الموثق من تعديل حالة السلة أو إضافة منتجات
+    final session = ref.read(authSessionProvider);
+    if (!session.isAuthenticated || session.isGuest) {
+      return false;
+    }
+
     final qty = quantity > 0 ? quantity : 1;
     final vText = (variantText ?? '').trim();
     final stableKey = (stableVariantId != null && stableVariantId.trim().isNotEmpty)

@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
+import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/common/app_action_icon_button.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/guest_auth_prompt_dialog.dart';
 import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
 
@@ -25,8 +28,19 @@ class ProductCard extends ConsumerWidget {
   });
 
   void _addToCart(BuildContext context, WidgetRef ref) {
-    ref.read(cartProvider.notifier).addToCart(item);
-    CartAddedDialog.show(context);
+    final session = ref.read(authSessionProvider);
+    if (!session.isAuthenticated || session.isGuest) {
+      GuestAuthPromptDialog.show(
+        context,
+        returnRoute: AppNav.currentRoute,
+        returnArgs: AppNav.currentArguments,
+      );
+      return;
+    }
+    final added = ref.read(cartProvider.notifier).addToCart(item);
+    if (added) {
+      CartAddedDialog.show(context);
+    }
   }
 
   @override

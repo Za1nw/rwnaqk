@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:rwnaqk_frontend/core/network/api_exceptions.dart';
 import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
 import 'package:rwnaqk_frontend/core/utils/app_mask_utils.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
@@ -90,17 +92,48 @@ class ForgotPasswordService {
 
     if (result.isSuccess) {
       CustomerModel? customer = result.customer;
-      if (customer == null) {
-        try {
-          customer = await _authRepository.me();
-        } catch (_) {}
-      }
 
-      _session.startSession(
+      await _session.startSession(
         accessToken: result.token ?? '',
         customerPayload: customer,
         emailVerificationRequired: result.requiresEmailVerification,
       );
+
+      if (customer == null && !result.requiresEmailVerification) {
+        try {
+          customer = await _authRepository.me();
+          if (customer.isBanned == true) {
+            await _session.markAsBanned(
+              customerPayload: customer,
+              reason: 'تم حظر حسابك. يرجى التواصل مع إدارة المتجر لمزيد من التفاصيل.',
+            );
+            return OtpVerificationResult(
+              success: false,
+              requiresEmailVerification: false,
+              message: 'تم حظر حسابك. يرجى التواصل مع إدارة المتجر لمزيد من التفاصيل.',
+            );
+          }
+          _session.setCustomer(customer);
+        } on AccountBannedException catch (bannedEx) {
+          CustomerModel? bannedCustomer;
+          if (bannedEx.customerData != null) {
+            try {
+              bannedCustomer = CustomerModel.fromJson(bannedEx.customerData!);
+            } catch (_) {}
+          }
+          await _session.markAsBanned(
+            customerPayload: bannedCustomer,
+            reason: bannedEx.message,
+          );
+          return OtpVerificationResult(
+            success: false,
+            requiresEmailVerification: false,
+            message: bannedEx.message,
+          );
+        } catch (e, st) {
+          debugPrint('[ForgotPasswordService] Warning: Failed to fetch customer profile via me(): $e\n$st');
+        }
+      }
     }
 
     return OtpVerificationResult(

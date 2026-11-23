@@ -31,7 +31,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     _activatedTabs.add(currentIndex);
 
     final cartCount = ref.watch(cartProvider.select((s) => s.itemCount));
-    final wishlistCount = ref.watch(wishlistProvider.select((s) => s.itemCount));
+    final wishlistCount = ref.watch(
+      wishlistProvider.select((s) => s.itemCount),
+    );
     final customer = ref.watch(currentCustomerProvider);
 
     final pages = [
@@ -63,7 +65,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ),
       bottomNavigationBar: AppBottomNav(
         currentIndex: currentIndex,
-        onChanged: navNotifier.changeTab,
+        onChanged: (index) {
+          navNotifier.changeTab(index);
+        },
         profileName: displayName,
         profileAvatarPath: '',
         profileAvatarUrl: customer?.avatarUrl ?? '',

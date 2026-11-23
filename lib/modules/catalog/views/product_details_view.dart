@@ -120,7 +120,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               isFavorite: state.isFavorite,
               onFavorite: () => notifier.toggleFavorite(context),
               onAdd: () => notifier.addToCart(context),
-              onBuy: notifier.buyNow,
+              onBuy: () => notifier.buyNow(context),
             ),
       body: SafeArea(
         top: false,

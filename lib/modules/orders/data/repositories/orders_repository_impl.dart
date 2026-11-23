@@ -64,6 +64,9 @@ class OrdersRepositoryImpl implements IOrdersRepository {
   @override
   Future<OrderDetailsModel> getOrderDetails(OrderModel order) async {
     if (AppEnv.enableMockData) {
+      if (kReleaseMode) {
+        throw StateError('CRITICAL: Mock order operations are forbidden in release mode.');
+      }
       return _fallback.getOrderDetails(order);
     }
 
@@ -76,11 +79,13 @@ class OrdersRepositoryImpl implements IOrdersRepository {
             : data;
         return OrderDetailsModel.fromJson(orderJson);
       }
+      throw const FormatException('Invalid server response for order details');
     } catch (_) {
-      // في حال تعذر جلب التفاصيل بالكامل، نعود للمستودع الاحتياطي
+      if (kReleaseMode || !AppEnv.enableMockData) {
+        rethrow;
+      }
+      return _fallback.getOrderDetails(order);
     }
-
-    return _fallback.getOrderDetails(order);
   }
 
   @override

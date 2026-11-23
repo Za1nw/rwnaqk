@@ -36,9 +36,9 @@ void main() {
     );
     expect(AppEnv.enableMockData, isFalse);
 
-    // 4. Development defaults to mock data enabled
+    // 4. Development allows mock data when configured
     dotenv.loadFromString(
-      envString: 'APP_ENV=development',
+      envString: 'APP_ENV=development\nENABLE_MOCK_DATA=true',
     );
     expect(AppEnv.isDevelopment, isTrue);
     expect(AppEnv.enableMockData, isTrue);

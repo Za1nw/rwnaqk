@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rwnaqk_frontend/core/di/core_providers.dart';
 import 'package:rwnaqk_frontend/core/services/auth/models/auth_session_state.dart';
@@ -7,9 +8,15 @@ import 'package:rwnaqk_frontend/modules/auth/views/banned_view.dart';
 import 'package:rwnaqk_frontend/modules/customer/data/models/customer_model.dart';
 import 'package:rwnaqk_frontend/routes/app_router.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
+  });
 
   group('Banned Customer Session & Guard Tests', () {
     test('AuthSessionState properly computes isBanned and denies isAuthenticated', () {
@@ -41,7 +48,7 @@ void main() {
       expect(sessionWithBannedCustomer.isAuthenticated, isFalse);
     });
 
-    test('Route Guards strictly lock banned customer to AppRoutes.banned', () {
+    test('Route Guards strictly lock banned customer to AppRoutes.banned', () async {
       final container = globalProviderContainer;
       final notifier = container.read(authSessionProvider.notifier);
 
@@ -52,7 +59,7 @@ void main() {
         isBanned: true,
       );
 
-      notifier.markAsBanned(
+      await notifier.markAsBanned(
         customerPayload: bannedCustomer,
         reason: 'مخالفة سياسة الاستخدام',
       );

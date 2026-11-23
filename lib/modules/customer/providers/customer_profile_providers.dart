@@ -119,14 +119,8 @@ class CustomerSettingsNotifier extends Notifier<CustomerSettingsState> {
   Future<void> logout() async {
     state = state.copyWith(isLoggingOut: true);
     try {
-      try {
-        final repo = ref.read(authRepositoryProvider);
-        await repo.logout();
-      } catch (_) {}
-
-      ref.read(authSessionProvider.notifier).clearSession();
+      await ref.read(authSessionProvider.notifier).logout();
       AppNotifier.success(Tk.settingsLogout.tr);
-      AppNav.offAllNamed(AppRoutes.login);
     } catch (e) {
       AppNotifier.errorFrom(e);
     } finally {

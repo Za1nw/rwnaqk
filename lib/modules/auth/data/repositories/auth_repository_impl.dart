@@ -13,11 +13,10 @@ import 'package:rwnaqk_frontend/modules/customer/data/models/user_session_model.
 class AuthRepositoryImpl implements IAuthRepository {
   AuthRepositoryImpl({
     required ApiClient apiClient,
-    required this._tokenStorage,
+    IAuthTokenStorage? tokenStorage,
   })  : _api = apiClient;
 
   final ApiClient _api;
-  final IAuthTokenStorage _tokenStorage;
 
   @override
   Future<LoginResult> login({
@@ -81,9 +80,6 @@ class AuthRepositoryImpl implements IAuthRepository {
       }
 
       final token = data['token'] as String?;
-      if (token != null && token.isNotEmpty) {
-        await _tokenStorage.writeToken(token);
-      }
 
       return LoginResult(
         isSuccess: true,
@@ -197,9 +193,6 @@ class AuthRepositoryImpl implements IAuthRepository {
       }
 
       final token = data['token'] as String?;
-      if (token != null && token.isNotEmpty) {
-        await _tokenStorage.writeToken(token);
-      }
 
       return LoginResult(
         isSuccess: true,
@@ -258,11 +251,7 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<void> logout() async {
-    try {
-      await _api.post<dynamic>(AuthEndpoints.logout);
-    } finally {
-      await _tokenStorage.clearToken();
-    }
+    await _api.post<dynamic>(AuthEndpoints.logout);
   }
 
   @override
@@ -471,9 +460,6 @@ class AuthRepositoryImpl implements IAuthRepository {
     final data = response.data;
     if (data is Map<String, dynamic>) {
       final token = data['token'] as String?;
-      if (token != null && token.isNotEmpty) {
-        await _tokenStorage.writeToken(token);
-      }
       CustomerModel? customer;
       if (data['customer'] is Map<String, dynamic>) {
         customer =

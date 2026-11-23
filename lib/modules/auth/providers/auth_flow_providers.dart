@@ -15,6 +15,68 @@ import 'package:rwnaqk_frontend/routes/app_route_args.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 // ==========================================
+// NAVIGATION HELPER FOR POST-AUTH FLOWS
+// ==========================================
+
+void _navigateAfterSuccessfulAuth({Map<String, dynamic>? initialArgs}) {
+  final currentArgs = initialArgs ??
+      (AppNav.currentArguments is Map<String, dynamic>
+          ? AppNav.currentArguments as Map<String, dynamic>
+          : null);
+
+  final rawReturnRoute = currentArgs?[AppRouteArgs.returnRoute] as String?;
+  final returnArgs = currentArgs?[AppRouteArgs.returnArgs];
+
+  final safeReturnRoute = _sanitizeReturnRoute(rawReturnRoute);
+
+  if (safeReturnRoute != null && safeReturnRoute != AppRoutes.main) {
+    AppNav.offAllNamed(safeReturnRoute, arguments: returnArgs);
+  } else {
+    AppNav.offAllNamed(AppRoutes.main);
+  }
+}
+
+String? _sanitizeReturnRoute(String? route) {
+  if (route == null || route.isEmpty) return null;
+
+  if (route.contains('://') || route.startsWith('//') || route.startsWith('javascript:')) {
+    return null;
+  }
+
+  const safeRoutes = {
+    AppRoutes.cart,
+    AppRoutes.payment,
+    AppRoutes.orderConfirmation,
+    AppRoutes.orders,
+    AppRoutes.orderDetails,
+    AppRoutes.orderTracking,
+    AppRoutes.addresses,
+    AppRoutes.profile,
+    AppRoutes.editProfile,
+    AppRoutes.passwordAndSecurity,
+    AppRoutes.twoFactorAndPasskeys,
+    AppRoutes.home,
+    AppRoutes.search,
+    AppRoutes.searchResults,
+    AppRoutes.flashSale,
+    AppRoutes.product,
+    AppRoutes.reviews,
+    AppRoutes.listing,
+    AppRoutes.helpCenter,
+    AppRoutes.supportChat,
+    AppRoutes.wishlist,
+    AppRoutes.settings,
+    AppRoutes.main,
+  };
+
+  if (safeRoutes.contains(route)) {
+    return route;
+  }
+
+  return null;
+}
+
+// ==========================================
 // 1. LOGIN FLOW
 // ==========================================
 
@@ -105,12 +167,25 @@ class LoginFormNotifier extends Notifier<LoginFormState> {
       }
 
       if (result.requiresTwoFactor) {
+        final currentArgs = (AppNav.currentArguments is Map<String, dynamic>)
+            ? AppNav.currentArguments as Map<String, dynamic>
+            : null;
+        final rawReturnRoute = currentArgs?[AppRouteArgs.returnRoute] as String?;
+        final returnArgs = currentArgs?[AppRouteArgs.returnArgs];
+        final safeReturnRoute = _sanitizeReturnRoute(rawReturnRoute);
+
         AppNav.toNamed(
           AppRoutes.twoFactorChallenge,
           arguments: <String, dynamic>{
             AppRouteArgs.loginEmail: email,
             AppRouteArgs.loginPassword: password,
             AppRouteArgs.target: email,
+            if (safeReturnRoute != null) ...{
+              AppRouteArgs.returnRoute: safeReturnRoute,
+            },
+            if (returnArgs != null) ...{
+              AppRouteArgs.returnArgs: returnArgs,
+            },
           },
         );
         return;
@@ -134,7 +209,7 @@ class LoginFormNotifier extends Notifier<LoginFormState> {
       }
 
       AppNotifier.success(Tk.loginSuccess);
-      AppNav.offAllNamed(AppRoutes.main);
+      _navigateAfterSuccessfulAuth();
     } catch (error) {
       AppNotifier.errorFrom(error);
       state = state.copyWith(errorMessage: ApiErrorUtils.toMessage(error));
@@ -806,7 +881,7 @@ class TwoFactorChallengeFlowNotifier
       }
 
       AppNotifier.success(Tk.loginSuccess);
-      AppNav.offAllNamed(AppRoutes.main);
+      _navigateAfterSuccessfulAuth();
     } catch (error) {
       AppNotifier.errorFrom(error);
       state = state.copyWith(

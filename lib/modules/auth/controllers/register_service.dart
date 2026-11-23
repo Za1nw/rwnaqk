@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:rwnaqk_frontend/core/network/api_exceptions.dart';
 import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
 import 'package:rwnaqk_frontend/core/services/geo/geo_lookup_api_service.dart';
 import 'package:rwnaqk_frontend/modules/auth/data/repositories/auth_repository.dart';
@@ -112,7 +114,7 @@ class RegisterService {
     );
 
     if (result.isBanned || result.customer?.isBanned == true) {
-      _session.markAsBanned(
+      await _session.markAsBanned(
         customerPayload: result.customer,
         reason: result.message,
       );
@@ -125,17 +127,48 @@ class RegisterService {
 
     if (result.isSuccess) {
       CustomerModel? customer = result.customer;
-      if (customer == null) {
-        try {
-          customer = await _authRepository.me();
-        } catch (_) {}
-      }
 
-      _session.startSession(
+      await _session.startSession(
         accessToken: result.token ?? '',
         customerPayload: customer,
         emailVerificationRequired: result.requiresEmailVerification,
       );
+
+      if (customer == null && !result.requiresEmailVerification) {
+        try {
+          customer = await _authRepository.me();
+          if (customer.isBanned == true) {
+            await _session.markAsBanned(
+              customerPayload: customer,
+              reason: 'تم حظر الحساب.',
+            );
+            return const RegisterResult(
+              message: 'تم حظر الحساب.',
+              requiresEmailVerification: false,
+              isBanned: true,
+            );
+          }
+          _session.setCustomer(customer);
+        } on AccountBannedException catch (bannedEx) {
+          CustomerModel? bannedCustomer;
+          if (bannedEx.customerData != null) {
+            try {
+              bannedCustomer = CustomerModel.fromJson(bannedEx.customerData!);
+            } catch (_) {}
+          }
+          await _session.markAsBanned(
+            customerPayload: bannedCustomer,
+            reason: bannedEx.message,
+          );
+          return RegisterResult(
+            message: bannedEx.message,
+            requiresEmailVerification: false,
+            isBanned: true,
+          );
+        } catch (e, st) {
+          debugPrint('[RegisterService] Warning: Failed to fetch customer profile via me(): $e\n$st');
+        }
+      }
     }
 
     return RegisterResult(

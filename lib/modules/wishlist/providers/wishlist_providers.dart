@@ -5,6 +5,7 @@ import 'package:rwnaqk_frontend/core/di/core_providers.dart';
 import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
 import 'package:rwnaqk_frontend/core/widgets/dialogs/cart_added_dialog.dart';
+import 'package:rwnaqk_frontend/core/widgets/dialogs/guest_auth_prompt_dialog.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
 import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/home/data/models/home_product_item.dart';
@@ -58,15 +59,6 @@ class WishlistNotifier extends Notifier<WishlistState> {
     final initialIds = WishlistLocalCache.getCachedIdsSync(prefs);
     final initialCount = WishlistLocalCache.getCachedCountSync(prefs);
 
-    // إذا كان التطبيق يفتح لأول مرة ولا توجد بيانات محلية، نحدث المعرفات في الخلفية مرة واحدة
-    if (initialIds.isEmpty && initialCount == 0) {
-      Future.microtask(() async {
-        if (!_disposed) {
-          await refreshFavoriteIds();
-        }
-      });
-    }
-
     return WishlistState(
       items: const [],
       favoriteIds: initialIds,
@@ -83,6 +75,13 @@ class WishlistNotifier extends Notifier<WishlistState> {
   /// جلب معرفات المفضلة الخفيفة والسريعة من السيرفر مع منع التكرار وكبح التزاحم
   Future<void> refreshFavoriteIds({bool force = false}) async {
     if (_disposed || _isRefreshingIds) return;
+
+    // لا يتم طلب معرفات المفضلة من السيرفر إذا لم يكن المستخدم مسجلاً للدخول (إلا في الاستدعاء القسري force)
+    final authSession = ref.read(authSessionProvider);
+    if (!force && (!authSession.isAuthenticated || authSession.token == null)) {
+      return;
+    }
+
     final now = DateTime.now();
     if (!force &&
         _lastIdsRefresh != null &&
@@ -397,25 +396,57 @@ class WishlistNotifier extends Notifier<WishlistState> {
 
   /// إضافة منتج إلى السلة
   void addToCart(HomeProductItem item) {
-    ref.read(cartProvider.notifier).addToCart(item);
+    final session = ref.read(authSessionProvider);
+    if (!session.isAuthenticated || session.isGuest) {
+      final context = AppNav.currentContext;
+      if (context != null) {
+        GuestAuthPromptDialog.show(
+          context,
+          returnRoute: AppNav.currentRoute,
+          returnArgs: AppNav.currentArguments,
+        );
+      }
+      return;
+    }
 
-    final context = AppNav.currentContext;
-    if (context != null) {
-      CartAddedDialog.show(context);
+    final added = ref.read(cartProvider.notifier).addToCart(item);
+    if (added) {
+      final context = AppNav.currentContext;
+      if (context != null) {
+        CartAddedDialog.show(context);
+      }
     }
   }
 
   /// إضافة جميع عناصر المفضلة إلى السلة دفعة واحدة
   void addAllToCart() {
-    if (state.items.isEmpty) return;
-
-    for (final item in state.items) {
-      ref.read(cartProvider.notifier).addToCart(item);
+    final session = ref.read(authSessionProvider);
+    if (!session.isAuthenticated || session.isGuest) {
+      final context = AppNav.currentContext;
+      if (context != null) {
+        GuestAuthPromptDialog.show(
+          context,
+          returnRoute: AppNav.currentRoute,
+          returnArgs: AppNav.currentArguments,
+        );
+      }
+      return;
     }
 
-    final context = AppNav.currentContext;
-    if (context != null) {
-      CartAddedDialog.show(context);
+    if (state.items.isEmpty) return;
+
+    bool anyAdded = false;
+    for (final item in state.items) {
+      if (ref.read(cartProvider.notifier).addToCart(item)) {
+        anyAdded = true;
+      }
+    }
+
+    if (anyAdded) {
+      final context = AppNav.currentContext;
+      if (context != null) {
+        CartAddedDialog.show(context);
+      }
     }
   }
 

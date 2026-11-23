@@ -17,6 +17,7 @@ abstract final class AppNav {
   static BuildContext? get context => currentContext;
 
   static String? currentRoute;
+  static Object? currentArguments;
 
   static OverlayState? get overlay => appNavigatorKey.currentState?.overlay;
 

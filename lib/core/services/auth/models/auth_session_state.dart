@@ -51,6 +51,7 @@ class AuthSessionState {
   final TwoFactorChallengePayload? twoFactorPayload;
   final int sessionGeneration;
   final String? errorMessage;
+  final bool isBootstrapping;
 
   const AuthSessionState({
     this.status = AuthSessionStatus.unauthenticated,
@@ -59,6 +60,7 @@ class AuthSessionState {
     this.twoFactorPayload,
     this.sessionGeneration = 0,
     this.errorMessage,
+    this.isBootstrapping = false,
   });
 
   /// التحقق هل الحساب محظور
@@ -67,9 +69,7 @@ class AuthSessionState {
 
   /// التحقق هل الجلسة مصادقة ومصرح لها بالدخول
   bool get isAuthenticated =>
-      !isBanned &&
-      (status == AuthSessionStatus.authenticated ||
-          status == AuthSessionStatus.guest);
+      !isBanned && status == AuthSessionStatus.authenticated;
 
   /// التحقق هل الجلسة في وضع الضيف
   bool get isGuest => status == AuthSessionStatus.guest;
@@ -100,6 +100,7 @@ class AuthSessionState {
     int? sessionGeneration,
     String? errorMessage,
     bool clearErrorMessage = false,
+    bool? isBootstrapping,
   }) {
     return AuthSessionState(
       status: status ?? this.status,
@@ -111,6 +112,7 @@ class AuthSessionState {
       sessionGeneration: sessionGeneration ?? this.sessionGeneration,
       errorMessage:
           clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+      isBootstrapping: isBootstrapping ?? this.isBootstrapping,
     );
   }
 }

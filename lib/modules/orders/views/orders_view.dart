@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
+import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/modules/cart/providers/cart_providers.dart';
 import 'package:rwnaqk_frontend/modules/orders/providers/orders_providers.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/order_card.dart';
 import 'package:rwnaqk_frontend/modules/orders/widgets/orders_filter_tabs.dart';
+import 'package:rwnaqk_frontend/routes/app_route_args.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 class OrdersScreen extends ConsumerStatefulWidget {
@@ -22,13 +24,48 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(ordersProvider.notifier).loadOrders();
+      // حماية منع تشغيل تحميل الطلبات للزائر أو غير الموثق من البداية
+      final session = ref.read(authSessionProvider);
+      if (session.isAuthenticated && !session.isGuest) {
+        ref.read(ordersProvider.notifier).loadOrders();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(authSessionProvider);
+    final isGuestOrUnauth = !session.isAuthenticated || session.isGuest;
     final isDark = context.isDark;
+
+    if (isGuestOrUnauth) {
+      return Scaffold(
+        backgroundColor: context.background,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeaderRow(context, isDark, 0, 0),
+                const SizedBox(height: 14),
+                Expanded(
+                  child: _OrdersGuestEmptyState(
+                    onLogin: () => AppNav.toNamed(
+                      AppRoutes.login,
+                      arguments: <String, dynamic>{
+                        AppRouteArgs.returnRoute: AppRoutes.orders,
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final ordersState = ref.watch(ordersProvider);
     final filteredOrders = ordersState.filteredOrders;
     final count = filteredOrders.length;
@@ -42,94 +79,7 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Top Header Row: Branded Title + Counter + Cart Button
-              Row(
-                children: [
-                  Text(
-                    Tk.ordersTitle.tr,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : const Color(0xFF1E0A17),
-                      fontWeight: FontWeight.w900,
-                      fontSize: 22,
-                      fontFamily: 'Cairo',
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: (isDark ? BrandColors.gold : BrandColors.burgundy)
-                          .withValues(alpha: isDark ? 0.20 : 0.10),
-                      borderRadius: BorderRadius.circular(999),
-                      border: Border.all(
-                        color:
-                            (isDark ? BrandColors.gold : BrandColors.burgundy)
-                                .withValues(alpha: isDark ? 0.40 : 0.20),
-                      ),
-                    ),
-                    child: Text(
-                      '$count طلبات',
-                      style: TextStyle(
-                        color: isDark
-                            ? BrandColors.gold
-                            : BrandColors.burgundy,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 11,
-                        fontFamily: 'Cairo',
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  InkWell(
-                    onTap: () => AppNav.toNamed(AppRoutes.cart),
-                    borderRadius: BorderRadius.circular(14),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFF261422)
-                            : const Color(0xFFF7F1F5),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isDark
-                              ? BrandColors.gold.withValues(alpha: 0.25)
-                              : BrandColors.burgundy.withValues(alpha: 0.12),
-                        ),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(
-                            Icons.shopping_bag_outlined,
-                            size: 21,
-                            color: isDark
-                                ? Colors.white
-                                : const Color(0xFF261422),
-                          ),
-                          if (cartCount > 0)
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color(0xFFE53935),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              _buildHeaderRow(context, isDark, count, cartCount),
 
               const SizedBox(height: 14),
 
@@ -170,6 +120,217 @@ class _OrdersScreenState extends ConsumerState<OrdersScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderRow(
+    BuildContext context,
+    bool isDark,
+    int count,
+    int cartCount,
+  ) {
+    return Row(
+      children: [
+        Text(
+          Tk.ordersTitle.tr,
+          style: TextStyle(
+            color: isDark ? Colors.white : const Color(0xFF1E0A17),
+            fontWeight: FontWeight.w900,
+            fontSize: 22,
+            fontFamily: 'Cairo',
+            letterSpacing: -0.2,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 9,
+            vertical: 3,
+          ),
+          decoration: BoxDecoration(
+            color: (isDark ? BrandColors.gold : BrandColors.burgundy)
+                .withValues(alpha: isDark ? 0.20 : 0.10),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: (isDark ? BrandColors.gold : BrandColors.burgundy)
+                  .withValues(alpha: isDark ? 0.40 : 0.20),
+            ),
+          ),
+          child: Text(
+            '$count طلبات',
+            style: TextStyle(
+              color: isDark ? BrandColors.gold : BrandColors.burgundy,
+              fontWeight: FontWeight.w800,
+              fontSize: 11,
+              fontFamily: 'Cairo',
+            ),
+          ),
+        ),
+        const Spacer(),
+        InkWell(
+          onTap: () => AppNav.toNamed(AppRoutes.cart),
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF261422) : const Color(0xFFF7F1F5),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isDark
+                    ? BrandColors.gold.withValues(alpha: 0.25)
+                    : BrandColors.burgundy.withValues(alpha: 0.12),
+              ),
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 21,
+                  color: isDark ? Colors.white : const Color(0xFF261422),
+                ),
+                if (cartCount > 0)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFE53935),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OrdersGuestEmptyState extends StatelessWidget {
+  final VoidCallback onLogin;
+
+  const _OrdersGuestEmptyState({required this.onLogin});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = context.isDark;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: (isDark ? BrandColors.gold : BrandColors.burgundy)
+                    .withValues(alpha: 0.12),
+                border: Border.all(
+                  color: (isDark ? BrandColors.gold : BrandColors.burgundy)
+                      .withValues(alpha: 0.35),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isDark ? BrandColors.gold : BrandColors.burgundy)
+                        .withValues(alpha: 0.14),
+                    blurRadius: 18,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.receipt_long_outlined,
+                  size: 42,
+                  color: isDark ? BrandColors.gold : BrandColors.burgundy,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              'تسجيل الدخول مطلوب',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF1E0A17),
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+                fontFamily: 'Cairo',
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'يرجى تسجيل الدخول إلى حسابك لمشاهدة قائمة طلباتك وتتبع حالة الشحنات',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isDark ? Colors.white60 : const Color(0xFF6E5664),
+                fontWeight: FontWeight.w600,
+                fontSize: 12.5,
+                fontFamily: 'Cairo',
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 22),
+            InkWell(
+              onTap: onLogin,
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [const Color(0xFFFAAD01), const Color(0xFFE59C00)]
+                        : [const Color(0xFF8E0542), const Color(0xFF6E0131)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isDark
+                              ? const Color(0xFFFAAD01)
+                              : const Color(0xFF6E0131))
+                          .withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.login_rounded,
+                      size: 17,
+                      color: isDark ? const Color(0xFF1E0A17) : Colors.white,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'تسجيل الدخول / إنشاء حساب',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFF1E0A17) : Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13.5,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -42,7 +42,7 @@ class LoginService {
     );
 
     if (result.isBanned || result.customer?.isBanned == true) {
-      _session.markAsBanned(
+      await _session.markAsBanned(
         customerPayload: result.customer,
         reason: result.message,
       );
@@ -50,18 +50,73 @@ class LoginService {
     }
 
     if (result.isSuccess) {
+      final token = result.token ?? '';
       CustomerModel? customer = result.customer;
-      if (customer == null) {
-        try {
-          customer = await _authRepository.me();
-        } catch (_) {}
-      }
 
-      _session.startSession(
-        accessToken: result.token ?? '',
-        customerPayload: customer,
-        emailVerificationRequired: result.requiresEmailVerification,
-      );
+      if (customer != null) {
+        // Path A: بيانات العميل متوفرة في استجابة تسجيل الدخول
+        if (customer.isBanned == true) {
+          await _session.markAsBanned(
+            customerPayload: customer,
+            reason: 'تم حظر حسابك. يرجى التواصل مع إدارة المتجر لمزيد من التفاصيل.',
+          );
+          return LoginResult(
+            isSuccess: false,
+            requiresTwoFactor: false,
+            requiresEmailVerification: false,
+            isBanned: true,
+            message: 'تم حظر حسابك. يرجى التواصل مع إدارة المتجر لمزيد من التفاصيل.',
+            customer: customer,
+          );
+        }
+
+        await _session.startSession(
+          accessToken: token,
+          customerPayload: customer,
+          emailVerificationRequired: result.requiresEmailVerification,
+        );
+        return result;
+      } else {
+        // Path B: بيانات العميل غير متوفرة في استجابة تسجيل الدخول
+        if (result.requiresEmailVerification) {
+          await _session.startSession(
+            accessToken: token,
+            customerPayload: null,
+            emailVerificationRequired: true,
+          );
+          return result;
+        }
+
+        // التحقق الاستباقي قبل الانتقال إلى authenticated
+        final verifiedCustomer = await _session.bootstrapLoginVerification(
+          token: token,
+        );
+
+        if (verifiedCustomer == null) {
+          final isBannedNow = _session.isCurrentSessionBanned;
+          return LoginResult(
+            isSuccess: false,
+            requiresTwoFactor: false,
+            requiresEmailVerification: false,
+            isBanned: isBannedNow,
+            message: isBannedNow
+                ? (_session.currentErrorMessage ??
+                    'تم حظر حسابك. يرجى التواصل مع إدارة المتجر لمزيد من التفاصيل.')
+                : 'فشل التحقق من هوية الحساب، يرجى المحاولة مرة أخرى.',
+            customer: null,
+          );
+        }
+
+        return LoginResult(
+          isSuccess: true,
+          requiresTwoFactor: false,
+          requiresEmailVerification: false,
+          isBanned: false,
+          message: result.message,
+          token: token,
+          customer: verifiedCustomer,
+        );
+      }
     }
 
     return result;

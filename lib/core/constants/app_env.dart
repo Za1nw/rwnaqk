@@ -21,6 +21,17 @@ class AppEnv {
   static bool get isStaging => appEnv.toLowerCase() == 'staging';
   static bool get isProduction => appEnv.toLowerCase() == 'production';
 
+  // Sentry Observability Configuration
+  static String get sentryDsn {
+    const fromDefine = String.fromEnvironment('SENTRY_DSN');
+    if (fromDefine.isNotEmpty) {
+      return fromDefine.trim();
+    }
+    return _safeGet('SENTRY_DSN', '').trim();
+  }
+
+  static bool get isSentryEnabled => sentryDsn.isNotEmpty;
+
   // API & Networking
   static String get apiBaseUrl {
     final url = _safeGet('API_BASE_URL', 'http://192.168.8.124:8000');

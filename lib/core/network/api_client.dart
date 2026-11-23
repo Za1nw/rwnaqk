@@ -4,14 +4,64 @@ import 'package:flutter/foundation.dart';
 import 'package:rwnaqk_frontend/core/constants/app_env.dart';
 import 'package:rwnaqk_frontend/core/network/api_exceptions.dart';
 import 'package:rwnaqk_frontend/core/services/auth/auth_token_storage.dart';
+import 'package:rwnaqk_frontend/core/services/auth/models/auth_session_state.dart'
+    show AuthSessionStatus;
+import 'package:rwnaqk_frontend/modules/auth/data/auth_endpoints.dart';
+
+/// سياسة التحكم بحقن التوكن في عميل الشبكة
+enum TokenInjectionPolicy {
+  /// مسموح بالحقن: الجلسة مصادقة رسمياً ومؤهلة لاستخدام التوكن
+  allowed,
+
+  /// ممنوع الحقن: الجلسة غير مصادقة، محظورة، ضيف، أو المسار عام
+  denied,
+
+  /// مجهول / خطأ: تعذر قراءة الحالة أو غياب الكولباك (Fail-Closed)
+  unknown,
+}
+
+/// لقطة سياق الجلسة الموحدة للتحقق من حقن التوكن [SessionTokenContext]
+@immutable
+class SessionTokenContext {
+  final TokenInjectionPolicy policy;
+  final String? currentSessionToken;
+  final int sessionGeneration;
+  final AuthSessionStatus? sessionStatus;
+  final bool isBanned;
+
+  const SessionTokenContext({
+    required this.policy,
+    this.currentSessionToken,
+    this.sessionGeneration = 0,
+    this.sessionStatus,
+    this.isBanned = false,
+  });
+
+  const SessionTokenContext.unknown()
+      : policy = TokenInjectionPolicy.unknown,
+        currentSessionToken = null,
+        sessionGeneration = 0,
+        sessionStatus = null,
+        isBanned = false;
+
+  const SessionTokenContext.denied({
+    int generation = 0,
+    AuthSessionStatus? status,
+    bool banned = false,
+  })  : policy = TokenInjectionPolicy.denied,
+        currentSessionToken = null,
+        sessionGeneration = generation,
+        sessionStatus = status,
+        isBanned = banned;
+}
 
 /// عميل اتصال شبكي موحد ونقي مبني على Dio
 ///
 /// مستقل تماماً عن GetX أو أي إطار واجهات، ويوفر:
-/// - إدراج توكن الجلسة تلقائياً من [IAuthTokenStorage]
+/// - إدراج توكن الجلسة تلقائياً وفق سياسة أمان صارمة واعية بالمصادقة
 /// - تحويل استثناءات Dio إلى [ApiException] متوافقة مع Laravel
 /// - دعم المفاتيح الآمنة مثل X-Idempotency-Key
-/// - التعامل مع رفع الملفات والسندات المالية
+/// - حماية كاملة من سباقات تبديل الحسابات والحظر واستعادة الجلسة
 class ApiClient {
   ApiClient({
     Dio? dio,
@@ -22,6 +72,7 @@ class ApiClient {
     this.onUnauthorizedWithDetails,
     this.onAccountBanned,
     this.getSessionGeneration,
+    this.getSessionTokenContext,
   })  : _tokenStorage = tokenStorage ?? SecureAuthTokenStorage() {
     _dio = dio ??
         Dio(
@@ -49,35 +100,133 @@ class ApiClient {
   final void Function(Map<String, dynamic>? customerData, String? reason)?
       onAccountBanned;
   final int? Function()? getSessionGeneration;
+  final SessionTokenContext Function(RequestOptions options)?
+      getSessionTokenContext;
 
   Dio get dio => _dio;
+
+  /// التحقق الدقيق مما إذا كان المسار مسار مصادقة عام لا يتطلب توكن
+  static bool isPublicAuthEndpoint(String method, String rawPath) {
+    if (method.toUpperCase() != 'POST') return false;
+    final cleanPath = Uri.tryParse(rawPath)?.path ?? rawPath;
+    return cleanPath == AuthEndpoints.login ||
+        cleanPath == AuthEndpoints.register ||
+        cleanPath == AuthEndpoints.forgotPassword ||
+        cleanPath == AuthEndpoints.verifyPasswordResetCode ||
+        cleanPath == AuthEndpoints.resetPassword;
+  }
+
+  /// التحقق الدقيق مما إذا كان المسار هو مسار التحقق الأولي auth/me
+  static bool isMeEndpoint(String method, String rawPath) {
+    if (method.toUpperCase() != 'GET') return false;
+    final cleanPath = Uri.tryParse(rawPath)?.path ?? rawPath;
+    return cleanPath == AuthEndpoints.me;
+  }
+
+  /// تطهير شامل لترويسات Authorization بحيادية تامة لحالة الأحرف
+  void _sanitizeAuthorizationHeaders(RequestOptions options) {
+    final authKeys = options.headers.keys
+        .where((k) => k.toLowerCase() == 'authorization')
+        .toList();
+    for (final key in authKeys) {
+      options.headers.remove(key);
+    }
+    options.extra.remove('requestToken');
+  }
 
   void _setupInterceptors() {
     _dio.interceptors.add(
       QueuedInterceptorsWrapper(
         onRequest: (options, handler) async {
-          // تسجيل رقم الجيل الحالي والتوكن عند لحظة إنشاء الطلب (Request-Creation Time Capture)
-          if (getSessionGeneration != null) {
-            options.extra['requestSessionGeneration'] =
-                getSessionGeneration?.call();
+          // 1. تنظيف مسبق لبيانات الطلب لضمان عدم إعادة استخدام قيم قديمة من محاولات سابقة
+          options.extra.remove('requestToken');
+          options.extra.remove('requestSessionGeneration');
+
+          // 2. إذا كان الطلب مسار مصادقة عام: تجريد الترويسات وتمرير الطلب كطلب غير موثق
+          if (isPublicAuthEndpoint(options.method, options.path)) {
+            _sanitizeAuthorizationHeaders(options);
+            if (AppEnv.enableDebugLogs && kDebugMode) {
+              debugPrint('[HTTP Request (Public Auth)] ${options.method} ${options.uri.path}');
+            }
+            return handler.next(options);
           }
 
-          // إضافة التوكن إن لم يكن مضافاً يدوياً
-          if (!options.headers.containsKey('Authorization')) {
-            final token = await _tokenStorage.readToken();
-            if (token != null && token.isNotEmpty) {
-              options.headers['Authorization'] = 'Bearer $token';
-              options.extra['requestToken'] = token;
+          // 3. استدعاء كولباك السياق بحماية Fail-Closed صارمة
+          SessionTokenContext context;
+          try {
+            if (getSessionTokenContext != null) {
+              context = getSessionTokenContext!(options);
+            } else {
+              context = const SessionTokenContext.unknown();
             }
-          } else {
-            final authHeader = options.headers['Authorization'] as String?;
-            if (authHeader != null && authHeader.startsWith('Bearer ')) {
-              options.extra['requestToken'] = authHeader.substring(7).trim();
+          } catch (e, st) {
+            debugPrint('[ApiClient] Fail-closed: getSessionTokenContext threw exception: $e\n$st');
+            context = const SessionTokenContext.unknown();
+          }
+
+          // 4. تقييم السياسة: إذا لم تكن الجلسة مؤهلة صراحة، تجريد الترويسات وتمرير الطلب دون توكن
+          if (context.policy != TokenInjectionPolicy.allowed) {
+            _sanitizeAuthorizationHeaders(options);
+            if (AppEnv.enableDebugLogs && kDebugMode) {
+              debugPrint('[HTTP Request (${context.policy.name})] ${options.method} ${options.uri.path}');
+            }
+            return handler.next(options);
+          }
+
+          // 5. إذا كانت السياسة allowed: التقاط جيل الجلسة الأولي وتحديد التوكن
+          final initialGen = context.sessionGeneration;
+          String? tokenToInject = context.currentSessionToken?.trim();
+
+          // إذا لم يتوفر التوكن في سياق الذاكرة، قراءته من التخزين كخيار احتياطي
+          if (tokenToInject == null || tokenToInject.isEmpty) {
+            try {
+              final diskToken = await _tokenStorage.readToken();
+              tokenToInject = diskToken?.trim();
+            } catch (e, st) {
+              debugPrint('[ApiClient] Error reading storage for allowed request: $e\n$st');
+              _sanitizeAuthorizationHeaders(options);
+              return handler.next(options);
             }
           }
+
+          // 6. التحقق البعدي المزدوج لمنع حالات السباق وتبدل الحسابات (Post-Verification Double-Check)
+          SessionTokenContext postContext;
+          try {
+            if (getSessionTokenContext != null) {
+              postContext = getSessionTokenContext!(options);
+            } else {
+              postContext = const SessionTokenContext.unknown();
+            }
+          } catch (e, st) {
+            debugPrint('[ApiClient] Fail-closed: post-verification check threw exception: $e\n$st');
+            _sanitizeAuthorizationHeaders(options);
+            return handler.next(options);
+          }
+
+          final isSameGen = postContext.sessionGeneration == initialGen;
+          final isStillAllowed = postContext.policy == TokenInjectionPolicy.allowed;
+          final isTokenValid = tokenToInject != null && tokenToInject.isNotEmpty;
+          final isMatchingToken = postContext.currentSessionToken == null ||
+              postContext.currentSessionToken!.trim().isEmpty ||
+              postContext.currentSessionToken!.trim() == tokenToInject;
+
+          if (!isSameGen || !isStillAllowed || !isTokenValid || !isMatchingToken) {
+            debugPrint(
+              '[ApiClient] Generation/Session race prevented: initialGen=$initialGen, '
+              'postGen=${postContext.sessionGeneration}, policy=${postContext.policy.name}. Token withheld.',
+            );
+            _sanitizeAuthorizationHeaders(options);
+            return handler.next(options);
+          }
+
+          // 7. إرفاق التوكن المعتمد فقط وتطهير أي ترويسة قديمة أو غير مطابقة
+          _sanitizeAuthorizationHeaders(options);
+          options.headers['Authorization'] = 'Bearer $tokenToInject';
+          options.extra['requestToken'] = tokenToInject;
+          options.extra['requestSessionGeneration'] = initialGen;
 
           if (AppEnv.enableDebugLogs && kDebugMode) {
-            debugPrint('[HTTP Request] ${options.method} ${options.uri}');
+            debugPrint('[HTTP Request (Authenticated)] ${options.method} ${options.uri.path}');
           }
 
           return handler.next(options);
@@ -116,6 +265,11 @@ class ApiClient {
 
     switch (statusCode) {
       case 401:
+        final isPublicAuth = isPublicAuthEndpoint(
+          error.requestOptions.method,
+          error.requestOptions.path,
+        );
+
         final authHeader =
             error.requestOptions.headers['Authorization'] as String?;
         final failedToken = (authHeader != null &&
@@ -125,15 +279,15 @@ class ApiClient {
         final requestGen =
             error.requestOptions.extra['requestSessionGeneration'] as int?;
 
-        // إذا تم تزويد رد نداء مع التفاصيل الدقيقة (التوكن + الجيل الملتقط لحظة إنشاء الطلب)
-        if (onUnauthorizedWithDetails != null) {
-          onUnauthorizedWithDetails?.call(failedToken, requestGen);
-        } else if (onUnauthorizedWithToken != null) {
-          if (failedToken != null && failedToken.isNotEmpty) {
+        // استدعاء معالجات انتهاء الجلسة فقط للطلبات الخاصة التي حملت توكناً مصادقاً فعلياً
+        if (!isPublicAuth && failedToken != null && failedToken.isNotEmpty) {
+          if (onUnauthorizedWithDetails != null) {
+            onUnauthorizedWithDetails?.call(failedToken, requestGen);
+          } else if (onUnauthorizedWithToken != null) {
             onUnauthorizedWithToken?.call(failedToken);
+          } else {
+            onUnauthorized?.call();
           }
-        } else {
-          onUnauthorized?.call();
         }
         return UnauthorizedException(
           message: errorMessage,

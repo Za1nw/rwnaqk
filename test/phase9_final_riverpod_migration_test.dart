@@ -73,7 +73,7 @@ void main() {
         mobile: '777000111',
       );
 
-      authNotifier.startSession(
+      await authNotifier.startSession(
         accessToken: 'secure_auth_token_99999',
         customerPayload: sampleCustomer,
       );
@@ -97,7 +97,7 @@ void main() {
       final authNotifier = container.read(authSessionProvider.notifier);
 
       // 1. Start user A session
-      authNotifier.startSession(
+      await authNotifier.startSession(
         accessToken: 'user_a_token',
         customerPayload: const CustomerModel(id: 101, fullName: 'User A', email: 'a@rawnaqk.com'),
       );
@@ -141,7 +141,7 @@ void main() {
     // -------------------------------------------------------------------------
     // 3. Pure Dart AuthSessionService Compatibility Adapter Verification
     // -------------------------------------------------------------------------
-    test('3. AuthSessionService delegates cleanly to Riverpod without package:get', () {
+    test('3. AuthSessionService delegates cleanly to Riverpod without package:get', () async {
       final service = AuthSessionService(container: container);
 
       expect(service.isAuthenticated, isFalse);
@@ -151,6 +151,7 @@ void main() {
         accessToken: 'compat_token_888',
         customerPayload: const CustomerModel(id: 888, fullName: 'Al-Anood', email: 'anood@rawnaqk.com'),
       );
+      await Future<void>.delayed(Duration.zero);
 
       expect(service.isAuthenticated, isTrue);
       expect(service.token.value, 'compat_token_888');
@@ -261,9 +262,9 @@ void main() {
     // -------------------------------------------------------------------------
     // 9. Customer Profile Data Aggregator
     // -------------------------------------------------------------------------
-    test('9. customerProfileDataProvider aggregates metrics seamlessly', () {
+    test('9. customerProfileDataProvider aggregates metrics seamlessly', () async {
       final authNotifier = container.read(authSessionProvider.notifier);
-      authNotifier.startSession(
+      await authNotifier.startSession(
         accessToken: 'vip_token',
         customerPayload: const CustomerModel(
           id: 777,

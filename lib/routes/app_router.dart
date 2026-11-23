@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rwnaqk_frontend/core/di/core_providers.dart';
+import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
+import 'package:rwnaqk_frontend/routes/app_route_args.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 // Auth Views
@@ -58,7 +60,8 @@ import 'package:rwnaqk_frontend/modules/wishlist/views/wishlist_view.dart';
 abstract final class AppRouter {
   const AppRouter._();
 
-  static const Set<String> _guestOnlyRoutes = {
+  /// مسارات تدفق المصادقة (متاحة للضيوف وغير المسجلين فقط؛ يتم تحويل المستخدم المسجل منها إلى الرئيسية)
+  static const Set<String> _authFlowRoutes = {
     AppRoutes.login,
     AppRoutes.register,
     AppRoutes.forgot,
@@ -67,43 +70,66 @@ abstract final class AppRouter {
     AppRoutes.twoFactorChallenge,
   };
 
-  static const Set<String> _authOnlyRoutes = {
+  /// مسارات عامة بالكامل (متاحة للزوار، الضيوف، وغير المسجلين)
+  @visibleForTesting
+  static const Set<String> publicRoutes = {
+    AppRoutes.onboarding,
+    AppRoutes.main,
     AppRoutes.home,
     AppRoutes.search,
     AppRoutes.searchResults,
     AppRoutes.flashSale,
     AppRoutes.product,
     AppRoutes.reviews,
+    AppRoutes.listing,
+    AppRoutes.helpCenter,
+    AppRoutes.supportChat,
     AppRoutes.wishlist,
-    AppRoutes.main,
+    AppRoutes.settings,
     AppRoutes.cart,
+    AppRoutes.orders,
+  };
+
+  /// مسارات محمية حصراً (تتطلب مستخدماً موثقاً isAuthenticated == true؛ يُمنع الزائر والضيف تماماً)
+  static const Set<String> _protectedRoutes = {
     AppRoutes.payment,
     AppRoutes.orderConfirmation,
     AppRoutes.orderSuccess,
-    AppRoutes.settings,
-    AppRoutes.profile,
-    AppRoutes.passwordAndSecurity,
-    AppRoutes.twoFactorAndPasskeys,
-    AppRoutes.helpCenter,
-    AppRoutes.supportChat,
-    AppRoutes.editProfile,
-    AppRoutes.addresses,
-    AppRoutes.orders,
     AppRoutes.orderDetails,
     AppRoutes.orderTracking,
-    AppRoutes.listing,
-    AppRoutes.emailVerify,
+    AppRoutes.addresses,
+    AppRoutes.profile,
+    AppRoutes.editProfile,
+    AppRoutes.passwordAndSecurity,
+    AppRoutes.twoFactorAndPasskeys,
   };
 
   /// Route generator with security guards and seamless transitions.
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     final routeName = settings.name ?? AppRoutes.onboarding;
+    AppNav.currentRoute = routeName;
+    AppNav.currentArguments = settings.arguments;
 
     // Evaluate route guard redirects
     final redirectedRoute = _checkRouteGuards(routeName);
     if (redirectedRoute != null && redirectedRoute != routeName) {
+      AppNav.currentRoute = redirectedRoute;
+
+      // إذا تم التحويل إلى شاشة الدخول بسبب مسار محمي، نرفق مسار العودة
+      var redirectedArgs = settings.arguments;
+      if (redirectedRoute == AppRoutes.login && _protectedRoutes.contains(routeName)) {
+        final existingMap = (settings.arguments is Map<String, dynamic>)
+            ? (settings.arguments as Map<String, dynamic>)
+            : <String, dynamic>{};
+        redirectedArgs = <String, dynamic>{
+          ...existingMap,
+          AppRouteArgs.returnRoute: routeName,
+          if (settings.arguments != null) AppRouteArgs.returnArgs: settings.arguments,
+        };
+      }
+
       return onGenerateRoute(
-        RouteSettings(name: redirectedRoute, arguments: settings.arguments),
+        RouteSettings(name: redirectedRoute, arguments: redirectedArgs),
       );
     }
 
@@ -166,25 +192,34 @@ abstract final class AppRouter {
         return AppRoutes.emailVerify;
       }
 
-      if (_guestOnlyRoutes.contains(route)) {
-        // If logged in and not preview guest, forward to main (or emailVerify if unverified)
+      if (_authFlowRoutes.contains(route)) {
+        // إذا كان المستخدم موثقاً وفعالاً (وليس زائراً)، يُحوّل للرئيسية (أو تأكيد البريد إذا لم يؤكد)
         if (isAuth && !isGuest) {
           return requiresVerification ? AppRoutes.emailVerify : AppRoutes.main;
         }
       }
 
-      if (_authOnlyRoutes.contains(route)) {
-        // If not logged in and not guest mode, forward to login
-        if (!isAuth && !isGuest) {
+      if (_protectedRoutes.contains(route)) {
+        // المسارات المحمية تتطلب مستخدماً موثقاً حصراً (يُمنع الزائر وغير المسجل)
+        if (!isAuth || isGuest) {
           return AppRoutes.login;
         }
       }
-    } catch (_) {
-      // If session provider isn't ready, let it pass
+    } catch (e, st) {
+      debugPrint('[AppRouter] Route guard check failed for route $route: $e\n$st');
+      // Fail-Safe (SEC-05): في حال حدوث أي خطأ في قراءة الجلسة، تُقفل المسارات المحمية فوراً
+      // وتُوجّه إلى شاشة تسجيل الدخول حمايةً لبيانات المستخدم
+      if (_protectedRoutes.contains(route)) {
+        return AppRoutes.login;
+      }
     }
 
     return null;
   }
+
+  /// فحص الحراس البرمجيين للمسار (متاح للاختبارات الآلية)
+  @visibleForTesting
+  static String? checkRouteGuards(String route) => _checkRouteGuards(route);
 
   static WidgetBuilder? _resolveWidgetBuilder(String route) {
     switch (route) {

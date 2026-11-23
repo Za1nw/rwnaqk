@@ -13,9 +13,25 @@ export 'package:rwnaqk_frontend/modules/orders/models/orders_state.dart';
 class OrdersNotifier extends Notifier<OrdersState> {
   IOrdersRepository get _repo => ref.read(ordersRepositoryProvider);
 
+  /// عداد تعريفي لتسلسل طلبات التحميل لضمان عدم كتابة استجابة قديمة فوق استجابة أحدث
+  int _activeRequestId = 0;
+
   @override
   OrdersState build() {
     return const OrdersState();
+  }
+
+  /// التحقق من أن طلب التحميل غير المتزامن ما زال صالحاً ولم تنتهِ صلاحيته بسبب تغير الجلسة أو تداخل الطلبات
+  /// يعتمد على ref.mounted للتحقق الصريح من بقاء Notifier حياً دون كتم أو التقاط صامت للاستثناءات
+  bool _isRequestValid(int requestId, int requestSessionGeneration) {
+    if (!ref.mounted) {
+      return false;
+    }
+    final currentSession = ref.read(authSessionProvider);
+    return currentSession.isAuthenticated &&
+        !currentSession.isGuest &&
+        currentSession.sessionGeneration == requestSessionGeneration &&
+        requestId == _activeRequestId;
   }
 
   /// تغيير فلتر العرض
@@ -23,8 +39,20 @@ class OrdersNotifier extends Notifier<OrdersState> {
     state = state.copyWith(filter: filter);
   }
 
-  /// تحميل الطلبات من المستودع المعتمد
+  /// تحميل الطلبات من المستودع المعتمد (مع الحماية الدفاعية الصارمة ضد استدعاءات الزائر وغير المسجل وسباق العمليات غير المتزامنة)
   Future<void> loadOrders({bool refresh = false}) async {
+    final session = ref.read(authSessionProvider);
+    if (!session.isAuthenticated || session.isGuest) {
+      // الدفاع الموضعي: منع إرسال API Requests أو تعبئة Mock Orders للزائر أو غير الموثق
+      if (state.orders.isNotEmpty || state.status != OrdersStatus.initial) {
+        state = const OrdersState();
+      }
+      return;
+    }
+
+    final requestId = ++_activeRequestId;
+    final requestSessionGen = session.sessionGeneration;
+
     if (AppEnv.enableMockData) {
       if (state.orders.isEmpty || refresh) {
         final service = OrdersService();
@@ -43,12 +71,18 @@ class OrdersNotifier extends Notifier<OrdersState> {
 
     try {
       final list = await _repo.getOrders();
+      if (!_isRequestValid(requestId, requestSessionGen)) {
+        return;
+      }
       state = state.copyWith(
         orders: list,
         status: OrdersStatus.loaded,
         errorMessage: () => null,
       );
     } catch (e) {
+      if (!_isRequestValid(requestId, requestSessionGen)) {
+        return;
+      }
       debugPrint('[OrdersNotifier.loadOrders] error: $e');
       state = state.copyWith(
         status: OrdersStatus.error,
@@ -57,7 +91,7 @@ class OrdersNotifier extends Notifier<OrdersState> {
     }
   }
 
-  /// إضافة طلب جديد محلياً وفي المستودع
+  /// إضافة طلب جديد محلياً في قائمة الذاكرة بعد تأكيد الشراء
   void addOrder(OrderModel order) {
     final updated = List<OrderModel>.from(state.orders)..insert(0, order);
     state = state.copyWith(
@@ -65,16 +99,25 @@ class OrdersNotifier extends Notifier<OrdersState> {
       filter: OrdersFilter.all,
       status: OrdersStatus.loaded,
     );
-    try {
-      _repo.createOrder(order);
-    } catch (_) {}
   }
 
   /// إلغاء طلب من قبل العميل
   Future<bool> cancelOrder(String orderId) async {
+    final session = ref.read(authSessionProvider);
+    final requestSessionGen = session.sessionGeneration;
+
     state = state.copyWith(status: OrdersStatus.loading);
     try {
       final updatedOrder = await _repo.cancelOrder(orderId);
+      if (!ref.mounted) {
+        return false;
+      }
+      final currentSession = ref.read(authSessionProvider);
+      if (!currentSession.isAuthenticated ||
+          currentSession.isGuest ||
+          currentSession.sessionGeneration != requestSessionGen) {
+        return false;
+      }
       final updatedList = state.orders.map((o) {
         if (o.id == orderId) return updatedOrder;
         return o;
@@ -87,6 +130,15 @@ class OrdersNotifier extends Notifier<OrdersState> {
       );
       return true;
     } catch (e) {
+      if (!ref.mounted) {
+        return false;
+      }
+      final currentSession = ref.read(authSessionProvider);
+      if (!currentSession.isAuthenticated ||
+          currentSession.isGuest ||
+          currentSession.sessionGeneration != requestSessionGen) {
+        return false;
+      }
       state = state.copyWith(
         status: OrdersStatus.error,
         errorMessage: () => e.toString(),
@@ -100,6 +152,7 @@ class OrdersNotifier extends Notifier<OrdersState> {
     required String? userId,
     required int generation,
   }) {
+    _activeRequestId++;
     if (userId == null ||
         userId != state.activeUserId ||
         generation != state.sessionGeneration) {
@@ -115,6 +168,7 @@ class OrdersNotifier extends Notifier<OrdersState> {
 
   /// تفريغ قائمة الطلبات بالكامل والكاش المحلي
   void clear() {
+    _activeRequestId++;
     state = const OrdersState();
     try {
       _repo.clearLocalCache();

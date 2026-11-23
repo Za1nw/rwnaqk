@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rwnaqk_frontend/core/constants/app_colors.dart';
 import 'package:rwnaqk_frontend/core/localization/app_localizations.dart';
 import 'package:rwnaqk_frontend/core/routing/app_nav.dart';
+import 'package:rwnaqk_frontend/core/services/auth/providers/auth_session_providers.dart';
 import 'package:rwnaqk_frontend/core/translations/app_locale_keys.dart';
 import 'package:rwnaqk_frontend/core/utils/app_money_utils.dart';
 import 'package:rwnaqk_frontend/core/widgets/feedback/app_toast.dart';
@@ -15,6 +16,7 @@ import 'package:rwnaqk_frontend/modules/cart/widgets/cart_wishlist_section.dart'
 import 'package:rwnaqk_frontend/modules/cart/widgets/free_shipping_meter.dart';
 import 'package:rwnaqk_frontend/modules/customer/providers/addresses_providers.dart';
 import 'package:rwnaqk_frontend/modules/wishlist/providers/wishlist_providers.dart';
+import 'package:rwnaqk_frontend/routes/app_route_args.dart';
 import 'package:rwnaqk_frontend/routes/app_routes.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -109,6 +111,37 @@ class CartScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(authSessionProvider);
+    final isGuestOrUnauth = !session.isAuthenticated || session.isGuest;
+    final isDark = context.isDark;
+
+    if (isGuestOrUnauth) {
+      return Scaffold(
+        backgroundColor: isDark
+            ? const Color(0xFF140A13)
+            : const Color(0xFFFBF8FA),
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopAppBar(context, ref, 0, true),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    16,
+                    16,
+                    16,
+                    100,
+                  ),
+                  child: _buildGuestEmptyState(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final cartState = ref.watch(cartProvider);
     final cartNotifier = ref.read(cartProvider.notifier);
     final quoteState = ref.watch(cartQuoteProvider);
@@ -116,7 +149,6 @@ class CartScreen extends ConsumerWidget {
     final selectedAddress = ref.watch(selectedAddressProvider) ??
         ref.watch(defaultAddressProvider);
 
-    final isDark = context.isDark;
     final isEmpty = cartState.isEmpty;
     final hasWishlist = wishlistState.items.isNotEmpty;
 
@@ -922,6 +954,140 @@ class CartScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Guest Empty State (الحالة الخاصة بالزائر غير المسجل مع زر تسجيل الدخول)
+  Widget _buildGuestEmptyState(BuildContext context) {
+    final isDark = context.isDark;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: isDark
+                      ? [
+                          BrandColors.gold.withValues(alpha: 0.20),
+                          const Color(0xFF24111F),
+                        ]
+                      : [
+                          BrandColors.burgundy.withValues(alpha: 0.12),
+                          const Color(0xFFF5EBF1),
+                        ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(
+                  color: isDark
+                      ? BrandColors.gold.withValues(alpha: 0.3)
+                      : BrandColors.burgundy.withValues(alpha: 0.2),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isDark ? BrandColors.gold : BrandColors.burgundy)
+                        .withValues(alpha: 0.18),
+                    blurRadius: 24,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 42,
+                  color: isDark ? BrandColors.gold : BrandColors.burgundy,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'تسجيل الدخول مطلوب',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF1E0A17),
+                fontWeight: FontWeight.w900,
+                fontSize: 19,
+                fontFamily: 'Cairo',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'يرجى تسجيل الدخول لعرض سلة التسوق الخاصة بك وإتمام عمليات الشراء',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isDark ? Colors.white60 : const Color(0xFF6E5664),
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                fontFamily: 'Cairo',
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 24),
+            InkWell(
+              onTap: () => AppNav.toNamed(
+                AppRoutes.login,
+                arguments: <String, dynamic>{
+                  AppRouteArgs.returnRoute: AppRoutes.cart,
+                },
+              ),
+              borderRadius: BorderRadius.circular(14),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [const Color(0xFFFAAD01), const Color(0xFFE59C00)]
+                        : [const Color(0xFF8E0542), const Color(0xFF6E0131)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isDark
+                              ? const Color(0xFFFAAD01)
+                              : const Color(0xFF6E0131))
+                          .withValues(alpha: 0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.login_rounded,
+                      size: 18,
+                      color: isDark ? const Color(0xFF1E0A17) : Colors.white,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'تسجيل الدخول / إنشاء حساب',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFF1E0A17) : Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13.5,
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
